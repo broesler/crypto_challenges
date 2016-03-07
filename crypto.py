@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 03/07/2016, 16:44
+# Last Modified: 03/07/2016, 17:44
 #
 '''
   Solutions to Matasano Crypto Challenges, Set 1.
@@ -79,85 +79,21 @@ def b64_int_dict(): #{{{
               63:'/'};
     return mydict #}}}
 
-def b64_chr_dict(): # {{{
-    ''' base64 dictionary with characters as keys. '''
-    mydict = {'A': 0,
-              'B': 1,
-              'C': 2,
-              'D': 3,
-              'E': 4,
-              'F': 5,
-              'G': 6,
-              'H': 7,
-              'I': 8,
-              'J': 9,
-              'K':10,
-              'L':11,
-              'M':12,
-              'N':13,
-              'O':14,
-              'P':15,
-              'Q':16,
-              'R':17,
-              'S':18,
-              'T':19,
-              'U':20,
-              'V':21,
-              'W':22,
-              'X':23,
-              'Y':24,
-              'Z':25,
-              'a':26,
-              'b':27,
-              'c':28,
-              'd':29,
-              'e':30,
-              'f':31,
-              'g':32,
-              'h':33,
-              'i':34,
-              'j':35,
-              'k':36,
-              'l':37,
-              'm':38,
-              'n':39,
-              'o':40,
-              'p':41,
-              'q':42,
-              'r':43,
-              's':44,
-              't':45,
-              'u':46,
-              'v':47,
-              'w':48,
-              'x':49,
-              'y':50,
-              'z':51,
-              '0':52,
-              '1':53,
-              '2':54,
-              '3':55,
-              '4':56,
-              '5':57,
-              '6':58,
-              '7':59,
-              '8':60,
-              '9':61,
-              '+':62,
-              '/':63};
-    return mydict #}}}
-
+#------------------------------------------------------------------------------
+#       Convert hexadecimal string to base64 string 
+#------------------------------------------------------------------------------
 def hex2b64(str_type):
     ''' Convert string from hexadecimal to base64. '''
-    b64_lut = b64_int_dict()    # lookup table of base64 characters
+    # lookup table of base64 characters, keys are integers
+    b64_lut = b64_int_dict()    
 
-    # Need multiples of 3 bytes to get base64 (6 bits per char)
+    # # Need multiples of 3 bytes to get base64 (6 bits per char)
     if len(str_type) < 3:
         raise ValueError('Input argument must be at least 3 characters.')
 
     if (4*len(str_type) % 3) != 0:
-        raise ValueError('Number of bits in input argument must be divisible'\
-                         'by 3.')
+        raise RuntimeWarning('Number of input bytes not divisible by 6, not'\
+                ' including padding characters in output.')
 
     # Number of characters in encoded string (need to divide by 2 because hex
     # characters only need 4 bits, not 8)
@@ -168,12 +104,23 @@ def hex2b64(str_type):
 
     b64_str = ''
     for i in range(nchr):
-        shift = 6 * (nchr - (i+1))
+        shift = 6 * (nchr - (i+1))              # take chunks of 6 bits
         mask = 0b111111 << shift
-        b64_int = (hex_int & mask) >> shift
-        b64_str += b64_lut[b64_int]
+        b64_int = (hex_int & mask) >> shift     # mask off relevant bits
+        b64_str += b64_lut[b64_int]             # look up encoding
 
     return b64_str
+
+#------------------------------------------------------------------------------
+#       Fixed-length XOR 
+#------------------------------------------------------------------------------
+def fixedXOR(str1, key):
+    if len(str1) != len(key):
+        raise ValueError('Input strings must be of equal length!')
+
+    # XOR the numbers
+    out = int(str1,16) ^ int(key,16)
+    return out
 
 #==============================================================================
 #==============================================================================
