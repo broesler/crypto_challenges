@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/04/2016, 10:57
+# Last Modified: 04/04/2016, 16:02
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -84,60 +84,49 @@ def b64_chr_dict():
 #------------------------------------------------------------------------------
 #       Convert hexadecimal string to base64 string
 #------------------------------------------------------------------------------
-def hex2b64_str(str_type):
+def hex2b64_str(hex_str):
     ''' Convert hex string to base64 string. '''
     b64_lut = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
     # pdb.set_trace()
-    nchr_in = len(str_type)     # Number of chars in encoded string
-    nbyte = nchr_in / 2         # 2 hex chars == 1 byte
+    nchr_in = len(hex_str)     # Number of chars in encoded string
+    # nbyte = nchr_in / 2         # 2 hex chars == 1 byte
     # nchr_out = nbyte * 4/3      # Number of chars in output
-
-    # Convert input hex string to integer
-    hex_int = int(str_type, 16)
 
     b64_str = ''
     # Operate in chunks of 3 bytes in ==> 4 bytes out
-    for i in range(0, nbyte, 3):
-        # get first 6 bits of first byte
-        shift = 8 * (nbyte - (i+1))
-        mask = 0xFC << shift
-        b64_int = (hex_int & mask) >> (shift+2)
-
-        # Add first character
+    for i in range(0, nchr_in, 6):
+        # Add first character using first 6 bits of first byte
+        # Need 2 chars of hex to get 1 byte
+        b64_int = (int(hex_str[i:i+2],16) & 0xFC) >> 2
         b64_str += b64_lut[b64_int]
 
         # get last 2 bits of first byte
-        mask = 0x03 << shift
-        b64_2 = (hex_int & mask) >> (shift-4)
+        b64_2 = (int(hex_str[i:i+2],16) & 0x03) << 4
 
         # if we have more bytes to go
-        if i+1 < nbyte:
+        if i+2 < nchr_in:
             # get first 4 bits of second byte and combine with 2 from above
-            mask = 0xF0 << (shift-8)
-            b64_4 = (hex_int & mask) >> (shift-4)
+            b64_4 = (int(hex_str[i+2:i+4],16) & 0xF0) >> 4
             b64_int = b64_2 | b64_4
 
             # Add second character
             b64_str += b64_lut[b64_int]
 
             # get last 4 bits of second byte
-            mask = 0x0F << (shift-8)
-            b64_2 = (hex_int & mask) >> (shift-10)
+            b64_2 = (int(hex_str[i+2:i+4],16) & 0x0F) << 2
 
             # if we have more bytes to go
-            if i+2 < nbyte:
+            if i+4 < nchr_in:
                 # get first 2 bits of last byte and combine with 4 from above
-                mask = 0xC0 << (shift-16)
-                b64_4 = (hex_int & mask) >> (shift-10)
+                b64_4 = (int(hex_str[i+4:i+6],16) & 0xC0) >> 6
                 b64_int = b64_2 | b64_4
 
                 # Add third character
                 b64_str += b64_lut[b64_int]
 
                 # Get last 6 bits of last byte
-                mask = 0x3F << (shift-16)
-                b64_int = (hex_int & mask) >> (shift-16)
+                b64_int = (int(hex_str[i+4:i+6],16) & 0x3F)
 
                 # Add fourth character
                 b64_str += b64_lut[b64_int]
