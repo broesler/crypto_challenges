@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 03/26/2016, 20:59
+# Last Modified: 03/30/2016, 16:10
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -33,7 +33,7 @@ def main():
     #       Test hex2b64_str
     #--------------------------------------------------------------------------
     print '---- hex2b64_str ----'
-    # ASCII string to base64 string
+    # Simple ASCII string to base64 string
     string = 'Man'
     expect = 'TWFu'
 
@@ -51,18 +51,10 @@ def main():
     # Input already a hex-encoded string
     test(crp.hex2b64_str(string), expect)
 
-    # Test for a string that is too short
-    try:
-        test(crp.hex2b64_str('B'), 'Whatever.')
-    except ValueError as errmsg:
-        test(errmsg[0], 'Input argument must be at least 3 characters.')
-
-    # Test for output padding (or lack thereof)
-    try:
-        test(crp.hex2b64_str('sure.'.encode('hex')), 'c3VyZS4=')
-    except Exception as errmsg:
-        test(errmsg[0], 'Number of input bytes not divisible by 6, not'\
-                ' including padding characters in output.')
+    # Test padding
+    test(crp.hex2b64_str('M'.encode('hex')), 'TQ==')
+    test(crp.hex2b64_str('Ma'.encode('hex')), 'TWE=')
+    # test(crp.hex2b64_str('sure.'.encode('hex')), 'c3VyZS4=')
 
     #--------------------------------------------------------------------------
     #        Test fixedXOR
