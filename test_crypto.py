@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 03/30/2016, 16:10
+# Last Modified: 04/04/2016, 18:27
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -86,7 +86,35 @@ def main():
     except ValueError as errmsg:
         test(errmsg[0], 'Input strings must be of equal length!')
 
-    return
+    #--------------------------------------------------------------------------
+    #        Test get_frequency_order
+    #--------------------------------------------------------------------------
+    print '---- get_frequency_order ----'
+    string = 'Hello'
+    r = crp.get_frequency_order(string)
+    
+    test(r, 'lHeo')     # remaining characters ranked in alphabetical order
+
+    #--------------------------------------------------------------------------
+    #        Test char_freq_score
+    #--------------------------------------------------------------------------
+    print '---- char_freq_score ----'
+    string = 'ETAOIN'
+    r = crp.char_freq_score(string)
+    test(r,6)
+
+    #--------------------------------------------------------------------------
+    #       Test single_byte_XOR       
+    #--------------------------------------------------------------------------
+    print '---- single_byte_XOR ----'
+    ciphertext = '1b37373331363f78151b7f2b783431333'\
+                 'd78397828372d363c78373e783a393b3736'
+
+    plaintext = crp.single_byte_XOR(ciphertext)
+
+    test(plaintext, 'Cooking MC\'s like a pound of bacon')
+
+    return # end main()
 
 # Call this test script directly from command-line
 if __name__ == '__main__':

@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/04/2016, 16:33
+# Last Modified: 04/04/2016, 18:28
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -88,6 +88,88 @@ def fixedXOR(str1, key):
     out_int = int(str1, 16) ^ int(key, 16)
 
     return out_int
+
+#------------------------------------------------------------------------------
+#      Character frequency score (English) 
+#------------------------------------------------------------------------------
+def char_freq_score(plaintext):
+    ''' Score an English string on a scale of 0 to 12 based on character
+    frequency. '''
+    # Most common English letters in order
+    etaoin = 'etaoinshrdlcumwfgypbvkjxqz'
+
+    # Get list of lowercase letters in order of most frequency to least
+    freqOrder = get_frequency_order(plaintext.lower())
+
+    # Find matches in top N characters
+    N = 6   # typically 6, could use more
+    score = 0
+    for ch in etaoin[:N]:
+        if ch in freqOrder[:N]:
+            score += 1
+
+    return score
+
+
+#------------------------------------------------------------------------------
+#       String character frequency order 
+#------------------------------------------------------------------------------
+def get_frequency_order(plaintext):
+    ''' Return string of character frequencies in input string ranked highest
+    to lowest.'''
+    ranks = ''
+
+    # Build dictionary
+    dict = {}
+    for c in plaintext:
+        if c not in dict:
+            dict[c] = 1
+        else:
+            dict[c] += 1
+
+    # Sort by character frequency
+    for k in sorted(dict, key=dict.get, reverse=True):
+        ranks += k
+
+    return ranks
+
+#------------------------------------------------------------------------------
+#       XOR input with single byte 
+#------------------------------------------------------------------------------
+def single_byte_XOR(ciphertext):
+    ''' Take a hex-encoded string that has been XOR'd against a single
+    character, and decode it. '''
+
+    N = len(ciphertext)   # number of bytes in ciphertext
+
+    # Initialize variables
+    cfreq_score_max = 0
+    plaintext_decrypt = ''
+
+    # For each possible byte
+    # for i in range(0x56, 0x60):
+    for i in range(0x00, 0x100):
+        # XOR each character in ciphertext with key
+        key = hex(i).lstrip('0x') or '0'
+
+        # Single-digit hex numbers need a padding 0
+        if len(key) == 1:
+            key = '0' + key
+
+        plaintext = '' 
+        # XOR each byte in the ciphertext with the key (1 byte == 2 chars)
+        for cipherbyte in [ciphertext[a:a+2] for a in range(0, N, 2)]:
+            plaintext += chr(fixedXOR(cipherbyte, key))
+
+        # Calculate character frequency score
+        cfreq_score = char_freq_score(plaintext)
+
+        # Track maximum score and actual key
+        if cfreq_score > cfreq_score_max:
+            cfreq_score_max = cfreq_score
+            plaintext_decrypt = plaintext
+
+    return plaintext_decrypt
 
 #==============================================================================
 #==============================================================================
