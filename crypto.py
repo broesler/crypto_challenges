@@ -4,82 +4,16 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 03/26/2016, 21:04
+# Last Modified: 04/04/2016, 10:57
 #
 '''
-  Solutions to Matasano Crypto Challenges, Set 1.
+  Functions to support solutions to Matasano Crypto Challenges, Set 1.
 '''
 #==============================================================================
 
-def b64_int_dict(): #{{{
-    ''' base64 dictionary with integers as keys. '''
-    mydict = {0:'A',
-              1:'B',
-              2:'C',
-              3:'D',
-              4:'E',
-              5:'F',
-              6:'G',
-              7:'H',
-              8:'I',
-              9:'J',
-              10:'K',
-              11:'L',
-              12:'M',
-              13:'N',
-              14:'O',
-              15:'P',
-              16:'Q',
-              17:'R',
-              18:'S',
-              19:'T',
-              20:'U',
-              21:'V',
-              22:'W',
-              23:'X',
-              24:'Y',
-              25:'Z',
-              26:'a',
-              27:'b',
-              28:'c',
-              29:'d',
-              30:'e',
-              31:'f',
-              32:'g',
-              33:'h',
-              34:'i',
-              35:'j',
-              36:'k',
-              37:'l',
-              38:'m',
-              39:'n',
-              40:'o',
-              41:'p',
-              42:'q',
-              43:'r',
-              44:'s',
-              45:'t',
-              46:'u',
-              47:'v',
-              48:'w',
-              49:'x',
-              50:'y',
-              51:'z',
-              52:'0',
-              53:'1',
-              54:'2',
-              55:'3',
-              56:'4',
-              57:'5',
-              58:'6',
-              59:'7',
-              60:'8',
-              61:'9',
-              62:'+',
-              63:'/'};
-    return mydict #}}}
+import pdb
 
-def b64_chr_dict(): #{{{
+def b64_chr_dict():
     ''' base64 dictionary with chars as keys. '''
     mydict = {'A': 0,
               'B': 1,
@@ -145,55 +79,85 @@ def b64_chr_dict(): #{{{
               '9':61,
               '+':62,
               '/':63};
-    return mydict #}}}
+    return mydict
 
 #------------------------------------------------------------------------------
-#       Convert hexadecimal string to base64 string 
+#       Convert hexadecimal string to base64 string
 #------------------------------------------------------------------------------
 def hex2b64_str(str_type):
     ''' Convert hex string to base64 string. '''
-    # lookup table of base64 characters, keys are integers
-    b64_lut = b64_int_dict()    
+    b64_lut = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
-    # Need multiples of 3 bytes to get base64 (6 bits per char)
-    if len(str_type) < 3:
-        raise ValueError('Input argument must be at least 3 characters.')
+    # pdb.set_trace()
+    nchr_in = len(str_type)     # Number of chars in encoded string
+    nbyte = nchr_in / 2         # 2 hex chars == 1 byte
+    # nchr_out = nbyte * 4/3      # Number of chars in output
 
-    if (4*len(str_type) % 3) != 0:
-        raise RuntimeWarning('Number of input bytes not divisible by 6, not'\
-                ' including padding characters in output.')
-
-    # Number of characters in encoded string (need to divide by 2 because hex
-    # characters only need 4 bits, not 8)
-    nchr = 2*len(str_type) / 3
-
-    # Convert hex string to integer
+    # Convert input hex string to integer
     hex_int = int(str_type, 16)
 
     b64_str = ''
-    for i in range(nchr):
-        shift = 6 * (nchr - (i+1))              # take chunks of 6 bits
-        mask = 0b111111 << shift
-        b64_int = (hex_int & mask) >> shift     # mask off relevant bits
-        b64_str += b64_lut[b64_int]             # look up encoding
+    # Operate in chunks of 3 bytes in ==> 4 bytes out
+    for i in range(0, nbyte, 3):
+        # get first 6 bits of first byte
+        shift = 8 * (nbyte - (i+1))
+        mask = 0xFC << shift
+        b64_int = (hex_int & mask) >> (shift+2)
+
+        # Add first character
+        b64_str += b64_lut[b64_int]
+
+        # get last 2 bits of first byte
+        mask = 0x03 << shift
+        b64_2 = (hex_int & mask) >> (shift-4)
+
+        # if we have more bytes to go
+        if i+1 < nbyte:
+            # get first 4 bits of second byte and combine with 2 from above
+            mask = 0xF0 << (shift-8)
+            b64_4 = (hex_int & mask) >> (shift-4)
+            b64_int = b64_2 | b64_4
+
+            # Add second character
+            b64_str += b64_lut[b64_int]
+
+            # get last 4 bits of second byte
+            mask = 0x0F << (shift-8)
+            b64_2 = (hex_int & mask) >> (shift-10)
+
+            # if we have more bytes to go
+            if i+2 < nbyte:
+                # get first 2 bits of last byte and combine with 4 from above
+                mask = 0xC0 << (shift-16)
+                b64_4 = (hex_int & mask) >> (shift-10)
+                b64_int = b64_2 | b64_4
+
+                # Add third character
+                b64_str += b64_lut[b64_int]
+
+                # Get last 6 bits of last byte
+                mask = 0x3F << (shift-16)
+                b64_int = (hex_int & mask) >> (shift-16)
+
+                # Add fourth character
+                b64_str += b64_lut[b64_int]
+
+            # There are only 2 bytes of input, so interpret 3rd character with
+            # a "0x00" byte appended, and pad with an '=' character 
+            else:
+                b64_str += b64_lut[b64_2]
+                b64_str += '='
+
+        # There is only 1 bytes of input, so interpret 2nd character with
+        # two "0x00" bytes appended, and pad with an '=' character 
+        else:
+            b64_str += b64_lut[b64_2]
+            b64_str += '=='
 
     return b64_str
 
-# def hex2b64_int(int_type):
-#     ''' Convert hex int to base64 int. '''
-#     # lookup table of base64 characters, keys are chars
-#     b64_lut = b64_chr_dict()    
-#
-#     nchr = 2*len(str(int_type)) / 3
-#
-#     return b64_int
-
-# def b64_encode(str_type)
-#     ''' Encode base64 string as integer '''
-#     return b64_int
-
 #------------------------------------------------------------------------------
-#       Fixed-length XOR 
+#       Fixed-length XOR
 #------------------------------------------------------------------------------
 def fixedXOR(str1, key):
     ''' Take a hex-encoded string and XOR it with a hex-encoded key to return
@@ -203,7 +167,7 @@ def fixedXOR(str1, key):
         raise ValueError('Input strings must be of equal length!')
 
     # XOR the numbers
-    out_int = int(str1,16) ^ int(key,16)
+    out_int = int(str1, 16) ^ int(key, 16)
 
     return out_int
 
