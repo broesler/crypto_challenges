@@ -4,13 +4,14 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/04/2016, 22:05
+# Last Modified: 04/05/2016, 14:00
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
 '''
 #==============================================================================
 from collections import namedtuple
+import pdb, traceback, sys
 
 #------------------------------------------------------------------------------
 #       Convert hexadecimal string to base64 string
@@ -20,45 +21,51 @@ def hex2b64_str(hex_str):
     b64_lut = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
     nchr_in = len(hex_str)     # Number of chars in encoded string
-    # nbyte = nchr_in / 2         # 2 hex chars == 1 byte
+    nbyte = nchr_in / 2         # 2 hex chars == 1 byte
     # nchr_out = nbyte * 4/3      # Number of chars in output
 
-    b64_str = ''
-    # Operate in chunks of 3 bytes (6 hex chars) in ==> 4 bytes out
-    for i in range(0, nchr_in, 6):
-        byte1 = int(hex_str[i:i+2], 16)
+    # Byte array (2 hex chars == 1 byte)
+    hex_byte = [int(hex_str[i:i+2], 16) for i in range(0, nchr_in, 2)]
 
+    b64_str = ''
+    # Operate in chunks of 3 bytes  in ==> 4 bytes out
+    for i in range(0, nbyte, 3):
         # Add first character using first 6 bits of first byte
         # Need 2 chars of hex to get 1 byte
-        b64_int = (byte1 & 0xFC) >> 2
+        b64_int = (hex_byte[i] & 0xFC) >> 2
         b64_str += b64_lut[b64_int]
 
         # get last 2 bits of first byte
-        b64_int = (byte1 & 0x03) << 4
+        b64_int = (hex_byte[i] & 0x03) << 4
 
         # if we have more bytes to go
-        if i+2 < nchr_in:
-            byte2 = int(hex_str[i+2:i+4], 16)
-
+        if i+1 < nbyte:
             # Add second character using first 4 bits of second byte and
             # combine with 2 from above
-            b64_int |= (byte2 & 0xF0) >> 4
+            b64_int |= (hex_byte[i+1] & 0xF0) >> 4
             b64_str += b64_lut[b64_int]
 
             # get last 4 bits of second byte
-            b64_int = (byte2 & 0x0F) << 2
+            b64_int = (hex_byte[i+1] & 0x0F) << 2
 
             # if we have more bytes to go
-            if i+4 < nchr_in:
+            if i+2 < nbyte:
                 # Add third character
-                byte3 = int(hex_str[i+4:i+6], 16)
-
                 # get first 2 bits of third byte and combine with 4 from above
-                b64_int |= (byte3 & 0xC0) >> 6
+                # b64_int |= (hex_byte[i+2] & 0xC0) >> 6
+
+                # The following construct is the same as "dbstop if error":
+                try:
+                    b64_int |= (hex_byte[i+2] & 0xC0) >> 6
+                except:
+                    type, value, tb = sys.exc_info()
+                    traceback.print_exc()
+                    pdb.post_mortem(tb)
+
                 b64_str += b64_lut[b64_int]
 
                 # Add fourth character using last 6 bits of third byte
-                b64_int = (byte3 & 0x3F)
+                b64_int = (hex_byte[i+2] & 0x3F)
                 b64_str += b64_lut[b64_int]
 
             # There are only 2 bytes of input, so interpret 3rd character with
@@ -103,7 +110,7 @@ def char_freq_score(plaintext):
     freqOrder = get_frequency_order(plaintext.lower())
 
     # Find matches in top N characters
-    N = 6   # typically 6, could use more
+    N = 6   # typically 6, could use more... needs experiment
     score = 0
     for ch in etaoin[:N]:
         if ch in freqOrder[:N]:
@@ -120,15 +127,15 @@ def get_frequency_order(plaintext):
     ranks = ''
 
     # Build dictionary
-    dict = {}
+    mydict = {}
     for c in plaintext:
-        if c not in dict:
-            dict[c] = 1
+        if c not in mydict:
+            mydict[c] = 1
         else:
-            dict[c] += 1
+            mydict[c] += 1
 
     # Sort by character frequency
-    for k in sorted(dict, key=dict.get, reverse=True):
+    for k in sorted(mydict, key=mydict.get, reverse=True):
         ranks += k
 
     return ranks
@@ -137,11 +144,21 @@ def get_frequency_order(plaintext):
 #       Decode XOR input with single byte
 #------------------------------------------------------------------------------
 def single_byte_XOR(ciphertext):
-    '''Take a hex-encoded string that has been XOR'd against a single
-    character, and decode it.'''
-    output = namedtuple('output', 'key decrypt score')
-
+    '''
+    Take a hex-encoded string that has been XOR'd against a single
+    character, and decode it. single_byte_XOR returns a struct containing:
+        out.key         integer value of the "true key" used for decryption
+        out.decrypt     actual decrypted string
+        out.score       integer character frequency score
+    '''
+    # Input checking
     N = len(ciphertext)   # number of bytes in ciphertext
+
+    if N % 2 != 0:
+        raise ValueError('Input string must have even number of characters!')
+
+    # Prepare output struct
+    output = namedtuple('output', 'key decrypt score')
 
     # Initialize variables
     cfreq_score_max = 0
