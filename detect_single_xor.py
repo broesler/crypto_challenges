@@ -4,7 +4,7 @@
 #  Created: 04/04/2016, 21:25
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/04/2016, 22:21
+# Last Modified: 04/05/2016, 15:11
 #
 '''
   Description: Detect single-character XOR in file.
@@ -21,7 +21,7 @@ import crypto as crp
 
 def main(filename):
     ''' Find the line in a file that contains an XORed string. '''
-    ifile = open(filename, 'rU')
+    fp = open(filename, 'rU')
 
     # Initialize variables
     Nline = 0
@@ -30,21 +30,26 @@ def main(filename):
     cfreq_score_max = 0
     found_line = 0
 
-    # XOR each line in the file to fine most likely candidate
-    for line in ifile:
+
+    # XOR each line in the file to find most likely candidate
+    # Lines are already hex-encoded, so no need to further process them
+    for line in fp:
         Nline += 1
-        xor_out = crp.single_byte_XOR(line.rstrip('\n').encode('hex'))
+        xor_out = crp.single_byte_XOR(line.rstrip('\n'))
 
         # Track actual output
         if xor_out.score > cfreq_score_max:
+            cfreq_score_max = xor_out.score
             true_key = xor_out.key
             plaintext_decrypt = xor_out.decrypt
-            cfreq_score_max = xor_out.score
             found_line = Nline
 
-    print 'Line: \t', Nline
+    print 'Line: \t', found_line
     print 'Key: \t', true_key
-    print 'String: \t', plaintext_decrypt
+    print 'Score: \t', cfreq_score_max
+    print 'String: ', plaintext_decrypt
+
+    fp.close()
     return
 
 # Call this test script directly from command-line

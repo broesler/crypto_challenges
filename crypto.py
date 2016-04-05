@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/05/2016, 14:00
+# Last Modified: 04/05/2016, 15:14
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -52,15 +52,15 @@ def hex2b64_str(hex_str):
             if i+2 < nbyte:
                 # Add third character
                 # get first 2 bits of third byte and combine with 4 from above
-                # b64_int |= (hex_byte[i+2] & 0xC0) >> 6
+                b64_int |= (hex_byte[i+2] & 0xC0) >> 6
 
-                # The following construct is the same as "dbstop if error":
-                try:
-                    b64_int |= (hex_byte[i+2] & 0xC0) >> 6
-                except:
-                    type, value, tb = sys.exc_info()
-                    traceback.print_exc()
-                    pdb.post_mortem(tb)
+                # # The following construct is the same as "dbstop if error":
+                # try:
+                #     b64_int |= (hex_byte[i+2] & 0xC0) >> 6
+                # except:
+                #     type, value, tb = sys.exc_info()
+                #     traceback.print_exc()
+                #     pdb.post_mortem(tb)
 
                 b64_str += b64_lut[b64_int]
 
@@ -74,7 +74,7 @@ def hex2b64_str(hex_str):
                 b64_str += b64_lut[b64_int]
                 b64_str += '='
 
-        # There is only 1 bytes of input, so interpret 2nd character with
+        # There is only 1 byte of input, so interpret 2nd character with
         # two "0x00" bytes appended, and pad with an '=' character
         else:
             b64_str += b64_lut[b64_int]
@@ -110,7 +110,7 @@ def char_freq_score(plaintext):
     freqOrder = get_frequency_order(plaintext.lower())
 
     # Find matches in top N characters
-    N = 6   # typically 6, could use more... needs experiment
+    N = 20
     score = 0
     for ch in etaoin[:N]:
         if ch in freqOrder[:N]:
