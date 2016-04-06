@@ -4,7 +4,7 @@
 #  Created: 04/04/2016, 21:25
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/05/2016, 15:11
+# Last Modified: 04/05/2016, 15:20
 #
 '''
   Description: Detect single-character XOR in file.
@@ -35,7 +35,7 @@ def main(filename):
     # Lines are already hex-encoded, so no need to further process them
     for line in fp:
         Nline += 1
-        xor_out = crp.single_byte_XOR(line.rstrip('\n'))
+        xor_out = crp.single_byte_XOR_decode(line.rstrip('\n'))
 
         # Track actual output
         if xor_out.score > cfreq_score_max:

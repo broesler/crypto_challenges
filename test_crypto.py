@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/05/2016, 15:16
+# Last Modified: 04/05/2016, 21:07
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -28,7 +28,6 @@ def test(result, expected):
 #------------------------------------------------------------------------------
 def main():
     ''' Call unit tests for functions in crypto.py '''
-
     #--------------------------------------------------------------------------
     #       Test hex2b64_str
     #--------------------------------------------------------------------------
@@ -54,7 +53,6 @@ def main():
     # Test padding
     test(crp.hex2b64_str('M'.encode('hex')), 'TQ==')
     test(crp.hex2b64_str('Ma'.encode('hex')), 'TWE=')
-    # test(crp.hex2b64_str('sure.'.encode('hex')), 'c3VyZS4=')
 
     #--------------------------------------------------------------------------
     #        Test fixedXOR
@@ -104,20 +102,46 @@ def main():
     test(r, 6)
 
     #--------------------------------------------------------------------------
-    #       Test single_byte_XOR
+    #       Test single_byte_XOR_decode
     #--------------------------------------------------------------------------
-    print '---- single_byte_XOR ----'
+    print '---- single_byte_XOR_decode ----'
+    # I/O test from <http://cryptopals.com/sets/1/challenges/3>
     ciphertext = '1b37373331363f78151b7f2b783431333'\
                  'd78397828372d363c78373e783a393b3736'
 
     # Returns namedtuple with fields key, score, decrypt, can also return those
     # fields as individual variables on LHS
-    out = crp.single_byte_XOR(ciphertext)
+    out = crp.single_byte_XOR_decode(ciphertext)
     test(out.key, '58')
     test(out.score, 15)
     test(out.decrypt, 'Cooking MC\'s like a pound of bacon')
 
+    #--------------------------------------------------------------------------
+    #        Test repeating_key_XOR
+    #--------------------------------------------------------------------------
+    print '---- repeating_key_XOR ----'
+    # I/O test from <http://cryptopals.com/sets/1/challenges/5>
+    # plaintext = 'Burning \'em, if you ain\'t quick and nimble '\
+    #             'I go crazy when I hear a cymbal'
+    plaintext = 'Burning \'em, if you ain\'t quick and nimble I go crazy when I hear a cymbal'
+    expect = '0b3637272a2b2e63622c2e69692a23693a2a'\
+             '3c6324202d623d63343c2a26226324272765272'\
+             'a282b2f20430a652e2c652a3124333a653e2'\
+             'b2027630c692b20283165286326302e27282f'
+    key = 'ICE'
+
+    # Currently, hex sequence '20690a' does not match '20430a'...
+    # chr() gives ' i\n' vs ' C\n'
+    ciphertext = crp.repeating_key_XOR(plaintext, key)
+    test(ciphertext, expect)
+
+    # 84th hex character --> 42nd byte of input is wrong
+    ind = expect.find('430a')   
+    print plaintext[ind/2-5:ind/2+5]
+
+    #--------------------------------------------------------------------------
     return # end main()
+    #--------------------------------------------------------------------------
 
 # Call this test script directly from command-line
 if __name__ == '__main__':

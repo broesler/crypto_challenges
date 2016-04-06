@@ -4,14 +4,16 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/05/2016, 15:14
+# Last Modified: 04/05/2016, 20:51
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
 '''
 #==============================================================================
 from collections import namedtuple
-import pdb, traceback, sys
+# import pdb
+# import traceback
+# import sys
 
 #------------------------------------------------------------------------------
 #       Convert hexadecimal string to base64 string
@@ -143,7 +145,7 @@ def get_frequency_order(plaintext):
 #------------------------------------------------------------------------------
 #       Decode XOR input with single byte
 #------------------------------------------------------------------------------
-def single_byte_XOR(ciphertext):
+def single_byte_XOR_decode(ciphertext):
     '''
     Take a hex-encoded string that has been XOR'd against a single
     character, and decode it. single_byte_XOR returns a struct containing:
@@ -156,9 +158,6 @@ def single_byte_XOR(ciphertext):
 
     if N % 2 != 0:
         raise ValueError('Input string must have even number of characters!')
-
-    # Prepare output struct
-    output = namedtuple('output', 'key decrypt score')
 
     # Initialize variables
     cfreq_score_max = 0
@@ -177,7 +176,7 @@ def single_byte_XOR(ciphertext):
 
         plaintext = ''
         # XOR each byte in the ciphertext with the key (1 byte == 2 hex chars)
-        for cipherbyte in [ciphertext[a:a+2] for a in range(0, N, 2)]:
+        for cipherbyte in [ciphertext[j:j+2] for j in range(0, N, 2)]:
             plaintext += chr(fixedXOR(cipherbyte, key))
 
         # Calculate character frequency score
@@ -190,9 +189,31 @@ def single_byte_XOR(ciphertext):
             plaintext_decrypt = plaintext   # str
 
     # Store output in named tuple
+    output = namedtuple('output', 'key decrypt score')
     out = output(true_key, plaintext_decrypt, cfreq_score_max)
 
     return out
 
+#------------------------------------------------------------------------------
+#       Repeating key XOR
+#------------------------------------------------------------------------------
+def repeating_key_XOR(plaintext, key):
+    '''Return an encrypted string from a plaintext input, XORed with
+    a repeating key.'''
+
+    N = len(plaintext)
+    M = len(key)
+
+    # Need hex strings for use of fixedXOR
+    plaintext_hex = plaintext.encode('hex')
+    key_hex = key.encode('hex')
+
+    ciphertext = ''
+    for i in range(0, N):
+        j = i % M   # loop over key characters
+        ciphertext += chr(fixedXOR(plaintext[i].encode('hex'),
+                                   key[j].encode('hex')))
+
+    return ciphertext.encode('hex')
 #==============================================================================
 #==============================================================================
