@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/05/2016, 20:51
+# Last Modified: 04/06/2016, 22:27
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -148,7 +148,10 @@ def get_frequency_order(plaintext):
 def single_byte_XOR_decode(ciphertext):
     '''
     Take a hex-encoded string that has been XOR'd against a single
-    character, and decode it. single_byte_XOR returns a struct containing:
+    character, and decode it. 
+    Input:
+        ciphertext      hex-encoded string 
+    Output:
         out.key         integer value of the "true key" used for decryption
         out.decrypt     actual decrypted string
         out.score       integer character frequency score
@@ -204,15 +207,10 @@ def repeating_key_XOR(plaintext, key):
     N = len(plaintext)
     M = len(key)
 
-    # Need hex strings for use of fixedXOR
-    plaintext_hex = plaintext.encode('hex')
-    key_hex = key.encode('hex')
-
     ciphertext = ''
     for i in range(0, N):
-        j = i % M   # loop over key characters
-        ciphertext += chr(fixedXOR(plaintext[i].encode('hex'),
-                                   key[j].encode('hex')))
+        ciphertext += chr(fixedXOR(plaintext[i].encode('hex'), 
+                          key[i % M].encode('hex')))
 
     return ciphertext.encode('hex')
 #==============================================================================

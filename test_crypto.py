@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/05/2016, 21:07
+# Last Modified: 04/07/2016, 14:22
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -121,23 +121,18 @@ def main():
     #--------------------------------------------------------------------------
     print '---- repeating_key_XOR ----'
     # I/O test from <http://cryptopals.com/sets/1/challenges/5>
-    # plaintext = 'Burning \'em, if you ain\'t quick and nimble '\
+    # plaintext = 'Burning \'em, if you ain\'t quick and nimble'\
     #             'I go crazy when I hear a cymbal'
-    plaintext = 'Burning \'em, if you ain\'t quick and nimble I go crazy when I hear a cymbal'
+    plaintext = 'Burning \'em, if you ain\'t quick and nimble\n'\
+                'I go crazy when I hear a cymbal'
     expect = '0b3637272a2b2e63622c2e69692a23693a2a'\
              '3c6324202d623d63343c2a26226324272765272'\
              'a282b2f20430a652e2c652a3124333a653e2'\
              'b2027630c692b20283165286326302e27282f'
     key = 'ICE'
 
-    # Currently, hex sequence '20690a' does not match '20430a'...
-    # chr() gives ' i\n' vs ' C\n'
     ciphertext = crp.repeating_key_XOR(plaintext, key)
     test(ciphertext, expect)
-
-    # 84th hex character --> 42nd byte of input is wrong
-    ind = expect.find('430a')   
-    print plaintext[ind/2-5:ind/2+5]
 
     #--------------------------------------------------------------------------
     return # end main()
