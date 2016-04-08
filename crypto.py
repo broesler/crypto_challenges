@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/06/2016, 22:27
+# Last Modified: 04/08/2016, 13:42
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -15,12 +15,47 @@ from collections import namedtuple
 # import traceback
 # import sys
 
+# base64 look-up table
+b64_lut = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+#------------------------------------------------------------------------------
+#       Convert base64 string to hexadecimal string
+#------------------------------------------------------------------------------
+def b642hex_str(b64_str):
+    '''Convert hex string to base64 string.'''
+    nbyte = len(b64_str)     # Number of chars in encoded string == # bytes
+
+    # Output characters (2 hex chars == 1 byte, don't include pads)
+    eq_ind = (nbyte - b64_str.find('=')) if (b64_str.find('=') > 0) else 0
+    nbyte_out = (3*nbyte)/4 - eq_ind
+    nchr_out = 2*nbyte_out
+
+    b64_byte = [b64_lut.find(b64_str[i]) for i in range(0, nbyte)]
+
+    # Take chunks of 4 bytes --> 3 bytes of output
+    hex_int = []
+    hex_str = ''
+    for i in range(0, nbyte, 4):
+        # Take integer conversion of b64 characters and combine to hex bytes
+        byte = []
+        byte.append(b64_byte[i])
+        byte.append(b64_byte[i+1])
+        byte.append(b64_byte[i+2])
+        byte.append(b64_byte[i+3])
+
+        hex_int.append((byte[0] << 2) | (byte[1] >> 4))
+        if byte[2] < 0x40:   # i.e. 64
+            hex_int.append((byte[1] << 4) | (byte[2] >> 2))
+            if byte[3] < 0x40:
+               hex_int.append((byte[2] << 6) | byte[3])
+
+    return hex_str
+
 #------------------------------------------------------------------------------
 #       Convert hexadecimal string to base64 string
 #------------------------------------------------------------------------------
 def hex2b64_str(hex_str):
     '''Convert hex string to base64 string.'''
-    b64_lut = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
     nchr_in = len(hex_str)     # Number of chars in encoded string
     nbyte = nchr_in / 2         # 2 hex chars == 1 byte
@@ -148,9 +183,9 @@ def get_frequency_order(plaintext):
 def single_byte_XOR_decode(ciphertext):
     '''
     Take a hex-encoded string that has been XOR'd against a single
-    character, and decode it. 
+    character, and decode it.
     Input:
-        ciphertext      hex-encoded string 
+        ciphertext      hex-encoded string
     Output:
         out.key         integer value of the "true key" used for decryption
         out.decrypt     actual decrypted string
@@ -209,9 +244,22 @@ def repeating_key_XOR(plaintext, key):
 
     ciphertext = ''
     for i in range(0, N):
-        ciphertext += chr(fixedXOR(plaintext[i].encode('hex'), 
+        ciphertext += chr(fixedXOR(plaintext[i].encode('hex'),
                           key[i % M].encode('hex')))
 
     return ciphertext.encode('hex')
+
+#------------------------------------------------------------------------------
+#       Hamming distance
+#------------------------------------------------------------------------------
+def hamming_dist(str1, str2):
+    '''Returns the number of differing bits of two hex-encoded strings.'''
+    # XOR the strings to get 1's where the bits differ
+    str_xor = fixedXOR(str1,str2)
+
+    # Count the number of bits that differ
+    H = bin(str_xor).count('1')
+
+    return H
 #==============================================================================
 #==============================================================================
