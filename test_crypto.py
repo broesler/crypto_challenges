@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/08/2016, 12:42
+# Last Modified: 04/11/2016, 14:23
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -32,6 +32,11 @@ def main():
     #       Test hex2b64_str
     #--------------------------------------------------------------------------
     print '---- hex2b64_str ----'
+    # Simple ASCII string to base64 string
+    test(crp.hex2b64_str('Man'.encode('hex')), 'TWFu')
+    test(crp.hex2b64_str('Ma'.encode('hex')), 'TWE=')
+    test(crp.hex2b64_str('M'.encode('hex')), 'TQ==')
+
     # Hex string to base64 string
     # I/O test taken from <http://cryptopals.com/sets/1/challenges/1>
     string = '49276d206b696c6c696e6720796f75722'\
@@ -43,25 +48,30 @@ def main():
     # Input already a hex-encoded string
     test(crp.hex2b64_str(string), expect)
 
-    # Simple ASCII string to base64 string
-    test(crp.hex2b64_str('Man'.encode('hex')), 'TWFu')
-    test(crp.hex2b64_str('Ma'.encode('hex')), 'TWE=')
-    test(crp.hex2b64_str('M'.encode('hex')), 'TQ==')
-
     #--------------------------------------------------------------------------
     #        Test b642hex_str
     #--------------------------------------------------------------------------
     print '---- b642hex_str ----'
     # Simple ASCII string to base64 string
-    string = 'TWFu'
-    expect = 'Man'
-
-    # Convert ASCII string to hex before passing
-    test(crp.b642hex_str(string).decode('hex'), expect)
-
-    # Test padding
+    test(crp.b642hex_str('TWFu').decode('hex'), 'Man')
     test(crp.b642hex_str('TWE=').decode('hex'), 'Ma')
     test(crp.b642hex_str('TQ==').decode('hex'), 'M')
+
+    # Longer ASCII string to base64 string
+    string = 'YW55IGNhcm5hbCBwbGVhc3Vy'
+    expect = 'any carnal pleasur'
+
+    test(crp.b642hex_str(string).decode('hex'), expect)
+
+    # Hex string to base64 string
+    # I/O test taken from <http://cryptopals.com/sets/1/challenges/1>
+    string = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsa'\
+             'WtlIGEgcG9pc29ub3VzIG11c2hyb29t'
+    expect = '49276d206b696c6c696e6720796f75722'\
+             '0627261696e206c696b65206120706f69'\
+             '736f6e6f7573206d757368726f6f6d'
+
+    test(crp.b642hex_str(string), expect)
 
     # #--------------------------------------------------------------------------
     # #        Test fixedXOR

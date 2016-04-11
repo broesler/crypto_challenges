@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/08/2016, 13:42
+# Last Modified: 04/11/2016, 14:23
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -16,38 +16,48 @@ from collections import namedtuple
 # import sys
 
 # base64 look-up table
-b64_lut = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+b64_lut = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
 
 #------------------------------------------------------------------------------
 #       Convert base64 string to hexadecimal string
 #------------------------------------------------------------------------------
 def b642hex_str(b64_str):
-    '''Convert hex string to base64 string.'''
+    '''Convert base64 string to hex string.'''
     nbyte = len(b64_str)     # Number of chars in encoded string == # bytes
 
+    if nbyte % 4 != 0:
+        raise ValueError('Input string must have a multiple of 4 characters!')
+        
     # Output characters (2 hex chars == 1 byte, don't include pads)
-    eq_ind = (nbyte - b64_str.find('=')) if (b64_str.find('=') > 0) else 0
-    nbyte_out = (3*nbyte)/4 - eq_ind
-    nchr_out = 2*nbyte_out
+    # eq_ind = (nbyte - b64_str.find('=')) if (b64_str.find('=') > 0) else 0
+    # nbyte_out = (3*nbyte)/4 - eq_ind
+    # nchr_out = 2*nbyte_out
 
+    # List of integers corresponding to b64 characters in input
     b64_byte = [b64_lut.find(b64_str[i]) for i in range(0, nbyte)]
+    # print b64_byte
 
-    # Take chunks of 4 bytes --> 3 bytes of output
     hex_int = []
     hex_str = ''
     for i in range(0, nbyte, 4):
-        # Take integer conversion of b64 characters and combine to hex bytes
-        byte = []
-        byte.append(b64_byte[i])
-        byte.append(b64_byte[i+1])
-        byte.append(b64_byte[i+2])
-        byte.append(b64_byte[i+3])
+        # Take chunks of 4 bytes --> 3 bytes of output
+        chunk = b64_byte[i:i+4]
 
-        hex_int.append((byte[0] << 2) | (byte[1] >> 4))
-        if byte[2] < 0x40:   # i.e. 64
-            hex_int.append((byte[1] << 4) | (byte[2] >> 2))
-            if byte[3] < 0x40:
-               hex_int.append((byte[2] << 6) | byte[3])
+        # First char of output
+        #   Need to mask off MSBs for left-shifts so we don't retain larger
+        #   values
+        hex_int.append((chunk[0] << 2) & 0xFF | (chunk[1] >> 4))
+
+        if (chunk[2] < 0x40) and (chunk[2] > 0x00):   # i.e. 64
+            # Second char
+            hex_int.append((chunk[1] << 4) & 0xFF | (chunk[2] >> 2))
+
+            # Third char
+            if (chunk[3] < 0x40) and (chunk[3] > 0x00):
+               hex_int.append((chunk[2] << 6) & 0xFF | chunk[3])
+
+    # Convert integer output to string
+    hex_str += ''.join(['%02x'%k for k in hex_int])
 
     return hex_str
 
