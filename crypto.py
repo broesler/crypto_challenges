@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/11/2016, 14:23
+# Last Modified: 04/11/2016, 14:27
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -28,24 +28,16 @@ def b642hex_str(b64_str):
     if nbyte % 4 != 0:
         raise ValueError('Input string must have a multiple of 4 characters!')
         
-    # Output characters (2 hex chars == 1 byte, don't include pads)
-    # eq_ind = (nbyte - b64_str.find('=')) if (b64_str.find('=') > 0) else 0
-    # nbyte_out = (3*nbyte)/4 - eq_ind
-    # nchr_out = 2*nbyte_out
-
     # List of integers corresponding to b64 characters in input
     b64_byte = [b64_lut.find(b64_str[i]) for i in range(0, nbyte)]
-    # print b64_byte
 
     hex_int = []
-    hex_str = ''
     for i in range(0, nbyte, 4):
         # Take chunks of 4 bytes --> 3 bytes of output
         chunk = b64_byte[i:i+4]
 
         # First char of output
-        #   Need to mask off MSBs for left-shifts so we don't retain larger
-        #   values
+        #   Need to mask off MSBs for left-shifts so we don't keep large #s
         hex_int.append((chunk[0] << 2) & 0xFF | (chunk[1] >> 4))
 
         if (chunk[2] < 0x40) and (chunk[2] > 0x00):   # i.e. 64
@@ -57,7 +49,7 @@ def b642hex_str(b64_str):
                hex_int.append((chunk[2] << 6) & 0xFF | chunk[3])
 
     # Convert integer output to string
-    hex_str += ''.join(['%02x'%k for k in hex_int])
+    hex_str = ''.join(['%02x'%k for k in hex_int])
 
     return hex_str
 
