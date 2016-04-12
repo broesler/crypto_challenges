@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/11/2016, 14:30
+# Last Modified: 04/11/2016, 19:00
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -140,8 +140,6 @@ def main():
     #--------------------------------------------------------------------------
     print '---- repeating_key_XOR ----'
     # I/O test from <http://cryptopals.com/sets/1/challenges/5>
-    # plaintext = 'Burning \'em, if you ain\'t quick and nimble'\
-    #             'I go crazy when I hear a cymbal'
     plaintext = 'Burning \'em, if you ain\'t quick and nimble\n'\
                 'I go crazy when I hear a cymbal'
     expect = '0b3637272a2b2e63622c2e69692a23693a2a'\

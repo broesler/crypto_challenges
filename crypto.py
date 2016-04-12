@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/11/2016, 14:27
+# Last Modified: 04/11/2016, 22:07
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -40,15 +40,15 @@ def b642hex_str(b64_str):
         #   Need to mask off MSBs for left-shifts so we don't keep large #s
         hex_int.append((chunk[0] << 2) & 0xFF | (chunk[1] >> 4))
 
-        if (chunk[2] < 0x40) and (chunk[2] > 0x00):   # i.e. 64
-            # Second char
+        # Second char
+        if (chunk[2] < 0x40) and (chunk[2] > 0x00):
             hex_int.append((chunk[1] << 4) & 0xFF | (chunk[2] >> 2))
 
             # Third char
             if (chunk[3] < 0x40) and (chunk[3] > 0x00):
                hex_int.append((chunk[2] << 6) & 0xFF | chunk[3])
 
-    # Convert integer output to string
+    # Convert integer list to hex string
     hex_str = ''.join(['%02x'%k for k in hex_int])
 
     return hex_str
