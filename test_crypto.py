@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/11/2016, 19:00
+# Last Modified: 04/11/2016, 22:27
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -148,12 +148,14 @@ def main():
              'b2027630c692b20283165286326302e27282f'
     key = 'ICE'
 
-    ciphertext = crp.repeating_key_XOR(plaintext, key)
+    ciphertext = crp.repeating_key_XOR(plaintext.encode('hex'), \
+                                             key.encode('hex'))
     test(ciphertext, expect)
 
     #--------------------------------------------------------------------------
-    #       Test hammming_dist 
+    #       Test hammming_dist
     #--------------------------------------------------------------------------
+    print '---- hamming_dist ----'
     str1 = 'this is a test'
     str2 = 'wokka wokka!!!'
 

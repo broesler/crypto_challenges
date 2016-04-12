@@ -4,7 +4,7 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/11/2016, 22:07
+# Last Modified: 04/11/2016, 22:38
 #
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
@@ -237,19 +237,22 @@ def single_byte_XOR_decode(ciphertext):
 #------------------------------------------------------------------------------
 #       Repeating key XOR
 #------------------------------------------------------------------------------
-def repeating_key_XOR(plaintext, key):
-    '''Return an encrypted string from a plaintext input, XORed with
+def repeating_key_XOR(plaintext_hex, key_hex):
+    '''Return an encrypted string from a hex-encoded input, XORed with
     a repeating key.'''
 
-    N = len(plaintext)
-    M = len(key)
+    N = len(plaintext_hex)
+    M = len(key_hex)
 
-    ciphertext = ''
-    for i in range(0, N):
-        ciphertext += chr(fixedXOR(plaintext[i].encode('hex'),
-                          key[i % M].encode('hex')))
+    pt_byte = [plaintext_hex[i:i+2] for i in range(0, N, 2)]
+    key_byte = [key_hex[i:i+2] for i in range(0, M, 2)]
 
-    return ciphertext.encode('hex')
+    ciphertext_hex = ''
+    for i in range(0, N/2):
+        ciphertext_int = fixedXOR(pt_byte[i], key_byte[i % (M/2)])
+        ciphertext_hex += '{0:02x}'.format(ciphertext_int)
+
+    return ciphertext_hex
 
 #------------------------------------------------------------------------------
 #       Hamming distance
