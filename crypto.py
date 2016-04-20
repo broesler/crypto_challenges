@@ -163,7 +163,6 @@ def char_freq_score(plaintext):
 def get_frequency_order(plaintext):
     '''Return string of character frequencies in input string ranked highest
     to lowest.'''
-    ranks = ''
 
     # Build dictionary
     mydict = {}
@@ -173,9 +172,8 @@ def get_frequency_order(plaintext):
         else:
             mydict[c] += 1
 
-    # Sort by character frequency
-    for k in sorted(mydict, key=mydict.get, reverse=True):
-        ranks += k
+    # Sort by character frequency, return string instead of list
+    ranks = ''.join(sorted(mydict, key=mydict.get, reverse=True))
 
     return ranks
 
