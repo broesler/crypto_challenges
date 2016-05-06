@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/11/2016, 22:27
+# Last Modified: 05/06/2016, 12:01
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -47,6 +47,7 @@ def main():
 
     # Input already a hex-encoded string
     test(crp.hex2b64_str(string), expect)
+    print '    |\tascii:  %s' % string.decode('hex')
 
     #--------------------------------------------------------------------------
     #        Test b642hex_str
@@ -72,6 +73,7 @@ def main():
              '736f6e6f7573206d757368726f6f6d'
 
     test(crp.b642hex_str(string), expect)
+    print '    |\tascii:  %s' % expect.decode('hex')
 
     #--------------------------------------------------------------------------
     #        Test fixedXOR
