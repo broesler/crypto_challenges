@@ -4,7 +4,7 @@
 #  Created: 03/07/2016, 13:42
 #   Author: Bernie Roesler
 #
-# Last Modified: 05/06/2016, 12:01
+# Last Modified: 05/13/2016, 14:34
 #
 '''
   Description: Test functions defined in crypto.py module
@@ -47,7 +47,7 @@ def main():
 
     # Input already a hex-encoded string
     test(crp.hex2b64_str(string), expect)
-    print '    |\tascii:  %s' % string.decode('hex')
+    print '    |\tascii:  \'%s\'' % string.decode('hex')
 
     #--------------------------------------------------------------------------
     #        Test b642hex_str
@@ -73,7 +73,7 @@ def main():
              '736f6e6f7573206d757368726f6f6d'
 
     test(crp.b642hex_str(string), expect)
-    print '    |\tascii:  %s' % expect.decode('hex')
+    print '    |\tascii:  \'%s\'' % expect.decode('hex')
 
     #--------------------------------------------------------------------------
     #        Test fixedXOR
@@ -99,6 +99,7 @@ def main():
     out_int = crp.fixedXOR(str1, key)
     out_str = hex(out_int).lstrip('0x').rstrip('L') or '0'
     test(out_str, expect)
+    print '    |\tascii:  \'%s\'' % expect.decode('hex')
 
     # Test for different length inputs
     try:
@@ -120,7 +121,7 @@ def main():
     print '---- char_freq_score ----'
     string = 'EtAoIn'
     r = crp.char_freq_score(string)
-    test(r, 6)
+    test(r, 3)  # only checks lowercase letters!
 
     #--------------------------------------------------------------------------
     #       Test single_byte_XOR_decode
@@ -133,8 +134,8 @@ def main():
     # Returns namedtuple with fields key, score, decrypt, can also return those
     # fields as individual variables on LHS
     out = crp.single_byte_XOR_decode(ciphertext)
-    test(out.key, '58')
-    test(out.score, 15)
+    test(out.key.decode('hex'), 'X')
+    test(out.score, 14)
     test(out.decrypt, 'Cooking MC\'s like a pound of bacon')
 
     #--------------------------------------------------------------------------

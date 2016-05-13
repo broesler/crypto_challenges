@@ -4,8 +4,6 @@
 #  Created: 03/03/2016, 14:55
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/11/2016, 22:38
-#
 '''
   Functions to support solutions to Matasano Crypto Challenges, Set 1.
 '''
@@ -143,13 +141,14 @@ def char_freq_score(plaintext):
     '''Score an English string on a scale of 0 to 12 based on character
     frequency.'''
     # Most common English letters in order
-    etaoin = 'etaoinshrdlcumwfgypbvkjxqz'
+    etaoin = ' etaoinshrdlcumwfgypbvkjxqz'
 
     # Get list of lowercase letters in order of most frequency to least
-    freqOrder = get_frequency_order(plaintext.lower())
+    freqOrder = get_frequency_order(plaintext)
+    # freqOrder = get_frequency_order(plaintext.lower())
 
     # Find matches in top N characters
-    N = 20
+    N = 22
     score = 0
     for ch in etaoin[:N]:
         if ch in freqOrder[:N]:
@@ -203,7 +202,6 @@ def single_byte_XOR_decode(ciphertext):
     plaintext_decrypt = ''
 
     # For each possible byte
-    # for i in range(0x56, 0x60):
     for i in range(0x00, 0x100):
         # XOR each character in ciphertext with key
         key = hex(i).lstrip('0x') or '0'
@@ -221,9 +219,9 @@ def single_byte_XOR_decode(ciphertext):
         cfreq_score = char_freq_score(plaintext)
 
         # Track maximum score and actual key
-        if cfreq_score > cfreq_score_max:
-            cfreq_score_max = cfreq_score   # int
-            true_key = key                  # chr
+        if cfreq_score >= cfreq_score_max:
+            cfreq_score_max   = cfreq_score # int
+            true_key          = key         # chr (in hex!)
             plaintext_decrypt = plaintext   # str
 
     # Store output in named tuple

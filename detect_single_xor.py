@@ -4,7 +4,7 @@
 #  Created: 04/04/2016, 21:25
 #   Author: Bernie Roesler
 #
-# Last Modified: 04/05/2016, 15:20
+# Last Modified: 05/13/2016, 14:33
 #
 '''
   Description: Detect single-character XOR in file.
@@ -45,15 +45,18 @@ def main(filename):
             found_line = Nline
 
     print 'Line: \t', found_line
-    print 'Key: \t', true_key
+    print 'Key: \t%s' % chr(int(true_key,16))
     print 'Score: \t', cfreq_score_max
-    print 'String: ', plaintext_decrypt
+    print 'String: \'%s\'' % plaintext_decrypt.strip()
 
     fp.close()
     return
 
 # Call this test script directly from command-line
 if __name__ == '__main__':
-    main(sys.argv[1])
+    if len(sys.argv) == 2:
+        main(sys.argv[1])
+    else:
+        main('4.txt')
 #==============================================================================
 #==============================================================================
