@@ -9,6 +9,7 @@
 '''
 #==============================================================================
 from collections import namedtuple
+import string
 # import pdb
 # import traceback
 # import sys
@@ -137,15 +138,27 @@ def fixedXOR(str1, key):
 #------------------------------------------------------------------------------
 #      Character frequency score (English)
 #------------------------------------------------------------------------------
+# def char_freq_score(plaintext):
+#     '''Score an English string on a scale of 0 to 12 based on character
+#     frequency.'''
+#     # Set of printable characters
+#     valid_characters = set(string.printable)-set(string.digits)-set(['#','$','%','/','~','`'])
+#
+#     if all(char in valid_characters for char in plaintext):
+#         score = 100
+#     else:
+#         score = 0
+#
+#     return score
+
 def char_freq_score(plaintext):
     '''Score an English string on a scale of 0 to 12 based on character
     frequency.'''
-    # Most common English letters in order
+    # Most common English letters in order (include space!!)
     etaoin = ' etaoinshrdlcumwfgypbvkjxqz'
 
     # Get list of lowercase letters in order of most frequency to least
     freqOrder = get_frequency_order(plaintext)
-    # freqOrder = get_frequency_order(plaintext.lower())
 
     # Find matches in top N characters
     N = 22
