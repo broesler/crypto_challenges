@@ -48,8 +48,9 @@ char *strtolower(char *s)
 int getHexByte(char *hex) 
 {
     int u = 0; 
-    char substr[2]; /* store 2 chars of hex string at a time */
+    char substr[2];
     strncpy(substr, hex, 2);                /* take 2 chars */
+    strtoupper(substr);                     /* convert to uppercase only */
     if (sscanf(substr, "%2X", &u)) {        /* convert to integer */
         return u;
     } else {
@@ -133,7 +134,7 @@ char *hex2b64_str(char *hex_str)
         nbyte_out,
         nchr_out,
         b64_int;
-    int hex_int[3];
+    int hex_int;
 
     if (hex_str) {
         nchr_in = strlen(hex_str);      /* Number of chars in encoded string */
@@ -158,38 +159,40 @@ char *hex2b64_str(char *hex_str)
 
     /* Operate in chunks of 3 bytes in ==> 4 bytes out */
     for (int i = 0; i < nbyte_in; i+=3) {
-        /* convert chars to actual bytes (assuming hex values) */
-        for (int j = 0; j < 3; j++) {
-            hex_int[j] = getHexByte(hex_str+2*i+2*j);
-        }
+        int j = 0;
+        hex_int = getHexByte(hex_str+2*i+2*j);
 
         /* Add first character using first 6 bits of first byte */
-        /* Need 2 chars of hex to get 1 byte */
-        b64_int = (hex_int[i] & 0xFC) >> 2;
+        b64_int = (hex_int & 0xFC) >> 2;
         strncat(b64_str, &b64_lut[b64_int], 1);
 
         /* get last 2 bits of first byte */
-        b64_int = (hex_int[i] & 0x03) << 4;
+        b64_int = (hex_int & 0x03) << 4;
 
         /* if we have more bytes to go */
-        if (i+1 < nbyte_in) {
+        if (j+1 < nbyte_in) {
+            j++;
+            hex_int = getHexByte(hex_str+2*i+2*j);
+
             /* Add second character using first 4 bits of second byte and
              * combine with 2 from above */
-            b64_int |= (hex_int[i+1] & 0xF0) >> 4;
+            b64_int |= (hex_int & 0xF0) >> 4;
             strncat(b64_str, &b64_lut[b64_int], 1);
 
             /* get last 4 bits of second byte */
-            b64_int = (hex_int[i+1] & 0x0F) << 2;
+            b64_int = (hex_int & 0x0F) << 2;
 
             /* if we have more bytes to go */
-            if (i+2 < nbyte_in) {
+            if (j+1 < nbyte_in) {
+                j++;
+                hex_int = getHexByte(hex_str+2*i+2*j);
                 /* Add third character */
                 /* get first 2 bits of third byte and combine with 4 from above */
-                b64_int |= (hex_int[i+2] & 0xC0) >> 6;
+                b64_int |= (hex_int & 0xC0) >> 6;
                 strncat(b64_str, &b64_lut[b64_int], 1);
 
                 /* Add fourth character using last 6 bits of third byte */
-                b64_int = (hex_int[i+2] & 0x3F);
+                b64_int = (hex_int & 0x3F);
                 strncat(b64_str, &b64_lut[b64_int], 1);
 
             /* There are only 2 bytes of input, so interpret 3rd character with

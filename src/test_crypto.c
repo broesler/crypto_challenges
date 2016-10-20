@@ -90,6 +90,23 @@ int HexConvert2() {
     END_TEST_CASE;
 }
 
+/* This tests conversion of a hex string to a base64 string */
+int HexConvert3() {
+    START_TEST_CASE;
+    char *hex1 = "49276d206b696c6c696e6720796f75722" \
+                 "0627261696e206c696b65206120706f69" \
+                 "736f6e6f7573206d757368726f6f6d";
+    char *b641 = hex2b64_str(hex1);
+    char *expect = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsa" \
+                   "WtlIGEgcG9pc29ub3VzIG11c2hyb29t";
+    SHOULD_BE(!strcmp(b641, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", b641, expect);
+#endif
+    free(b641);
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -100,6 +117,7 @@ int main(void) {
     RUN_TEST(StrToUpper1, "strtoupper() test case 1");
     RUN_TEST(HexConvert1, "atoh(),htoa()  test case 1");
     RUN_TEST(HexConvert2, "hex2b64_str()  test case 1");
+    RUN_TEST(HexConvert3, "hex2b64_str()  test case 1");
 
     /* Count errors */
     if (!fails) {
