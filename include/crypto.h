@@ -17,8 +17,17 @@
 //------------------------------------------------------------------------------
 //      Function Definitions
 //------------------------------------------------------------------------------
-// Print ASCII string as hexadecimal
+// Uppercase entire string
+char *strtoupper(char *s);
+
+// Uppercase entire string
+char *strtolower(char *s);
+
+// Encode ASCII string as hexadecimal
 char *atoh(const char *str);
+
+// Decode hexadecimal string to ASCII 
+char *htoa(const char *str);
 
 #endif
 //==============================================================================

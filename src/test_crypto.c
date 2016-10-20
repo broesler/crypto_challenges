@@ -33,12 +33,24 @@
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
+int StrToUpper1() {
+    START_TEST_CASE;
+    char *str1 = NEW("test");
+    strcpy(str1,"test");
+    SHOULD_BE(!strcmp(strtoupper(str1), "TEST")); /* convert in-place */
+    SHOULD_BE(!strcmp(strtolower(str1), "test"));
+    free(str1);
+    END_TEST_CASE;
+}
+
 /* This tests conversion of a hex string to a base64 string */
 int HexConvert1() {
     START_TEST_CASE;
     char *str1 = "Man";
     char *hex = atoh(str1);  /* any atoh call must be free'd! */
-    printf("%s\n", hex);
+    SHOULD_BE(!strcmp(hex,"4D616E"));    /* convert to hex */
+    char *str2 = htoa(hex);
+    SHOULD_BE(!strcmp(str2,str1));       /* convert back to ascii */
     free(hex);
     END_TEST_CASE;
 }
@@ -50,11 +62,12 @@ int main(void) {
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(HexConvert1, "push() test case 1");
+    RUN_TEST(StrToUpper1, "strtoupper() test case 1");
+    RUN_TEST(HexConvert1, "atoh() test case 1");
 
     /* Count errors */
     if (!fails) {
-        printf("All %d tests passed!\n", total); 
+        printf("\033[0;32mAll %d tests passed!\033[0m\n", total); 
         return 0;
     } else {
         printf("\033[0;31m%d/%d tests failed!\033[0m\n", fails, total);
