@@ -30,6 +30,7 @@
     /* # Input already a hex-encoded string */
     /* test(crp.hex2b64_str(string), expect) */
     /* print '    |\tascii:  \'%s\'' % string.decode('hex') */
+
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
@@ -43,7 +44,7 @@ int StrToUpper1() {
     END_TEST_CASE;
 }
 
-/* This tests conversion of a hex string to a base64 string */
+/* This tests conversion of an ASCII string to a hex string, and vice versa */
 int HexConvert1() {
     START_TEST_CASE;
     char *str1 = "Man";
@@ -52,6 +53,40 @@ int HexConvert1() {
     char *str2 = htoa(hex);
     SHOULD_BE(!strcmp(str2,str1));       /* convert back to ascii */
     free(hex);
+    free(str2);
+    END_TEST_CASE;
+}
+
+/* This tests conversion of a hex string to a base64 string */
+int HexConvert2() {
+    START_TEST_CASE;
+    char *str1 = "Man";
+    char *hex1 = atoh(str1);  /* any atoh call must be free'd! */
+    char *b641 = hex2b64_str(hex1);
+#ifdef LOGSTATUS
+    printf("%-4s => %-7s => %-5s\n", str1, hex1, b641);
+#endif
+    SHOULD_BE(!strcmp(b641, "TWFu"));
+    char *str2 = "Ma";
+    char *hex2 = atoh(str2);  /* any atoh call must be free'd! */
+    char *b642 = hex2b64_str(hex2);
+#ifdef LOGSTATUS
+    printf("%-4s => %-7s => %-5s\n", str2, hex2, b642);
+#endif
+    SHOULD_BE(!strcmp(b642, "TWE="));
+    char *str3 = "M";
+    char *hex3 = atoh(str3);  /* any atoh call must be free'd! */
+    char *b643 = hex2b64_str(hex3);
+#ifdef LOGSTATUS
+    printf("%-4s => %-7s => %-5s\n", str3, hex3, b643);
+#endif
+    SHOULD_BE(!strcmp(b643, "TQ=="));
+    free(hex1); 
+    free(hex2); 
+    free(hex3); 
+    free(b641);
+    free(b642);
+    free(b643);
     END_TEST_CASE;
 }
 
@@ -63,7 +98,8 @@ int main(void) {
     int total = 0;
 
     RUN_TEST(StrToUpper1, "strtoupper() test case 1");
-    RUN_TEST(HexConvert1, "atoh() test case 1");
+    RUN_TEST(HexConvert1, "atoh(),htoa()  test case 1");
+    RUN_TEST(HexConvert2, "hex2b64_str()  test case 1");
 
     /* Count errors */
     if (!fails) {

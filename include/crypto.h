@@ -23,11 +23,17 @@ char *strtoupper(char *s);
 // Uppercase entire string
 char *strtolower(char *s);
 
+// Get single hex byte from a string
+int getHexByte(char *hex);
+
 // Encode ASCII string as hexadecimal
-char *atoh(const char *str);
+char *atoh(char *str);
 
 // Decode hexadecimal string to ASCII 
-char *htoa(const char *str);
+char *htoa(char *str);
+
+// Convert hex string to base-64 string
+char *hex2b64_str(char *hex_str);
 
 #endif
 //==============================================================================
