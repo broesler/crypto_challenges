@@ -3,7 +3,7 @@
  *  Created: 10/19/2016, 22:17
  *   Author: Bernie Roesler
  *
- *  Description: 
+ *  Description: Tests of cryptography functions in crypto challenges
  *
  *============================================================================*/
 #include <string.h>
@@ -12,24 +12,6 @@
 #include "header.h"
 #include "crypto.h"
 #include "unit_test.h"
-
-    /* print '---- hex2b64_str ----' */
-    /* # Simple ASCII string to base64 string */
-    /* test(crp.hex2b64_str('Man'.encode('hex')), 'TWFu') */
-    /* test(crp.hex2b64_str('Ma'.encode('hex')), 'TWE=') */
-    /* test(crp.hex2b64_str('M'.encode('hex')), 'TQ==') */
-    /*  */
-    /* # Hex string to base64 string */
-    /* # I/O test taken from <http://cryptopals.com/sets/1/challenges/1> */
-    /* string = '49276d206b696c6c696e6720796f75722'\ */
-    /*          '0627261696e206c696b65206120706f69'\ */
-    /*          '736f6e6f7573206d757368726f6f6d' */
-    /* expect = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsa'\ */
-    /*          'WtlIGEgcG9pc29ub3VzIG11c2hyb29t' */
-    /*  */
-    /* # Input already a hex-encoded string */
-    /* test(crp.hex2b64_str(string), expect) */
-    /* print '    |\tascii:  \'%s\'' % string.decode('hex') */
 
 /*------------------------------------------------------------------------------
  *        Define test functions
@@ -113,7 +95,7 @@ int FixedXOR1() {
     char hex1[]   = "1c0111001f010100061a024b53535009181c";
     char hex2[]   = "686974207468652062756c6c277320657965";
     char expect[] = "746865206b696420646f6e277420706c6179";
-    strtoupper(expect); /* always use uppercase */
+    strtoupper(expect);  /* always use uppercase */
     char *xor = fixedXOR(hex1, hex2);
     SHOULD_BE(!strcmp(xor, expect));
 #ifdef LOGSTATUS
@@ -122,6 +104,22 @@ int FixedXOR1() {
     free(xor);
     END_TEST_CASE;
 }
+
+/* #<{(| This function tests the decoding of a single byte XOR cipher |)}># */
+/* int SingleByte1() { */
+/*     START_TEST_CASE; */
+/*     #<{(| char hex1[]   = "1b37373331363f78151b7f2b783431333d78" \ |)}># */
+/*     #<{(|                  "397828372d363c78373e783a393b3736"; |)}># */
+/*     char expect[] = "Cooking MC's like a pound of bacon"; */
+/*     char hex1[] = "4D616E"; */
+/*     char *plaintext = singleByteXORDecode(hex1); */
+/*     SHOULD_BE(!strcmp(plaintext, expect)); */
+/* #ifdef LOGSTATUS */
+/*     printf("Got:    %s\nExpect: %s\n", plaintext, expect); */
+/* #endif */
+/*     free(plaintext); */
+/*     END_TEST_CASE; */
+/* } */
 
 /*------------------------------------------------------------------------------
  *        Run tests
@@ -135,6 +133,7 @@ int main(void) {
     RUN_TEST(HexConvert2, "hex2b64_str()  test case 1");
     RUN_TEST(HexConvert3, "hex2b64_str()  test case 1");
     RUN_TEST(FixedXOR1, "fixedXOR()  test case 1");
+    /* RUN_TEST(SingleByte1, "singleByteXORDecode()  test case 1"); */
 
     /* Count errors */
     if (!fails) {

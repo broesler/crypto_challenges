@@ -66,9 +66,9 @@ char *atoh(char *str)
 {
     static const char *lut = "0123456789ABCDEF";
     size_t len = strlen(str);
-    char *hex = (char *)calloc(2*len, sizeof(char));
 
-    /* zero out string */
+    /* allocate memory */
+    char *hex = (char *)calloc(2*len, sizeof(char));
     MALLOC_CHECK(hex);
     BZERO(hex, sizeof(*hex));
 
@@ -96,9 +96,7 @@ char *htoa(char *hex)
     char ascii[2];  /* store 1 ascii character */
 
     /* Create uppercase copy of input string */
-    char *hex_upper = malloc(len * sizeof(char));
-    MALLOC_CHECK(hex_upper);
-    BZERO(hex_upper, len);
+    char hex_upper[len];
     strncpy(hex_upper, hex, len);   /* copy string in as-is */
     strtoupper(hex_upper);          /* make string uppercase */
 
@@ -115,7 +113,6 @@ char *htoa(char *hex)
         strncat(str, ascii, 1);             /* append to output string */
     }
 
-    free(hex_upper);
     return str;
 }
 
@@ -133,9 +130,7 @@ int *htoi(char *hex)
     size_t nbyte = len/2;
 
     /* Create uppercase copy of input string */
-    char *hex_upper = malloc(len * sizeof(char));
-    MALLOC_CHECK(hex_upper);
-    BZERO(hex_upper, len);
+    char hex_upper[len];
     strncpy(hex_upper, hex, len);   /* copy string in as-is */
     strtoupper(hex_upper);          /* make function case insensitive */
 
@@ -150,7 +145,6 @@ int *htoi(char *hex)
         out[i] = getHexByte(hex_upper+2*i); /* get integer value of byte */
     }
 
-    free(hex_upper);
     return out;
 }
 
@@ -252,31 +246,92 @@ char *fixedXOR(char *str1, char *str2)
 {
     size_t len1 = strlen(str1),
            len2 = strlen(str2);
-    size_t len = len1/2;    /* 2 hex chars per byte */
     char *hex_str;
-    int hex_xor[len];
-    char hex_chars[3];  /* store 1 ascii character */
+    int hex_xor, hex_int1, hex_int2;
+    char hex_chars[3];
 
     if (len1 != len2) { ERROR("Input strings must be the same length!"); }
+
+    int nbyte = len1/2;
 
     /* allocate memory for string output */
     hex_str = malloc(len1 * sizeof(char));
     MALLOC_CHECK(hex_str);
     BZERO(hex_str, len1);
 
-    /* decode hex strings and convert to integers */
-    int *hex_int1 = htoi(str1);
-    int *hex_int2 = htoi(str2);
-
-    for (int i = 0; i < len; i++) {
-        hex_xor[i] = hex_int1[i] ^ hex_int2[i];
-        snprintf(hex_chars, 3, "%0.2X", hex_xor[i]);  /* convert to hex chars */
-        strncat(hex_str, hex_chars, 3);               /* append to output string */
+    /* XOR each byte in the input string */
+    for (int i = 0; i < nbyte; i++) {
+        hex_int1 = getHexByte(str1+2*i); /* 2 chars per byte */
+        hex_int2 = getHexByte(str2+2*i);
+        hex_xor = hex_int1 ^ hex_int2;
+        snprintf(hex_chars, 3, "%0.2X", hex_xor);  /* convert to hex chars */
+        strncat(hex_str, hex_chars, 2);            /* append to output string */
     }
 
-    free(hex_int1);
-    free(hex_int2);
     return hex_str;
 }
+
+
+/*------------------------------------------------------------------------------
+ *         Get character frequency score of string
+ *----------------------------------------------------------------------------*/
+/* int charFreqScore(char *str) */
+/* { */
+/*     #<{(| most common English letters (include spaces!) |)}># */
+/*     const char etaoin = " etaoinshrdlcumwfgypbvkjxqz"; */
+/*  */
+/*     #<{(| Get ordered string of letters |)}># */
+/* } */
+
+/* #<{(|------------------------------------------------------------------------------ */
+/*  *         Decode a string XOR'd against a single character */
+/*  *----------------------------------------------------------------------------|)}># */
+/* char *singleByteXORDecode(char *hex) */
+/* { */
+/*     size_t len = strlen(hex); */
+/*  */
+/*     if (len & 1) { ERROR("Input string is not a valid hex string!"); } */
+/*  */
+/*     int nbyte = len/2; */
+/*  */
+/*     char key[3];            #<{(| i.e. 0x01 --> '01' |)}># */
+/*     BZERO(key, 3); */
+/*  */
+/*     char key_str[len];      #<{(| i.e. if hex == "4D616E", key_str = "010101" |)}># */
+/*     BZERO(key_str, len); */
+/*  */
+/*     #<{(| Allocate memory for the output |)}># */
+/*     char *plaintext = malloc(nbyte * sizeof(char)); */
+/*     MALLOC_CHECK(plaintext); */
+/*     BZERO(plaintext, nbyte); */
+/*  */
+/*     #<{(| Initialize variables |)}># */
+/*     int cfreq_score_max = 0; */
+/*     #<{(| char true_key; |)}># */
+/*     #<{(| char plaintext_decrypt[nbyte];  #<{(| ascii is half the length of hex |)}># |)}># */
+/*  */
+/*     #<{(| test each possible character byte |)}># */
+/*     #<{(| for (int i = 0; i < 0x100; i++) { |)}># */
+/*     int i = 0x56; */
+/*         #<{(| repeat key for each byte of input, to speed up XOR |)}># */
+/*         snprintf(key, 3, "%0.2X", i); */
+/*         for (int j = 0; j < nbyte; j++) { */
+/*             strncat(key_str, key, 2); */
+/*         } */
+/*  */
+/*         #<{(| XOR each byte in the ciphertext with the key |)}># */
+/*         char *xor = fixedXOR(hex, key_str); */
+/*  */
+/*         #<{(| Calculate character frequency score |)}># */
+/*         int cfreq_score = charFreqScore(xor); */
+/*          */
+/*  */
+/*         #<{(| Track maximum score and actual key |)}># */
+/*     #<{(| } |)}># */
+/*         printf("%s\n", key_str); */
+/*  */
+/*     #<{(| Return the decoded plaintext! |)}># */
+/*     return plaintext; */
+/* } */
 /*==============================================================================
  *============================================================================*/
