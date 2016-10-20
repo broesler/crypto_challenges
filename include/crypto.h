@@ -15,6 +15,11 @@
 #include <string.h>
 
 //------------------------------------------------------------------------------
+//      Constants
+//------------------------------------------------------------------------------
+#define MAX_STR_LEN 4096
+
+//------------------------------------------------------------------------------
 //      Function Definitions
 //------------------------------------------------------------------------------
 // Uppercase entire string
@@ -32,8 +37,14 @@ char *atoh(char *str);
 // Decode hexadecimal string to ASCII 
 char *htoa(char *str);
 
+// Decode hexadecimal string to integer array
+int *htoi(char *hex);
+
 // Convert hex string to base-64 string
 char *hex2b64_str(char *hex_str);
+
+// XOR two strings
+char *fixedXOR(char *str1, char *str2);
 
 #endif
 //==============================================================================

@@ -86,7 +86,6 @@ char *atoh(char *str)
  *----------------------------------------------------------------------------*/
 char *htoa(char *hex)
 {
-    /* static const char *lut = "0123456789ABCDEF"; */
     size_t len = strlen(hex);
 
     /* Check for bad inputs */
@@ -94,7 +93,6 @@ char *htoa(char *hex)
 
     /* Proceed with conversion */
     unsigned int u; 
-    /* char substr[2]; #<{(| store 2 chars of hex string at a time |)}># */
     char ascii[2];  /* store 1 ascii character */
 
     /* Create uppercase copy of input string */
@@ -112,7 +110,6 @@ char *htoa(char *hex)
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
     for (size_t i = 0; i < len; i+=2)
     {
-        BZERO(ascii, sizeof(ascii));        /* clear memory */
         u = getHexByte(hex_upper+i);        /* get integer value of byte */
         snprintf(ascii, 2, "%c", u);        /* convert to ascii character */
         strncat(str, ascii, 1);             /* append to output string */
@@ -120,6 +117,41 @@ char *htoa(char *hex)
 
     free(hex_upper);
     return str;
+}
+
+/*------------------------------------------------------------------------------ 
+ *      Decode hex-encoded string into int array
+ *----------------------------------------------------------------------------*/
+int *htoi(char *hex)
+{
+    size_t len = strlen(hex);
+
+    /* Check for bad inputs */
+    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
+
+    /* Proceed with conversion */
+    size_t nbyte = len/2;
+
+    /* Create uppercase copy of input string */
+    char *hex_upper = malloc(len * sizeof(char));
+    MALLOC_CHECK(hex_upper);
+    BZERO(hex_upper, len);
+    strncpy(hex_upper, hex, len);   /* copy string in as-is */
+    strtoupper(hex_upper);          /* make function case insensitive */
+
+    /* Allocate memory */
+    int *out = malloc(nbyte * sizeof(int));
+    MALLOC_CHECK(out);
+    BZERO(out, nbyte);
+
+    /* Take every 2 hex characters and combine bytes to make 1 integer */
+    for (size_t i = 0; i < nbyte; i++)
+    {
+        out[i] = getHexByte(hex_upper+2*i); /* get integer value of byte */
+    }
+
+    free(hex_upper);
+    return out;
 }
 
 /*------------------------------------------------------------------------------
@@ -213,5 +245,38 @@ char *hex2b64_str(char *hex_str)
     return b64_str;
 }
 
+/*------------------------------------------------------------------------------
+ *      XOR two equal-length buffers
+ *----------------------------------------------------------------------------*/
+char *fixedXOR(char *str1, char *str2)
+{
+    size_t len1 = strlen(str1),
+           len2 = strlen(str2);
+    size_t len = len1/2;    /* 2 hex chars per byte */
+    char *hex_str;
+    int hex_xor[len];
+    char hex_chars[3];  /* store 1 ascii character */
+
+    if (len1 != len2) { ERROR("Input strings must be the same length!"); }
+
+    /* allocate memory for string output */
+    hex_str = malloc(len1 * sizeof(char));
+    MALLOC_CHECK(hex_str);
+    BZERO(hex_str, len1);
+
+    /* decode hex strings and convert to integers */
+    int *hex_int1 = htoi(str1);
+    int *hex_int2 = htoi(str2);
+
+    for (int i = 0; i < len; i++) {
+        hex_xor[i] = hex_int1[i] ^ hex_int2[i];
+        snprintf(hex_chars, 3, "%0.2X", hex_xor[i]);  /* convert to hex chars */
+        strncat(hex_str, hex_chars, 3);               /* append to output string */
+    }
+
+    free(hex_int1);
+    free(hex_int2);
+    return hex_str;
+}
 /*==============================================================================
  *============================================================================*/

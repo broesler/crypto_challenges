@@ -63,24 +63,24 @@ int HexConvert2() {
     char *str1 = "Man";
     char *hex1 = atoh(str1);  /* any atoh call must be free'd! */
     char *b641 = hex2b64_str(hex1);
+    SHOULD_BE(!strcmp(b641, "TWFu"));
 #ifdef LOGSTATUS
     printf("%-4s => %-7s => %-5s\n", str1, hex1, b641);
 #endif
-    SHOULD_BE(!strcmp(b641, "TWFu"));
     char *str2 = "Ma";
     char *hex2 = atoh(str2);  /* any atoh call must be free'd! */
     char *b642 = hex2b64_str(hex2);
+    SHOULD_BE(!strcmp(b642, "TWE="));
 #ifdef LOGSTATUS
     printf("%-4s => %-7s => %-5s\n", str2, hex2, b642);
 #endif
-    SHOULD_BE(!strcmp(b642, "TWE="));
     char *str3 = "M";
     char *hex3 = atoh(str3);  /* any atoh call must be free'd! */
     char *b643 = hex2b64_str(hex3);
+    SHOULD_BE(!strcmp(b643, "TQ=="));
 #ifdef LOGSTATUS
     printf("%-4s => %-7s => %-5s\n", str3, hex3, b643);
 #endif
-    SHOULD_BE(!strcmp(b643, "TQ=="));
     free(hex1); 
     free(hex2); 
     free(hex3); 
@@ -107,6 +107,22 @@ int HexConvert3() {
     END_TEST_CASE;
 }
 
+/* This tests the XOR of two hex-encoded strings */
+int FixedXOR1() {
+    START_TEST_CASE;
+    char hex1[]   = "1c0111001f010100061a024b53535009181c";
+    char hex2[]   = "686974207468652062756c6c277320657965";
+    char expect[] = "746865206b696420646f6e277420706c6179";
+    strtoupper(expect); /* always use uppercase */
+    char *xor = fixedXOR(hex1, hex2);
+    SHOULD_BE(!strcmp(xor, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", xor, expect);
+#endif
+    free(xor);
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -118,6 +134,7 @@ int main(void) {
     RUN_TEST(HexConvert1, "atoh(),htoa()  test case 1");
     RUN_TEST(HexConvert2, "hex2b64_str()  test case 1");
     RUN_TEST(HexConvert3, "hex2b64_str()  test case 1");
+    RUN_TEST(FixedXOR1, "fixedXOR()  test case 1");
 
     /* Count errors */
     if (!fails) {

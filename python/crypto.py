@@ -125,7 +125,7 @@ def hex2b64_str(hex_str):
 #------------------------------------------------------------------------------
 def fixedXOR(str1, key):
     '''Take a hex-encoded string and XOR it with a hex-encoded key to return
-    a hex-encoded string.'''
+    an integer.'''
 
     if len(str1) != len(key):
         raise ValueError('Input strings must be of equal length!')
