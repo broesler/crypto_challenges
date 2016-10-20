@@ -105,6 +105,20 @@ int FixedXOR1() {
     END_TEST_CASE;
 }
 
+/* This function tests the decoding of a single byte XOR cipher */
+int GetFreq1() {
+    START_TEST_CASE;
+    char *str1 = "Hello";
+    int count[26] = {0};
+    findFreqOrder(str1, count);
+    for (int i = 0; i < 26; i++) {
+        printf("%c  %d\n", i+'a', count[i]);
+    }
+    /* SHOULD_BE(!strcmp(plaintext, expect)); */
+    free(plaintext);
+    END_TEST_CASE;
+}
+
 /* #<{(| This function tests the decoding of a single byte XOR cipher |)}># */
 /* int SingleByte1() { */
 /*     START_TEST_CASE; */
@@ -120,7 +134,7 @@ int FixedXOR1() {
 /*     free(plaintext); */
 /*     END_TEST_CASE; */
 /* } */
-
+/*  */
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -133,7 +147,7 @@ int main(void) {
     RUN_TEST(HexConvert2, "hex2b64_str()  test case 1");
     RUN_TEST(HexConvert3, "hex2b64_str()  test case 1");
     RUN_TEST(FixedXOR1, "fixedXOR()  test case 1");
-    /* RUN_TEST(SingleByte1, "singleByteXORDecode()  test case 1"); */
+    RUN_TEST(SingleByte1, "singleByteXORDecode()  test case 1");
 
     /* Count errors */
     if (!fails) {

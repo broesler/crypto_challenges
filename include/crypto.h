@@ -46,6 +46,9 @@ char *hex2b64_str(char *hex_str);
 // XOR two strings
 char *fixedXOR(char *str1, char *str2);
 
+// Character frequency list
+int findFrequency(char *str);
+
 // Character frequency score
 int charFreqScore(char *str);
 
