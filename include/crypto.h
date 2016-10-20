@@ -18,7 +18,7 @@
 //      Function Definitions
 //------------------------------------------------------------------------------
 // Print ASCII string as hexadecimal
-void print_hex(const char *s);
+char *atoh(const char *str);
 
 #endif
 //==============================================================================

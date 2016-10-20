@@ -1,2 +1,24 @@
+# misc files
+.gdb_history
+valout
+
+# Object files
+*.o
+
+# Precompiled headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Executables
 *.pyc
 *.pyo
+*.x86_64
+
+# Debug files
+*.dSYM

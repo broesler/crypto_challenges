@@ -37,12 +37,9 @@
 int HexConvert1() {
     START_TEST_CASE;
     char *str1 = "Man";
-    /* unsigned int hex_str = 0x4d616e; // == "Man" */
-    int hex_str = 0x4d;
-    printf("%c\n", hex_str);
-    /* char *b64_str = hex2b64(hex_str); */
-    /* SHOULDBE( */
-    print_hex(str1);
+    char *hex = atoh(str1);  /* any atoh call must be free'd! */
+    printf("%s\n", hex);
+    free(hex);
     END_TEST_CASE;
 }
 
