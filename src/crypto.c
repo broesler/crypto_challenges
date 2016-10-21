@@ -279,7 +279,7 @@ CHARFREQ *findFrequency(char *s)
     /* TODO update this function to count other non-alphabetic characters, and
      * penalize strings that have many non-ascii characters */
     CHARFREQ *cf; /* one struct per letter of alphabet */
-    int i = 0;
+    int i;
 
     /* Initialize struct array */
     cf = malloc(NUM_LETTERS * sizeof(CHARFREQ));
@@ -287,25 +287,21 @@ CHARFREQ *findFrequency(char *s)
     BZERO(cf, sizeof(*cf));
 
     for (i = 0; i < NUM_LETTERS; i++) {
-        cf[i].letter = i+'A';
+        cf[i].letter = i;
         cf[i].count = 0;
     }
 
-    /* Count letters in string */
+    /* Get frequency of ALL characters in the string */
     i = 0;
     while (s[i]) {
-        if (s[i] >= 'A' && s[i] <= 'Z') {
-            cf[s[i]-'A'].count++;
-        } else if (s[i] >= 'a' && s[i] <= 'z') {
-            cf[s[i]-'a'].count++;
-        }
+        cf[(size_t)s[i]].count++;
         i++;
     }
     return cf;
 }
 
 /*------------------------------------------------------------------------------
- *         Compare two counts of char freq
+ *         Compare two counts of char freq (used by qsort)
  *----------------------------------------------------------------------------*/
 int compare_counts(const void *a, const void *b)
 {
@@ -329,7 +325,7 @@ int compare_counts(const void *a, const void *b)
 int charFreqScore(char *str, const int N)
 {
     /* most common English letters (include spaces!) */
-    const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
+    const char etaoin[] = " ETAOINSHRDLCUMWFGYPBVKJXQZ";
     int score = 0;
 
     /* Get ordered string of letters */
@@ -342,11 +338,12 @@ int charFreqScore(char *str, const int N)
     /* TODO remove this double loop? Maybe get first N ranked characters as
      * a string, then check strchr() or strpbrk() */
     for (int i = 0; i < N; i++) {       /* for each of the top common letters */
-       for (int j = 0; j < N; j++) {    /* see if it is in the top of the string */
-            if (etaoin[i] == cf[j].letter) {
+        for (int j = 0; j < N; j++) {    /* see if it is in the top of the string */
+            /* Score upper/lowercase letters the same */
+            if (etaoin[i] == toupper(cf[j].letter)) {
                 score += 1;
             }
-       }
+        }
     }
 
     free(cf);

@@ -8,6 +8,7 @@
 #ifndef _CRYPTO_H_
 #define _CRYPTO_H_
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +17,7 @@
 //      Constants
 //------------------------------------------------------------------------------
 #define MAX_STR_LEN 4096
-#define NUM_LETTERS 26
+#define NUM_LETTERS 0xFF
 
 //------------------------------------------------------------------------------
 //      Structures
