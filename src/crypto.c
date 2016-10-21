@@ -33,9 +33,9 @@ char *strtoupper(char *s)
 char *strtolower(char *s)
 {
     int i = 0;
-    while (s[i]) {
-        if (s[i] >= 'A' && s[i] <= 'Z') {
-            s[i] += 32;
+    while (*(s+i)) {
+        if (*(s+i) >= 'A' && *(s+i) <= 'Z') {
+            *(s+i) += 32;
         }
         i++;
     }
@@ -274,14 +274,49 @@ char *fixedXOR(char *str1, char *str2)
 /*------------------------------------------------------------------------------
  *         Find character frequency in string 
  *----------------------------------------------------------------------------*/
-void findFrequency(char s[], int count[])
+CHARFREQ *findFrequency(char *s)
 {
+    CHARFREQ *cf; /* one struct per letter of alphabet */
     int i = 0;
+
+    /* Initialize struct array */
+    cf = malloc(NUM_LETTERS * sizeof(CHARFREQ));
+    MALLOC_CHECK(cf);
+    BZERO(cf, sizeof(*cf));
+
+    for (i = 0; i < NUM_LETTERS; i++) {
+        cf[i].letter = i+'a';
+        cf[i].count = 0;
+    }
+
+    /* Count letters in string */
+    /* NOTE: lowercase only for now... */
+    i = 0;
     while (s[i]) {
         if (s[i] >= 'a' && s[i] <= 'z') {
-            count[s[i]-'a']++;
+            cf[s[i]-'a'].count++;
         }
         i++;
+    }
+    return cf;
+}
+
+/*------------------------------------------------------------------------------
+ *         Compare two counts of char freq
+ *----------------------------------------------------------------------------*/
+int compare_counts(const void *a, const void *b)
+{
+    /* Case inputs to my type */
+    CHARFREQ *cfa = (CHARFREQ *)a;
+    CHARFREQ *cfb = (CHARFREQ *)b;
+
+    /* Compare counts */
+    if (cfa->count < cfb->count) {
+        return 1;
+    } else if (cfa->count == cfb->count) {
+        return 0;
+    } else {
+        return -1;
     }
 }
 
@@ -294,12 +329,16 @@ int charFreqScore(char *str)
     /* const char etaoin[] = " etaoinshrdlcumwfgypbvkjxqz"; */
     /* int N = 4; */
     int score = 0;
-    int count[26] = {0};
 
     /* Get ordered string of letters */
-    findFreqOrder(str, count);
+    CHARFREQ *cf = findFrequency(str);
+
+    /* Sort by frequency */
+    qsort(cf, NUM_LETTERS, sizeof(cf[0]), compare_counts); 
 
     /* Count matches in top N characters */
+
+    free(cf);
     return score;
 }
 

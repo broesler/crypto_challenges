@@ -109,13 +109,44 @@ int FixedXOR1() {
 int GetFreq1() {
     START_TEST_CASE;
     char *str1 = "Hello";
-    int count[26] = {0};
-    findFreqOrder(str1, count);
+    CHARFREQ *cf = findFrequency(str1);
+#ifdef LOGSTATUS
     for (int i = 0; i < 26; i++) {
-        printf("%c  %d\n", i+'a', count[i]);
+        printf("%c  %d\n", cf[i].letter, cf[i].count);
     }
-    /* SHOULD_BE(!strcmp(plaintext, expect)); */
-    free(plaintext);
+#endif
+    /* SHOULD_BE(cf['h'-'a'].letter == 'h'); */
+    /* SHOULD_BE(cf['h'-'a'].count == 1); */
+    SHOULD_BE(cf['l'-'a'].letter == 'l');
+    SHOULD_BE(cf['l'-'a'].count == 2);
+    SHOULD_BE(cf['e'-'a'].letter == 'e');
+    SHOULD_BE(cf['e'-'a'].count == 1);
+    SHOULD_BE(cf['o'-'a'].letter == 'o');
+    SHOULD_BE(cf['o'-'a'].count == 1);
+    free(cf);
+    END_TEST_CASE;
+}
+
+/* This function tests the decoding of a single byte XOR cipher */
+int GetFreq2() {
+    START_TEST_CASE;
+    char *str1 = "Hello";
+    CHARFREQ *cf = findFrequency(str1);
+    int check1 = compare_counts(cf,       cf+('e'-'a'));
+    int check2 = compare_counts(cf,       cf);
+    int check3 = compare_counts(cf+('e'-'a'), cf);
+    SHOULD_BE(check1 ==  1); /* a less than b */
+    SHOULD_BE(check2 ==  0); /* a equal to b */
+    SHOULD_BE(check3 == -1); /* a greater than b */
+    free(cf);
+    END_TEST_CASE;
+}
+
+/* This function tests the decoding of a single byte XOR cipher */
+int GetFreq3() {
+    START_TEST_CASE;
+    char *str1 = "Hello";
+    int test = charFreqScore(str1);
     END_TEST_CASE;
 }
 
@@ -134,7 +165,7 @@ int GetFreq1() {
 /*     free(plaintext); */
 /*     END_TEST_CASE; */
 /* } */
-/*  */
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -147,7 +178,10 @@ int main(void) {
     RUN_TEST(HexConvert2, "hex2b64_str()  test case 1");
     RUN_TEST(HexConvert3, "hex2b64_str()  test case 1");
     RUN_TEST(FixedXOR1, "fixedXOR()  test case 1");
-    RUN_TEST(SingleByte1, "singleByteXORDecode()  test case 1");
+    RUN_TEST(GetFreq1, "findFrequency()  test case 1");
+    RUN_TEST(GetFreq2, "findFrequency()  test case 2");
+    RUN_TEST(GetFreq3, "findFrequency()  test case 3");
+    /* RUN_TEST(SingleByte1, "singleByteXORDecode()  test case 1"); */
 
     /* Count errors */
     if (!fails) {

@@ -18,6 +18,16 @@
 //      Constants
 //------------------------------------------------------------------------------
 #define MAX_STR_LEN 4096
+#define NUM_LETTERS 26
+
+//------------------------------------------------------------------------------
+//      Structures
+//------------------------------------------------------------------------------
+// The character frequency structure contains the letter and its frequency
+typedef struct _CHARFREQ {
+    char letter;
+    int count;
+} CHARFREQ;
 
 //------------------------------------------------------------------------------
 //      Function Definitions
@@ -47,7 +57,10 @@ char *hex2b64_str(char *hex_str);
 char *fixedXOR(char *str1, char *str2);
 
 // Character frequency list
-int findFrequency(char *str);
+CHARFREQ *findFrequency(char *s);
+
+// Compare counts
+int compare_counts(const void *a, const void *b);
 
 // Character frequency score
 int charFreqScore(char *str);
