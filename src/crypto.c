@@ -6,9 +6,6 @@
  *  Description: Utility functions for cryptography challenges
  *
  *============================================================================*/
-
-#include <ctype.h>
-
 #include "crypto.h"
 #include "header.h"
 
@@ -254,7 +251,7 @@ char *fixedXOR(char *str1, char *str2)
 
     if (len1 != len2) { ERROR("Input strings must be the same length!"); }
 
-    int nbyte = len1/2;
+    /* int nbyte = len1/2; */
 
     /* allocate memory for string output */
     hex_str = malloc(len1 * sizeof(char));
@@ -262,9 +259,9 @@ char *fixedXOR(char *str1, char *str2)
     BZERO(hex_str, len1);
 
     /* XOR each byte in the input string */
-    for (int i = 0; i < nbyte; i++) {
-        hex_int1 = getHexByte(str1+2*i); /* 2 chars per byte */
-        hex_int2 = getHexByte(str2+2*i);
+    for (int i = 0; i < len1; i+=2) {
+        hex_int1 = getHexByte(str1+i); /* 2 chars per byte */
+        hex_int2 = getHexByte(str2+i);
         hex_xor = hex_int1 ^ hex_int2;
         snprintf(hex_chars, 3, "%0.2X", hex_xor);  /* convert to hex chars */
         strncat(hex_str, hex_chars, 2);            /* append to output string */
@@ -279,6 +276,8 @@ char *fixedXOR(char *str1, char *str2)
  *----------------------------------------------------------------------------*/
 CHARFREQ *findFrequency(char *s)
 {
+    /* TODO update this function to count other non-alphabetic characters, and
+     * penalize strings that have many non-ascii characters */
     CHARFREQ *cf; /* one struct per letter of alphabet */
     int i = 0;
 
@@ -327,11 +326,10 @@ int compare_counts(const void *a, const void *b)
 /*------------------------------------------------------------------------------
  *         Get character frequency score of string
  *----------------------------------------------------------------------------*/
-int charFreqScore(char *str)
+int charFreqScore(char *str, const int N)
 {
     /* most common English letters (include spaces!) */
     const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
-    int N = 4;
     int score = 0;
 
     /* Get ordered string of letters */
@@ -341,6 +339,8 @@ int charFreqScore(char *str)
     qsort(cf, NUM_LETTERS, sizeof(cf[0]), compare_counts); 
 
     /* Count matches in top N characters */
+    /* TODO remove this double loop? Maybe get first N ranked characters as
+     * a string, then check strchr() or strpbrk() */
     for (int i = 0; i < N; i++) {       /* for each of the top common letters */
        for (int j = 0; j < N; j++) {    /* see if it is in the top of the string */
             if (etaoin[i] == cf[j].letter) {
@@ -356,29 +356,29 @@ int charFreqScore(char *str)
 /*------------------------------------------------------------------------------
  *         Decode a string XOR'd against a single character
  *----------------------------------------------------------------------------*/
-char *singleByteXORDecode(char *hex)
+char *singleByteXORDecode(char *hex, const int N)
 {
     size_t len = strlen(hex);
-
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
 
-    int nbyte = len/2;
-    strtoupper(hex);    /* just operate on uppercase for now */
-
-    char key[3];            /* i.e. 0x01 --> '01' */
-    char key_str[len];      /* i.e. if hex == "4D616E", key_str = "010101" */
+    int nbyte = len/2,
+        cfreq_score_max = 0;
+    char key[3],            /* i.e. 0x01 --> '01' */
+         key_str[len];      /* i.e. if hex == "4D616E", key_str = "010101" */
 
     /* Allocate memory for the output */
     char *plaintext = malloc(len * sizeof(char));
     MALLOC_CHECK(plaintext);
+    BZERO(plaintext, len);
 
-    /* Initialize variables */
-    /* int cfreq_score_max = 0; */
-    /* char *true_key; */
+    char *true_key = malloc(3 * sizeof(char));
+    MALLOC_CHECK(true_key);
+    BZERO(true_key, sizeof(*true_key));
 
     /* test each possible character byte */
+    /* for (int i = 0x58; i < 0x59; i++) { */
     for (int i = 0x00; i < 0x100; i++) {
-        /* repeat key for each byte of input, to speed up XOR */
+        /* repeat key for each byte of input, so only one XOR is needed */
         BZERO(key, 3);
         BZERO(key_str, len);
         snprintf(key, 3, "%0.2X", i);
@@ -388,31 +388,25 @@ char *singleByteXORDecode(char *hex)
 
         /* XOR each byte in the ciphertext with the key */
         char *xor = fixedXOR(hex, key_str);
-        printf("%s\n", xor);
 
         /* Convert to plain ASCII text */
-        /* char *ptext = htoa(xor); */
-        /* printf("%s\n", ptext); */
+        char *ptext = htoa(xor);
 
         /* Calculate character frequency score */
-        /* int cfreq_score = charFreqScore(ptext); */
+        int cfreq_score = charFreqScore(ptext, N);
 
         /* Track maximum score and actual key */
-        /* if (cfreq_score >= cfreq_score_max) { */
-        /*     cfreq_score_max = cfreq_score; */
-        /*     true_key = key; */
-        /*     plaintext = ptext; */
-        /* } */
-
-        /* Cleanup before next loop */
-        /* free(xor); */
-        /* free(ptext); */
+        if (cfreq_score > cfreq_score_max) {
+            cfreq_score_max = cfreq_score;
+            strncpy(true_key, key, 2);
+            strncpy(plaintext, ptext, len);
+        }
     }
 
-/* #ifdef LOGSTATUS */
-/*     printf("key = %s\n", true_key); */
-/*     printf("cfreq_score_max = %d\n", cfreq_score_max); */
-/* #endif */
+#ifdef LOGSTATUS
+    printf("key = %s\n", true_key);
+    printf("cfreq_score_max = %d\n", cfreq_score_max);
+#endif
 
     /* Return the decoded plaintext! */
     return plaintext;

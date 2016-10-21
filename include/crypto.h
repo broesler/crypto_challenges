@@ -4,9 +4,7 @@
 //   Author: Bernie Roesler
 //
 //  Description: Utility functions for cryptography challenges
-//
 //=============================================================================
-
 #ifndef _CRYPTO_H_
 #define _CRYPTO_H_
 
@@ -63,10 +61,10 @@ CHARFREQ *findFrequency(char *s);
 int compare_counts(const void *a, const void *b);
 
 // Character frequency score
-int charFreqScore(char *str);
+int charFreqScore(char *str, const int N);
 
 // Single byte XOR decode
-char *singleByteXORDecode(char *hex);
+char *singleByteXORDecode(char *hex, const int N);
 
 #endif
 //==============================================================================

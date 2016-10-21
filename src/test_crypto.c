@@ -89,7 +89,8 @@ int HexConvert3() {
     END_TEST_CASE;
 }
 
-/* This tests the XOR of two hex-encoded strings */
+/* This tests the XOR of two hex-encoded strings, as well as printing their
+ * ASCII conversions */
 int FixedXOR1() {
     START_TEST_CASE;
     char hex1[]   = "1c0111001f010100061a024b53535009181c";
@@ -115,8 +116,8 @@ int FixedXOR1() {
     END_TEST_CASE;
 }
 
-/* This function tests the decoding of a single byte XOR cipher */
-int GetFreq1() {
+/* This function tests the function to find letter frequency in a string */
+int FindFreq1() {
     START_TEST_CASE;
     char *str1 = "HelLo";
     CHARFREQ *cf = findFrequency(str1);
@@ -128,7 +129,7 @@ int GetFreq1() {
     SHOULD_BE(cf['H'-'A'].letter == 'H');
     SHOULD_BE(cf['H'-'A'].count == 1);
     SHOULD_BE(cf['L'-'A'].letter == 'L');
-    SHOULD_BE(cf['L'-'A'].count == 2);
+    SHOULD_BE(cf['l'-'a'].count == 2);
     SHOULD_BE(cf['E'-'A'].letter == 'E');
     SHOULD_BE(cf['E'-'A'].count == 1);
     SHOULD_BE(cf['O'-'A'].letter == 'O');
@@ -137,10 +138,10 @@ int GetFreq1() {
     END_TEST_CASE;
 }
 
-/* This function tests the decoding of a single byte XOR cipher */
-int GetFreq2() {
+/* This function tests the comparison function to sort the letter frequencies*/
+int FindFreq2() {
     START_TEST_CASE;
-    char *str1 = "HELLO";
+    char *str1 = "Hello";
     CHARFREQ *cf = findFrequency(str1);
     int check1 = compare_counts(cf,       cf+('E'-'A'));
     int check2 = compare_counts(cf,       cf);
@@ -152,22 +153,27 @@ int GetFreq2() {
     END_TEST_CASE;
 }
 
-/* This function tests the decoding of a single byte XOR cipher */
-int GetFreq3() {
+/* This function tests the character frequency score*/
+int FindFreq3() {
     START_TEST_CASE;
-    char *str1 = "EEEETTTAAZ"; /* rank: e = 4, t = 3, a = 2, z = 1 */
-    int test = charFreqScore(str1);
+    int N = 4;  /* number of chars "ETAOINSHRDLCUMWFGYPBVKJXQZ" to test */
+    char *str1 = "EeeetTtAaz"; /* rank: e = 4, t = 3, a = 2, z = 1 */
+    int test = charFreqScore(str1, N);
     SHOULD_BE(test == 3);
+    char *str2 = "xyz";
+    test = charFreqScore(str2, N);
+    SHOULD_BE(test == 0);
     END_TEST_CASE;
 }
 
 /* This function tests the decoding of a single byte XOR cipher */
 int SingleByte1() {
     START_TEST_CASE;
+    int N = 6;  /* number of chars "ETAOINSHRDLCUMWFGYPBVKJXQZ" to test */
     char hex1[]   = "1b37373331363f78151b7f2b783431333d78" \
-                     "397828372d363c78373e783a393b3736";
+                    "397828372d363c78373e783a393b3736";
     char expect[] = "Cooking MC's like a pound of bacon";
-    char *plaintext = singleByteXORDecode(hex1);
+    char *plaintext = singleByteXORDecode(hex1, N);
     SHOULD_BE(!strcmp(plaintext, expect));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", plaintext, expect);
@@ -188,10 +194,10 @@ int main(void) {
     RUN_TEST(HexConvert2, "hex2b64_str()  test case 1");
     RUN_TEST(HexConvert3, "hex2b64_str()  test case 1");
     RUN_TEST(FixedXOR1, "fixedXOR()  test case 1");
-    RUN_TEST(GetFreq1, "findFrequency()  test case 1");
-    /* RUN_TEST(GetFreq2, "findFrequency()  test case 2"); */
-    /* RUN_TEST(GetFreq3, "findFrequency()  test case 3"); */
-    /* RUN_TEST(SingleByte1, "singleByteXORDecode()  test case 1"); */
+    RUN_TEST(FindFreq1, "findFrequency()  test case 1");
+    RUN_TEST(FindFreq2, "findFrequency()  test case 2");
+    RUN_TEST(FindFreq3, "findFrequency()  test case 3");
+    RUN_TEST(SingleByte1, "singleByteXORDecode()  test case 1");
 
     /* Count errors */
     if (!fails) {
