@@ -48,7 +48,8 @@ char *strtolower(char *s)
 int getHexByte(char *hex) 
 {
     int u = 0; 
-    char substr[2];
+    char substr[3];
+    BZERO(substr, 3);
     strncpy(substr, hex, 2);                /* take 2 chars */
     strtoupper(substr);                     /* convert to uppercase only */
     if (sscanf(substr, "%2X", &u)) {        /* convert to integer */
@@ -97,6 +98,7 @@ char *htoa(char *hex)
 
     /* Create uppercase copy of input string */
     char hex_upper[len];
+    BZERO(hex_upper, len);
     strncpy(hex_upper, hex, len);   /* copy string in as-is */
     strtoupper(hex_upper);          /* make string uppercase */
 
@@ -240,7 +242,7 @@ char *hex2b64_str(char *hex_str)
 }
 
 /*------------------------------------------------------------------------------
- *      XOR two equal-length buffers
+ *      XOR two equal-length hex-encoded buffers
  *----------------------------------------------------------------------------*/
 char *fixedXOR(char *str1, char *str2)
 {
@@ -268,6 +270,7 @@ char *fixedXOR(char *str1, char *str2)
         strncat(hex_str, hex_chars, 2);            /* append to output string */
     }
 
+    /* return hex-encoded string */
     return hex_str;
 }
 
@@ -285,15 +288,16 @@ CHARFREQ *findFrequency(char *s)
     BZERO(cf, sizeof(*cf));
 
     for (i = 0; i < NUM_LETTERS; i++) {
-        cf[i].letter = i+'a';
+        cf[i].letter = i+'A';
         cf[i].count = 0;
     }
 
     /* Count letters in string */
-    /* NOTE: lowercase only for now... */
     i = 0;
     while (s[i]) {
-        if (s[i] >= 'a' && s[i] <= 'z') {
+        if (s[i] >= 'A' && s[i] <= 'Z') {
+            cf[s[i]-'A'].count++;
+        } else if (s[i] >= 'a' && s[i] <= 'z') {
             cf[s[i]-'a'].count++;
         }
         i++;
@@ -326,8 +330,8 @@ int compare_counts(const void *a, const void *b)
 int charFreqScore(char *str)
 {
     /* most common English letters (include spaces!) */
-    /* const char etaoin[] = " etaoinshrdlcumwfgypbvkjxqz"; */
-    /* int N = 4; */
+    const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
+    int N = 4;
     int score = 0;
 
     /* Get ordered string of letters */
@@ -337,6 +341,13 @@ int charFreqScore(char *str)
     qsort(cf, NUM_LETTERS, sizeof(cf[0]), compare_counts); 
 
     /* Count matches in top N characters */
+    for (int i = 0; i < N; i++) {       /* for each of the top common letters */
+       for (int j = 0; j < N; j++) {    /* see if it is in the top of the string */
+            if (etaoin[i] == cf[j].letter) {
+                score += 1;
+            }
+       }
+    }
 
     free(cf);
     return score;
@@ -352,26 +363,24 @@ char *singleByteXORDecode(char *hex)
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
 
     int nbyte = len/2;
+    strtoupper(hex);    /* just operate on uppercase for now */
 
     char key[3];            /* i.e. 0x01 --> '01' */
-    BZERO(key, 3);
-
     char key_str[len];      /* i.e. if hex == "4D616E", key_str = "010101" */
-    BZERO(key_str, len);
 
     /* Allocate memory for the output */
-    char *plaintext = malloc(nbyte * sizeof(char));
+    char *plaintext = malloc(len * sizeof(char));
     MALLOC_CHECK(plaintext);
-    BZERO(plaintext, nbyte);
 
     /* Initialize variables */
-    int cfreq_score_max = 0;
-    char *true_key;
+    /* int cfreq_score_max = 0; */
+    /* char *true_key; */
 
     /* test each possible character byte */
-    /* for (int i = 0; i < 0x100; i++) { */
-    int i = 0x56;
+    for (int i = 0x00; i < 0x100; i++) {
         /* repeat key for each byte of input, to speed up XOR */
+        BZERO(key, 3);
+        BZERO(key_str, len);
         snprintf(key, 3, "%0.2X", i);
         for (int j = 0; j < nbyte; j++) {
             strncat(key_str, key, 2);
@@ -379,18 +388,31 @@ char *singleByteXORDecode(char *hex)
 
         /* XOR each byte in the ciphertext with the key */
         char *xor = fixedXOR(hex, key_str);
+        printf("%s\n", xor);
+
+        /* Convert to plain ASCII text */
+        /* char *ptext = htoa(xor); */
+        /* printf("%s\n", ptext); */
 
         /* Calculate character frequency score */
-        int cfreq_score = charFreqScore(xor);
+        /* int cfreq_score = charFreqScore(ptext); */
 
         /* Track maximum score and actual key */
-        if (cfreq_score >= cfreq_score_max) {
-            cfreq_score_max = cfreq_score;
-            true_key = key;
-            plaintext = xor;
-        }
-    /* } */
-        printf("%s\n", key_str);
+        /* if (cfreq_score >= cfreq_score_max) { */
+        /*     cfreq_score_max = cfreq_score; */
+        /*     true_key = key; */
+        /*     plaintext = ptext; */
+        /* } */
+
+        /* Cleanup before next loop */
+        /* free(xor); */
+        /* free(ptext); */
+    }
+
+/* #ifdef LOGSTATUS */
+/*     printf("key = %s\n", true_key); */
+/*     printf("cfreq_score_max = %d\n", cfreq_score_max); */
+/* #endif */
 
     /* Return the decoded plaintext! */
     return plaintext;

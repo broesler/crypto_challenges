@@ -97,32 +97,42 @@ int FixedXOR1() {
     char expect[] = "746865206b696420646f6e277420706c6179";
     strtoupper(expect);  /* always use uppercase */
     char *xor = fixedXOR(hex1, hex2);
+    char *ascii1 = htoa(hex1);
+    char *ascii2 = htoa(hex2);
+    char *ascii3 = htoa(xor);
     SHOULD_BE(!strcmp(xor, expect));
+    /* SHOULD_BE(!strcmp(ascii1, "KSSP")); // sketchy, non-printables */
+    SHOULD_BE(!strcmp(ascii2, "hit the bull's eye"));
+    SHOULD_BE(!strcmp(ascii3, "the kid don't play"));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", xor, expect);
+    printf("ascii:\n1: %s\n2: %s\n3: %s\n", ascii1, ascii2, ascii3);
 #endif
     free(xor);
+    free(ascii1);
+    free(ascii2);
+    free(ascii3);
     END_TEST_CASE;
 }
 
 /* This function tests the decoding of a single byte XOR cipher */
 int GetFreq1() {
     START_TEST_CASE;
-    char *str1 = "Hello";
+    char *str1 = "HelLo";
     CHARFREQ *cf = findFrequency(str1);
 #ifdef LOGSTATUS
     for (int i = 0; i < 26; i++) {
         printf("%c  %d\n", cf[i].letter, cf[i].count);
     }
 #endif
-    /* SHOULD_BE(cf['h'-'a'].letter == 'h'); */
-    /* SHOULD_BE(cf['h'-'a'].count == 1); */
-    SHOULD_BE(cf['l'-'a'].letter == 'l');
-    SHOULD_BE(cf['l'-'a'].count == 2);
-    SHOULD_BE(cf['e'-'a'].letter == 'e');
-    SHOULD_BE(cf['e'-'a'].count == 1);
-    SHOULD_BE(cf['o'-'a'].letter == 'o');
-    SHOULD_BE(cf['o'-'a'].count == 1);
+    SHOULD_BE(cf['H'-'A'].letter == 'H');
+    SHOULD_BE(cf['H'-'A'].count == 1);
+    SHOULD_BE(cf['L'-'A'].letter == 'L');
+    SHOULD_BE(cf['L'-'A'].count == 2);
+    SHOULD_BE(cf['E'-'A'].letter == 'E');
+    SHOULD_BE(cf['E'-'A'].count == 1);
+    SHOULD_BE(cf['O'-'A'].letter == 'O');
+    SHOULD_BE(cf['O'-'A'].count == 1);
     free(cf);
     END_TEST_CASE;
 }
@@ -130,11 +140,11 @@ int GetFreq1() {
 /* This function tests the decoding of a single byte XOR cipher */
 int GetFreq2() {
     START_TEST_CASE;
-    char *str1 = "Hello";
+    char *str1 = "HELLO";
     CHARFREQ *cf = findFrequency(str1);
-    int check1 = compare_counts(cf,       cf+('e'-'a'));
+    int check1 = compare_counts(cf,       cf+('E'-'A'));
     int check2 = compare_counts(cf,       cf);
-    int check3 = compare_counts(cf+('e'-'a'), cf);
+    int check3 = compare_counts(cf+('E'-'A'), cf);
     SHOULD_BE(check1 ==  1); /* a less than b */
     SHOULD_BE(check2 ==  0); /* a equal to b */
     SHOULD_BE(check3 == -1); /* a greater than b */
@@ -145,26 +155,26 @@ int GetFreq2() {
 /* This function tests the decoding of a single byte XOR cipher */
 int GetFreq3() {
     START_TEST_CASE;
-    char *str1 = "Hello";
+    char *str1 = "EEEETTTAAZ"; /* rank: e = 4, t = 3, a = 2, z = 1 */
     int test = charFreqScore(str1);
+    SHOULD_BE(test == 3);
     END_TEST_CASE;
 }
 
-/* #<{(| This function tests the decoding of a single byte XOR cipher |)}># */
-/* int SingleByte1() { */
-/*     START_TEST_CASE; */
-/*     #<{(| char hex1[]   = "1b37373331363f78151b7f2b783431333d78" \ |)}># */
-/*     #<{(|                  "397828372d363c78373e783a393b3736"; |)}># */
-/*     char expect[] = "Cooking MC's like a pound of bacon"; */
-/*     char hex1[] = "4D616E"; */
-/*     char *plaintext = singleByteXORDecode(hex1); */
-/*     SHOULD_BE(!strcmp(plaintext, expect)); */
-/* #ifdef LOGSTATUS */
-/*     printf("Got:    %s\nExpect: %s\n", plaintext, expect); */
-/* #endif */
-/*     free(plaintext); */
-/*     END_TEST_CASE; */
-/* } */
+/* This function tests the decoding of a single byte XOR cipher */
+int SingleByte1() {
+    START_TEST_CASE;
+    char hex1[]   = "1b37373331363f78151b7f2b783431333d78" \
+                     "397828372d363c78373e783a393b3736";
+    char expect[] = "Cooking MC's like a pound of bacon";
+    char *plaintext = singleByteXORDecode(hex1);
+    SHOULD_BE(!strcmp(plaintext, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", plaintext, expect);
+#endif
+    free(plaintext);
+    END_TEST_CASE;
+}
 
 /*------------------------------------------------------------------------------
  *        Run tests
@@ -179,8 +189,8 @@ int main(void) {
     RUN_TEST(HexConvert3, "hex2b64_str()  test case 1");
     RUN_TEST(FixedXOR1, "fixedXOR()  test case 1");
     RUN_TEST(GetFreq1, "findFrequency()  test case 1");
-    RUN_TEST(GetFreq2, "findFrequency()  test case 2");
-    RUN_TEST(GetFreq3, "findFrequency()  test case 3");
+    /* RUN_TEST(GetFreq2, "findFrequency()  test case 2"); */
+    /* RUN_TEST(GetFreq3, "findFrequency()  test case 3"); */
     /* RUN_TEST(SingleByte1, "singleByteXORDecode()  test case 1"); */
 
     /* Count errors */
