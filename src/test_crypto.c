@@ -154,20 +154,43 @@ int FindFreq1()
     END_TEST_CASE;
 }
 
+/* This function tests the validity of printable characters */
+int IsValid1()
+{
+    START_TEST_CASE;
+    /* everything prints */
+    char *str1 = "Anything less than the best is a felony.";
+    int test = isValid(str1);
+    int expect = 0;
+    SHOULD_BE(test == expect); 
+#ifdef LOGSTATUS
+    printf("Got:    %d\nExpect: %d\n", test, expect);
+#endif
+    /* include non-printing char */
+    char *str2 = "Anything \u1801less than the best is a felony.";
+    test = isValid(str2);
+    expect = 1;
+    SHOULD_BE(test == expect); 
+#ifdef LOGSTATUS
+    printf("Got:    %d\nExpect: %d\n", test, expect);
+#endif
+    END_TEST_CASE;
+}
+
 /* This function tests the character frequency score*/
 int CharFreqScore1()
 {
     START_TEST_CASE;
-    char *str1 = "EeeetTtAaz"; /* rank: e = 4, t = 3, a = 2, z = 1 */
-    int test = charFreqScore(str1);
+    char *str1 = "Anything less than the best is a felony.";
+    float test = charFreqScore(str1);
+    float expect = 17.523940286501208;
 #ifdef LOGSTATUS
-    printf("%d\n", test);
+    printf("Got:    %10.4f\nExpect: %10.4f\n", test, expect);
 #endif
-    /* TODO manually calculate chi-squared for given string to test */
-    SHOULD_BE(test == 3);
-    char *str2 = "xyz";
-    test = charFreqScore(str2);
-    SHOULD_BE(test == 0);
+    SHOULD_BE(test == expect); 
+    /* char *str2 = "xyz"; */
+    /* test = charFreqScore(str2); */
+    /* SHOULD_BE(test == 0); */
     END_TEST_CASE;
 }
 
@@ -201,8 +224,9 @@ int main(void)
     RUN_TEST(HexConvert3, "hex2b64_str() test case 2");
     RUN_TEST(FixedXOR1, "fixedXOR() test case 1");
     RUN_TEST(FindFreq1, "countChars() test case 1");
+    RUN_TEST(IsValid1, "isValid() test case 1");
     /* RUN_TEST(CharFreqScore1, "charFreqScore() test case 1"); */
-    RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1");
+    /* RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1"); */
 
     /* Count errors */
     if (!fails) {

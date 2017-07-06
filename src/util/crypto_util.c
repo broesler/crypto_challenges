@@ -152,8 +152,24 @@ int *htoi(char *hex)
  *----------------------------------------------------------------------------*/
 int isValid(const char *s)
 {
-    while ( *s && !isgraph((unsigned char)*s) ) ++s;
-    return *s != '\0';
+    while (*s && isprint((unsigned char)*s)) s++;
+    return (*s != '\0');
+
+    /*     int i = 0; */
+    /*     while (*s) */
+    /*     { */
+    /*         if (isprint((unsigned char)*s)) */
+    /*         { */
+    /*             s++; */
+    /*             i++; */
+    /*         } else { */
+    /* #ifdef LOGSTATUS */
+    /*             printf("Found non-printable at %d\n", i); */
+    /* #endif */
+    /*             return i; */
+    /*         } */
+    /*     } */
+    /*     return (*s != '\0'); */
 }
 
 /*==============================================================================

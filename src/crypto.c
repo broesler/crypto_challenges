@@ -141,10 +141,10 @@ CHARFREQ *countChars(char *s)
 {
     /* TODO update this function to count other non-alphabetic characters, and
      * penalize strings that have many non-ascii characters */
-    CHARFREQ *cf; /* one struct per letter of alphabet */
+    CHARFREQ *cf;
     int i;
 
-    /* Initialize struct array */
+    /* Initialize struct array -- one struct per possible hex character */
     cf = malloc(NUM_LETTERS * sizeof(CHARFREQ));
     MALLOC_CHECK(cf);
     BZERO(cf, NUM_LETTERS*sizeof(CHARFREQ));
@@ -180,6 +180,7 @@ float charFreqScore(char *str)
     CHARFREQ *cf = countChars(str);
 
     /* <https://en.wikipedia.org/wiki/Letter_frequency> */
+    /* Indexed [A-Z] - 'A' == 0 -- 26 */
     const float english_freq[] = 
         { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \
           0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \
@@ -262,7 +263,7 @@ char *singleByteXORDecode(char *hex)
 
 #ifdef LOGSTATUS
         /* print each key, decoded string, score */
-        if (isValid(ptext) == 0) {
+        if (isValid(ptext)) {
             printf("%0.2X\t%s\t%10.4f\n", i, ptext, cfreq_score);
         } else {
             printf("%0.2X\t%s\t\t%10.5f\n", i, "--------------------", cfreq_score);
