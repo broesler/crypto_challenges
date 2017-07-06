@@ -6,9 +6,18 @@
  *  Description: Utility functions for cryptography challenges
  *
  *============================================================================*/
+#include <float.h>
+
 #include "crypto.h"
 #include "crypto_util.h"
 #include "header.h"
+
+/* Global variable */
+const float ENGLISH_FREQ[] = 
+    { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \
+      0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \
+      0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \
+      0.00978, 0.02360, 0.00150, 0.01974, 0.00074 };
 
 /*------------------------------------------------------------------------------
  *      Convert hexadecimal string to base64 string
@@ -137,29 +146,23 @@ char *fixedXOR(char *str1, char *str2)
 /*------------------------------------------------------------------------------
  *         Find character frequency in string 
  *----------------------------------------------------------------------------*/
-CHARFREQ *countChars(char *s)
+CHARFREQ *countChars(const char *s)
 {
-    /* TODO update this function to count other non-alphabetic characters, and
-     * penalize strings that have many non-ascii characters */
-    CHARFREQ *cf;
-    int i;
-
     /* Initialize struct array -- one struct per possible hex character */
-    cf = malloc(NUM_LETTERS * sizeof(CHARFREQ));
+    CHARFREQ *cf = malloc(NUM_LETTERS * sizeof(CHARFREQ));
     MALLOC_CHECK(cf);
     BZERO(cf, NUM_LETTERS*sizeof(CHARFREQ));
 
     /* Populate struct array with ALL characters */
-    for (i = 0; i < NUM_LETTERS; i++) {
+    for (int i = 0; i < NUM_LETTERS; i++) {
         cf[i].letter = i;
         cf[i].count = 0;
     }
 
     /* Get frequency of ALL characters in the string */
-    i = 0;
-    while (s[i]) {
-        cf[(size_t)s[i]].count++;
-        i++;
+    while (*s) {
+        cf[(size_t)*s].count++;
+        s++;
     }
     return cf;
 }
@@ -169,6 +172,7 @@ CHARFREQ *countChars(char *s)
  *----------------------------------------------------------------------------*/
 float charFreqScore(char *str)
 {
+    /* TODO update to penalize strings with non-ascii characters */
     const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";  /* acceptable chars */
     int len = strlen(etaoin);
     float observed = 0.0,
@@ -176,16 +180,8 @@ float charFreqScore(char *str)
           chi_sq = 0.0;
     int ch_ind;
 
-    /* Get ordered string of letters */
-    CHARFREQ *cf = countChars(str);
-
-    /* <https://en.wikipedia.org/wiki/Letter_frequency> */
-    /* Indexed [A-Z] - 'A' == 0 -- 26 */
-    const float english_freq[] = 
-        { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \
-          0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \
-          0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \
-          0.00978, 0.02360, 0.00150, 0.01974, 0.00074 };
+    /* Count all characters in string */
+    CHARFREQ *cf = countChars(strtoupper(str));
 
     /* Calculate score via chi-squared test */
     float slen = (float)strlen(str);
@@ -194,7 +190,7 @@ float charFreqScore(char *str)
     for (int i = 0; i < len; i++) {
         ch_ind = etaoin[i];
         observed = cf[ch_ind].count;
-        expected = english_freq[ch_ind-'A'] * slen;
+        expected = ENGLISH_FREQ[ch_ind-'A'] * slen;
         chi_sq += (observed - expected)*(observed - expected) / expected;
     }
 
@@ -235,7 +231,7 @@ char *singleByteXORDecode(char *hex)
     size_t len = strlen(hex);
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
 
-    float cfreq_score_min = 1.0e9; /* initialize to large number */
+    float cfreq_score_min = FLT_MAX; /* initialize to large number */
 
     /* Allocate memory for the output */
     char *plaintext = malloc(len * sizeof(char));
@@ -250,25 +246,21 @@ char *singleByteXORDecode(char *hex)
 #ifdef LOGSTATUS
         printf("key\tdecoded string\t\t\t\tchi^2\n");
 #endif
-    /* for (int i = 0x58; i < 0x59; i++) { */
     for (int i = 0x00; i < 0x100; i++) {
-        /* Decode hex string */
-        char *xor = singleByteXOREncode(hex, i);
+        char *xor = singleByteXOREncode(hex, i); /* Decode hex string */
+        char *ptext = htoa(xor);                 /* Convert to ASCII text */
+        float cfreq_score = FLT_MAX;             /* initialize to high value */
 
-        /* Convert to plain ASCII text */
-        char *ptext = htoa(xor);
-
-        /* Calculate character frequency score */
-        float cfreq_score = charFreqScore(ptext);
-
-#ifdef LOGSTATUS
-        /* print each key, decoded string, score */
+        /* Make sure string is printable */
         if (isValid(ptext)) {
-            printf("%0.2X\t%s\t%10.4f\n", i, ptext, cfreq_score);
-        } else {
-            printf("%0.2X\t%s\t\t%10.5f\n", i, "--------------------", cfreq_score);
-        }
+            cfreq_score = charFreqScore(ptext);  /* calculate string score */
+#ifdef LOGSTATUS
+            printf("%0.2X\t%s\t%10.4e\n", i, ptext, cfreq_score);
+/*         } else { */
+/*             printf("%0.2X\t%s\t\t%10.5e\n", \ */
+/*                     i, "------------------------------", cfreq_score); */
 #endif
+        }
 
         /* Track minimum chi-squared score and actual key */
         if (cfreq_score < cfreq_score_min) {
@@ -280,8 +272,8 @@ char *singleByteXORDecode(char *hex)
 
 #ifdef LOGSTATUS
     printf("--------------------\n");
-    printf("found key = %s\n", true_key);
-    printf("cfreq_score_min = %10.4f\n", cfreq_score_min);
+    printf("found key =        %s\n",   true_key);
+    printf("cfreq_score_min = %8.4f\n", cfreq_score_min);
 #endif
 
     /* Return the decoded plaintext! */

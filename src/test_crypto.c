@@ -6,6 +6,7 @@
  *  Description: Tests of cryptography functions in crypto challenges
  *
  *============================================================================*/
+#include <math.h>
 #include <string.h>
 
 /* User-defined headers */
@@ -20,11 +21,9 @@
 int StrToUpper1()
 {
     START_TEST_CASE;
-    char *str1 = NEW("test");
-    strcpy(str1,"test");
+    char str1[] = "test";
     SHOULD_BE(!strcmp(strtoupper(str1), "TEST")); /* convert in-place */
     SHOULD_BE(!strcmp(strtolower(str1), "test"));
-    free(str1);
     END_TEST_CASE;
 }
 
@@ -32,7 +31,7 @@ int StrToUpper1()
 int HexConvert1()
 {
     START_TEST_CASE;
-    char *str1 = "Man";
+    char str1[] = "Man";
     char *hex = atoh(str1);  /* any atoh call must be free'd! */
     SHOULD_BE(!strcmp(hex,"4D616E"));    /* convert to hex */
     char *str2 = htoa(hex);
@@ -46,21 +45,21 @@ int HexConvert1()
 int HexConvert2()
 {
     START_TEST_CASE;
-    char *str1 = "Man";
+    char str1[] = "Man";
     char *hex1 = atoh(str1);  /* any atoh call must be free'd! */
     char *b641 = hex2b64_str(hex1);
     SHOULD_BE(!strcmp(b641, "TWFu"));
 #ifdef LOGSTATUS
     printf("%-4s => %-7s => %-5s\n", str1, hex1, b641);
 #endif
-    char *str2 = "Ma";
+    char str2[] = "Ma";
     char *hex2 = atoh(str2);  /* any atoh call must be free'd! */
     char *b642 = hex2b64_str(hex2);
     SHOULD_BE(!strcmp(b642, "TWE="));
 #ifdef LOGSTATUS
     printf("%-4s => %-7s => %-5s\n", str2, hex2, b642);
 #endif
-    char *str3 = "M";
+    char str3[] = "M";
     char *hex3 = atoh(str3);  /* any atoh call must be free'd! */
     char *b643 = hex2b64_str(hex3);
     SHOULD_BE(!strcmp(b643, "TQ=="));
@@ -80,12 +79,12 @@ int HexConvert2()
 int HexConvert3()
 {
     START_TEST_CASE;
-    char *hex1 = "49276d206b696c6c696e6720796f75722" \
-                 "0627261696e206c696b65206120706f69" \
-                 "736f6e6f7573206d757368726f6f6d";
+    char hex1[] = "49276d206b696c6c696e6720796f75722" \
+                  "0627261696e206c696b65206120706f69" \
+                  "736f6e6f7573206d757368726f6f6d";
     char *b641 = hex2b64_str(hex1);
-    char *expect = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsa" \
-                   "WtlIGEgcG9pc29ub3VzIG11c2hyb29t";
+    char expect[] = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsa" \
+                    "WtlIGEgcG9pc29ub3VzIG11c2hyb29t";
     SHOULD_BE(!strcmp(b641, expect));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", b641, expect);
@@ -126,7 +125,7 @@ int FixedXOR1()
 int FindFreq1()
 {
     START_TEST_CASE;
-    char *str1 = "HelLo, World!";
+    char str1[] = "HelLo, World!";
     CHARFREQ *cf = countChars(str1);
     SHOULD_BE(cf['H'].letter == 'H');
     SHOULD_BE(cf['H'].count == 1);
@@ -159,17 +158,17 @@ int IsValid1()
 {
     START_TEST_CASE;
     /* everything prints */
-    char *str1 = "Anything less than the best is a felony.";
+    char str1[] = "Anything less than the best is a felony.";
     int test = isValid(str1);
-    int expect = 0;
+    int expect = 1;
     SHOULD_BE(test == expect); 
 #ifdef LOGSTATUS
     printf("Got:    %d\nExpect: %d\n", test, expect);
 #endif
     /* include non-printing char */
-    char *str2 = "Anything \u1801less than the best is a felony.";
+    char str2[] = "Anything \u1801less than the best is a felony.";
     test = isValid(str2);
-    expect = 1;
+    expect = 0;
     SHOULD_BE(test == expect); 
 #ifdef LOGSTATUS
     printf("Got:    %d\nExpect: %d\n", test, expect);
@@ -181,16 +180,15 @@ int IsValid1()
 int CharFreqScore1()
 {
     START_TEST_CASE;
-    char *str1 = "Anything less than the best is a felony.";
+    char str1[] = "Anything less than the best is a felony.";
     float test = charFreqScore(str1);
-    float expect = 17.523940286501208;
+    float tol = 1e-6;
+    float expect = 15.6190082292009702; /* length == all chars */
+    /* float expect = 17.5239402865012082; #<{(| length == just letters |)}># */
+    SHOULD_BE(fabsf(test - expect) < tol); 
 #ifdef LOGSTATUS
     printf("Got:    %10.4f\nExpect: %10.4f\n", test, expect);
 #endif
-    SHOULD_BE(test == expect); 
-    /* char *str2 = "xyz"; */
-    /* test = charFreqScore(str2); */
-    /* SHOULD_BE(test == 0); */
     END_TEST_CASE;
 }
 
@@ -200,9 +198,10 @@ int SingleByte1()
     START_TEST_CASE;
     char hex1[]   = "1b37373331363f78151b7f2b783431333d78" \
                     "397828372d363c78373e783a393b3736";
-    char expect[] = "Cooking MC's like a pound of bacon";
+    char expect[] = "COOKING MC'S LIKE A POUND OF BACON";
     char *plaintext = singleByteXORDecode(hex1);
-    SHOULD_BE(!strcmp(plaintext, expect));
+    /* compare all uppercase values */
+    SHOULD_BE(!strcmp(strtoupper(plaintext), expect));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", plaintext, expect);
 #endif
@@ -225,8 +224,8 @@ int main(void)
     RUN_TEST(FixedXOR1, "fixedXOR() test case 1");
     RUN_TEST(FindFreq1, "countChars() test case 1");
     RUN_TEST(IsValid1, "isValid() test case 1");
-    /* RUN_TEST(CharFreqScore1, "charFreqScore() test case 1"); */
-    /* RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1"); */
+    RUN_TEST(CharFreqScore1, "charFreqScore() test case 1");
+    RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1");
 
     /* Count errors */
     if (!fails) {

@@ -22,6 +22,11 @@ typedef struct _CHARFREQ {
     int count;
 } CHARFREQ;
 
+// constant array
+// <https://en.wikipedia.org/wiki/Letter_frequency>
+// Indexed [A-Z] - 'A' == 0 -- 26
+extern const float ENGLISH_FREQ[];
+
 //------------------------------------------------------------------------------
 //      Function Definitions
 //------------------------------------------------------------------------------
@@ -35,7 +40,7 @@ char *hex2b64_str(char *hex_str);
 char *fixedXOR(char *str1, char *str2);
 
 // Character frequency list
-CHARFREQ *countChars(char *s);
+CHARFREQ *countChars(const char *s);
 
 // Character frequency score
 float charFreqScore(char *str);
