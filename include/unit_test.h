@@ -5,7 +5,6 @@
 //
 //   Description: Useful unit testing macros
 //==============================================================================
-
 #ifndef _UNIT_TEST_H
 #define _UNIT_TEST_H
 
@@ -15,7 +14,7 @@
 // check a condition and if false print the test condition failed
 // e.g., SHOULD_BE(dict->start == NULL)
 #define SHOULD_BE(x) if (!(x))  {rs=rs+1; \
-    printf("Line %d Fails\n", __LINE__); \
+    printf("\033[0;31mLine %d fails!\033[0m\n", __LINE__); \
 }
 
 // return the result count at the end of a test
@@ -26,16 +25,17 @@
 // translates to:
 // if (!TestDAdd1()) {
 //     printf("Test %s passed\n","DAdd Test case 1");
-// } else { 
+// } else {
 //     printf("Test %s failed\n", "DAdd Test case 1");
 //     cnt = cnt +1;
 // }
+// \u2713 gives escape sequence for ✓ (U+2713), or ✗ (U+2717)
 #define RUN_TEST(x, y) \
 if (!x()) {                          \
-    printf("Test %s passed.\n", y);  \
+    printf("\033[0;32m\u2713\033[0m Test %s passed.\n", y);  \
     total++;                         \
 } else {                             \
-    printf("Test %s failed!\n", y);  \
+    printf("\033[0;31m\u2717\033[0m Test %s failed!\n", y);  \
     total++;                         \
     fails = fails + 1;               \
 }

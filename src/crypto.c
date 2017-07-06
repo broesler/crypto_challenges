@@ -7,145 +7,8 @@
  *
  *============================================================================*/
 #include "crypto.h"
+#include "crypto_util.h"
 #include "header.h"
-
-/*------------------------------------------------------------------------------ 
- *      Convert string to uppercase
- *----------------------------------------------------------------------------*/
-char *strtoupper(char *s)
-{
-    int i = 0;
-    while (*(s+i)) {
-        if (*(s+i) >= 'a' && *(s+i) <= 'z') {
-            *(s+i) -= 32;
-        }
-        i++;
-    }
-    return s;
-}
-
-/*------------------------------------------------------------------------------ 
- *      Convert string to lowercase
- *----------------------------------------------------------------------------*/
-char *strtolower(char *s)
-{
-    int i = 0;
-    while (*(s+i)) {
-        if (*(s+i) >= 'A' && *(s+i) <= 'Z') {
-            *(s+i) += 32;
-        }
-        i++;
-    }
-    return s;
-}
-
-/*------------------------------------------------------------------------------ 
- *      Get an integer from 2 hex characters in a string
- *----------------------------------------------------------------------------*/
-int getHexByte(char *hex) 
-{
-    int u = 0; 
-    char substr[3];
-    BZERO(substr, 3);
-    strncpy(substr, hex, 2);                /* take 2 chars */
-    strtoupper(substr);                     /* convert to uppercase only */
-    if (sscanf(substr, "%2X", &u)) {        /* convert to integer */
-        return u;
-    } else {
-        ERROR("Invalid hex character!");
-    }
-}
-
-/*------------------------------------------------------------------------------ 
- *      Encode ASCII string into hex string
- *----------------------------------------------------------------------------*/
-/* Take each 8-bit character and convert it to 2, 4-bit characters */
-char *atoh(char *str)
-{
-    static const char *lut = "0123456789ABCDEF";
-    size_t len = strlen(str);
-
-    /* allocate memory */
-    char *hex = (char *)calloc(2*len, sizeof(char));
-    MALLOC_CHECK(hex);
-    BZERO(hex, sizeof(*hex));
-
-    for (size_t i = 0; i < len; i++)
-    {
-        char c = str[i];
-        strncat(hex, &lut[c >> 0x04], 1); /* take first 4 bits */
-        strncat(hex, &lut[c  & 0x0F], 1); /* take next 4 bits */
-    }
-    return hex;
-}
-
-/*------------------------------------------------------------------------------ 
- *      Decode hex-encoded string into ASCII string
- *----------------------------------------------------------------------------*/
-char *htoa(char *hex)
-{
-    size_t len = strlen(hex);
-
-    /* Check for bad inputs */
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
-
-    /* Proceed with conversion */
-    unsigned int u; 
-    char ascii[2];  /* store 1 ascii character */
-
-    /* Create uppercase copy of input string */
-    char hex_upper[len];
-    BZERO(hex_upper, len);
-    strncpy(hex_upper, hex, len);   /* copy string in as-is */
-    strtoupper(hex_upper);          /* make string uppercase */
-
-    /* Allocate memory */
-    char *str = malloc(len/2 * sizeof(char));
-    MALLOC_CHECK(str);
-    BZERO(str, sizeof(*str));
-
-    /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
-    for (size_t i = 0; i < len; i+=2)
-    {
-        u = getHexByte(hex_upper+i);        /* get integer value of byte */
-        snprintf(ascii, 2, "%c", u);        /* convert to ascii character */
-        strncat(str, ascii, 1);             /* append to output string */
-    }
-
-    return str;
-}
-
-/*------------------------------------------------------------------------------ 
- *      Decode hex-encoded string into int array
- *----------------------------------------------------------------------------*/
-int *htoi(char *hex)
-{
-    size_t len = strlen(hex);
-
-    /* Check for bad inputs */
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
-
-    /* Proceed with conversion */
-    size_t nbyte = len/2;
-
-    /* Create uppercase copy of input string */
-    char hex_upper[len];
-    strncpy(hex_upper, hex, len);   /* copy string in as-is */
-    strtoupper(hex_upper);          /* make function case insensitive */
-
-    /* Allocate memory */
-    int *out = malloc(nbyte * sizeof(int));
-    MALLOC_CHECK(out);
-    BZERO(out, nbyte);
-
-    /* Take every 2 hex characters and combine bytes to make 1 integer */
-    for (size_t i = 0; i < nbyte; i++)
-    {
-        out[i] = getHexByte(hex_upper+2*i); /* get integer value of byte */
-    }
-
-    return out;
-}
 
 /*------------------------------------------------------------------------------
  *      Convert hexadecimal string to base64 string
@@ -274,7 +137,7 @@ char *fixedXOR(char *str1, char *str2)
 /*------------------------------------------------------------------------------
  *         Find character frequency in string 
  *----------------------------------------------------------------------------*/
-CHARFREQ *findFrequency(char *s)
+CHARFREQ *countChars(char *s)
 {
     /* TODO update this function to count other non-alphabetic characters, and
      * penalize strings that have many non-ascii characters */
@@ -284,8 +147,9 @@ CHARFREQ *findFrequency(char *s)
     /* Initialize struct array */
     cf = malloc(NUM_LETTERS * sizeof(CHARFREQ));
     MALLOC_CHECK(cf);
-    BZERO(cf, sizeof(*cf));
+    BZERO(cf, NUM_LETTERS*sizeof(CHARFREQ));
 
+    /* Populate struct array with ALL characters */
     for (i = 0; i < NUM_LETTERS; i++) {
         cf[i].letter = i;
         cf[i].count = 0;
@@ -301,67 +165,76 @@ CHARFREQ *findFrequency(char *s)
 }
 
 /*------------------------------------------------------------------------------
- *         Compare two counts of char freq (used by qsort)
- *----------------------------------------------------------------------------*/
-int compare_counts(const void *a, const void *b)
-{
-    /* Case inputs to my type */
-    CHARFREQ *cfa = (CHARFREQ *)a;
-    CHARFREQ *cfb = (CHARFREQ *)b;
-
-    /* Compare counts */
-    if (cfa->count < cfb->count) {
-        return 1;
-    } else if (cfa->count == cfb->count) {
-        return 0;
-    } else {
-        return -1;
-    }
-}
-
-/*------------------------------------------------------------------------------
  *         Get character frequency score of string
  *----------------------------------------------------------------------------*/
-int charFreqScore(char *str, const int N)
+float charFreqScore(char *str)
 {
-    /* most common English letters (include spaces!) */
-    const char etaoin[] = " ETAOINSHRDLCUMWFGYPBVKJXQZ";
-    int score = 0;
+    const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";  /* acceptable chars */
+    int len = strlen(etaoin);
+    float observed = 0.0,
+          expected = 0.0,
+          chi_sq = 0.0;
+    int ch_ind;
 
     /* Get ordered string of letters */
-    CHARFREQ *cf = findFrequency(str);
+    CHARFREQ *cf = countChars(str);
 
-    /* Sort by frequency */
-    qsort(cf, NUM_LETTERS, sizeof(cf[0]), compare_counts); 
+    /* <https://en.wikipedia.org/wiki/Letter_frequency> */
+    const float english_freq[] = 
+        { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \
+          0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \
+          0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \
+          0.00978, 0.02360, 0.00150, 0.01974, 0.00074 };
 
-    /* Count matches in top N characters */
-    /* TODO remove this double loop? Maybe get first N ranked characters as
-     * a string, then check strchr() or strpbrk() */
-    for (int i = 0; i < N; i++) {       /* for each of the top common letters */
-        for (int j = 0; j < N; j++) {    /* see if it is in the top of the string */
-            /* Score upper/lowercase letters the same */
-            if (etaoin[i] == toupper(cf[j].letter)) {
-                score += 1;
-            }
-        }
+    /* Calculate score via chi-squared test */
+    float slen = (float)strlen(str);
+
+    /* Sum the chi^2 values for each alphabetic character */
+    for (int i = 0; i < len; i++) {
+        ch_ind = etaoin[i];
+        observed = cf[ch_ind].count;
+        expected = english_freq[ch_ind-'A'] * slen;
+        chi_sq += (observed - expected)*(observed - expected) / expected;
     }
 
     free(cf);
-    return score;
+    return chi_sq;
+}
+
+/*------------------------------------------------------------------------------
+ *         Encode a string with a single byte XOR cipher 
+ *----------------------------------------------------------------------------*/
+char *singleByteXOREncode(char *hex, int key_int)
+{
+    size_t len = strlen(hex);
+    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
+    if ((key_int < 0x00) || (key_int >= 0x100)) { ERROR("key is outside of valid range!"); }
+
+    int nbyte = len/2;
+    char key[3],            /* i.e. 0x01 --> '01' */
+         key_str[len+1];    /* i.e. if hex == "4D616E", key_str = "010101" */
+    BZERO(key, 3);
+    BZERO(key_str, len+1);
+
+    /* repeat key for each byte of input, so only one XOR is needed */
+    snprintf(key, 3, "%0.2X", key_int);
+    for (int j = 0; j < nbyte; j++) {
+        strncat(key_str, key, 2);
+    }
+
+    /* XOR each byte in the ciphertext with the key */
+    return fixedXOR(hex, key_str);
 }
 
 /*------------------------------------------------------------------------------
  *         Decode a string XOR'd against a single character
  *----------------------------------------------------------------------------*/
-char *singleByteXORDecode(char *hex, const int N)
+char *singleByteXORDecode(char *hex)
 {
     size_t len = strlen(hex);
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
 
-    int nbyte = len/2,
-        cfreq_score_max = 0;
-    char key[3],            /* i.e. 0x01 --> '01' */
-         key_str[len];      /* i.e. if hex == "4D616E", key_str = "010101" */
+    float cfreq_score_min = 1.0e9; /* initialize to large number */
 
     /* Allocate memory for the output */
     char *plaintext = malloc(len * sizeof(char));
@@ -373,36 +246,41 @@ char *singleByteXORDecode(char *hex, const int N)
     BZERO(true_key, sizeof(*true_key));
 
     /* test each possible character byte */
+#ifdef LOGSTATUS
+        printf("key\tdecoded string\t\t\t\tchi^2\n");
+#endif
     /* for (int i = 0x58; i < 0x59; i++) { */
     for (int i = 0x00; i < 0x100; i++) {
-        /* repeat key for each byte of input, so only one XOR is needed */
-        BZERO(key, 3);
-        BZERO(key_str, len);
-        snprintf(key, 3, "%0.2X", i);
-        for (int j = 0; j < nbyte; j++) {
-            strncat(key_str, key, 2);
-        }
-
-        /* XOR each byte in the ciphertext with the key */
-        char *xor = fixedXOR(hex, key_str);
+        /* Decode hex string */
+        char *xor = singleByteXOREncode(hex, i);
 
         /* Convert to plain ASCII text */
         char *ptext = htoa(xor);
 
         /* Calculate character frequency score */
-        int cfreq_score = charFreqScore(ptext, N);
+        float cfreq_score = charFreqScore(ptext);
 
-        /* Track maximum score and actual key */
-        if (cfreq_score > cfreq_score_max) {
-            cfreq_score_max = cfreq_score;
-            strncpy(true_key, key, 2);
+#ifdef LOGSTATUS
+        /* print each key, decoded string, score */
+        if (isValid(ptext) == 0) {
+            printf("%0.2X\t%s\t%10.4f\n", i, ptext, cfreq_score);
+        } else {
+            printf("%0.2X\t%s\t\t%10.5f\n", i, "--------------------", cfreq_score);
+        }
+#endif
+
+        /* Track minimum chi-squared score and actual key */
+        if (cfreq_score < cfreq_score_min) {
+            cfreq_score_min = cfreq_score;
+            snprintf(true_key, 3, "%0.2X", i);
             strncpy(plaintext, ptext, len);
         }
     }
 
 #ifdef LOGSTATUS
-    printf("key = %s\n", true_key);
-    printf("cfreq_score_max = %d\n", cfreq_score_max);
+    printf("--------------------\n");
+    printf("found key = %s\n", true_key);
+    printf("cfreq_score_min = %10.4f\n", cfreq_score_min);
 #endif
 
     /* Return the decoded plaintext! */

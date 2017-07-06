@@ -8,24 +8,27 @@
 
 # Directories where source files are kept
 SRCDIR = ./
+UTILDIR = ./util/
 INCLDIR = ../include/
 
 # Set the compiler options
 CC = gcc
 CFLAGS = -Wall -pedantic -std=c99
-# CFLAGS = -Wall -pedantic -std=c99 -fPIC
+# CFLAGS += -fPIC
 
-# Look for header files here
-OPT = -I$(SRCDIR) -I$(INCLDIR)
+# Look for header files here -- store all headers in ../include/
+# OPT = -I$(SRCDIR) -I$(UTILDIR) -I$(INCLDIR)
+OPT = -I$(INCLDIR)
 
 # Define source files, utility files (function files)
 SRC_CRYPTO = test_crypto.c crypto.c
+UTIL = $(wildcard $(UTILDIR)*.c)
 
 # Define object files
-OBJ_CRYPTO = $(SRC_CRYPTO:%.c=%.o) 
+OBJ_CRYPTO = $(SRC_CRYPTO:%.c=%.o) $(UTIL:%.c=%.o) 
 
 # Define header files
-INCL = $(wildcard $(SRCDIR)*.h) $(wildcard $(INCLDIR)*.h)
+INCL = $(wildcard $(INCLDIR)*.h)
 
 # Make options
 all: test_crypto
@@ -50,6 +53,9 @@ clean:
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
+	rm -f $(UTILDIR)*.o
+	rm -f $(UTILDIR)*.gch
+	rm -rf $(UTILDIR)*.dSYM/
 	rm -f test_crypto
 
 #==============================================================================

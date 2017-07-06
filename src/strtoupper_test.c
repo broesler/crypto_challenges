@@ -3,7 +3,7 @@
  *  Created: 10/20/2016, 14:14
  *   Author: Bernie Roesler
  *
- *  Description: 
+ *  Description: Test algorithm for making string into uppercase
  *
  *============================================================================*/
 #include <stdio.h>
