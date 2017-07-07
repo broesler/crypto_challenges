@@ -221,34 +221,41 @@ char *singleByteXOREncode(char *hex, int key_int)
 /* char *singleByteXORDecode(char *hex) */
 XOR_NODE *singleByteXORDecode(char *hex)
 {
+    XOR_NODE *out = NULL;
     size_t len = strlen(hex);
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
 
-    float cfreq_score_min = FLT_MAX; /* initialize to large number */
-
     /* Allocate memory for the output */
-    char *plaintext = init_str(len);
-    char *true_key = init_str(3);
+    out = NEW(XOR_NODE);
+    MALLOC_CHECK(out);
+    BZERO(out, sizeof(XOR_NODE));
+
+    /* initialize fields */
+    out->key = 0;
+    BZERO(out->plaintext, sizeof(out->plaintext));
+    out->score = FLT_MAX; /* initialize to large number */
 
     /* test each possible character byte */
+    /* for (int i = 0x35; i < 0x36; i++) { #<{(| actual key for 4.txt |)}># */
     for (int i = 0x00; i < 0x100; i++) {
         char *xor = singleByteXOREncode(hex, i); /* Decode hex string */
         char *ptext = htoa(xor);                 /* Convert to ASCII text */
         float cfreq_score = FLT_MAX;             /* initialize to high value */
 
         /* Make sure string is printable */
-        if (isValid(ptext)) {
+        if (isprintable(ptext)) {
             cfreq_score = charFreqScore(ptext);  /* calculate string score */
+            ptext[strcspn(ptext, "\n")] = 0;     /* remove trailing '\n' */
 #ifdef LOGSTATUS
             printf("%0.2X\t%s\t%10.4e\n", i, ptext, cfreq_score);
 #endif
-        }
-
-        /* Track minimum chi-squared score and actual key */
-        if (cfreq_score < cfreq_score_min) {
-            cfreq_score_min = cfreq_score;
-            snprintf(true_key, 3, "%0.2X", i);
-            strncpy(plaintext, ptext, len);
+            /* Track minimum chi-squared score and actual key */
+            if (cfreq_score < out->score) {
+                out->key = i;
+                BZERO(out->plaintext, sizeof(out->plaintext));
+                strncpy(out->plaintext, ptext, strlen(ptext));
+                out->score = cfreq_score;
+            }
         }
 
         /* clean-up */
@@ -256,21 +263,29 @@ XOR_NODE *singleByteXORDecode(char *hex)
         free(ptext);
     }
 
-    /* clean-up */
-    free(true_key);
-
-    /* Return the decoded plaintext! */
-    return plaintext;
+    return out;
 }
 
 /*------------------------------------------------------------------------------
  *         Find single byte XOR string in a file
  *----------------------------------------------------------------------------*/
-char *findSingleByteXOR(char *filename)
+XOR_NODE *findSingleByteXOR(char *filename)
 {
+    XOR_NODE *out = NULL;
     FILE *fp = NULL;
     char *buffer = NULL;
     char message[2*MAX_PAGE_NUM];
+
+    /* Allocate memory for the output */
+    out = NEW(XOR_NODE);
+    MALLOC_CHECK(out);
+    BZERO(out, sizeof(XOR_NODE));
+
+    /* Initialize fields */
+    out->key = 0;
+    BZERO(out->plaintext, sizeof(out->plaintext));
+    out->score = FLT_MAX; /* initialize to large number */
+    out->file_line = 0;
 
     /* open file stream */
     fp = fopen(filename, "r");
@@ -283,29 +298,35 @@ char *findSingleByteXOR(char *filename)
     /* Initialize buffer */
     buffer = init_str(MAX_WORD_LEN);
 
+    int file_line = 1;
+
     /* For each line, run singleByteXORDecode, return {key, string, score} */
-    while(!feof(fp))
+    while ( (buffer = fgets(buffer, MAX_WORD_LEN*sizeof(char), fp)) )
     {
-        /* read line from file */
-        buffer = fgets(buffer, MAX_WORD_LEN*sizeof(char), fp);
-        buffer[strcspn(buffer, "\n")] = 0; /* remove '\n' from buffer */
-        /* printf("%s\n", buffer); */
+        printf("---------- Line: %3d\n", file_line);
+        buffer[strcspn(buffer, "\n")] = 0;  /* remove trailing '\n' */
 
-        /* lines already in hex-encoding */
-        /* TODO return data structure with {key, plaintext, score} */
-        char *ptext = singleByteXORDecode(buffer);
-        if (isValid(ptext)) {
-            printf("%s\n", ptext);
-        }
+        /* Find most likely key for this line */
+        XOR_NODE *temp = singleByteXORDecode(buffer);
+        if (*temp->plaintext) {
+            /* Track {key, string, score} by lowest score */
+            if (temp->score < out->score) {
+                out->key = temp->key;
+                BZERO(out->plaintext, sizeof(out->plaintext));
+                strncpy(out->plaintext, temp->plaintext, strlen(temp->plaintext));
+                out->score = temp->score;
+                out->file_line = file_line;
+            }
+        } else { printf("\x1B[A\r"); /* erase title line */ }
 
-        /* Reinitialize buffer */
-        BZERO(buffer, MAX_WORD_LEN*sizeof(char));
+        free(temp);
+        file_line++;
     }
 
-    /* Track lowest {key, string, score} by score, and that is the answer */
-
+    printf("\n");
+    free(buffer);
     fclose(fp);
-    return buffer;
+    return out;
 }
 /*==============================================================================
  *============================================================================*/

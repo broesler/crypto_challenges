@@ -146,12 +146,12 @@ int FindFreq1()
 }
 
 /* This function tests the validity of printable characters */
-int IsValid1()
+int IsPrintable1()
 {
     START_TEST_CASE;
     /* everything prints */
     char str1[] = "Anything less than the best is a felony.";
-    int test = isValid(str1);
+    int test = isprintable(str1);
     int expect = 1;
     SHOULD_BE(test == expect); 
 #ifdef LOGSTATUS
@@ -159,7 +159,7 @@ int IsValid1()
 #endif
     /* include non-printing char */
     char str2[] = "Anything \u1801less than the best is a felony.";
-    test = isValid(str2);
+    test = isprintable(str2);
     expect = 0;
     SHOULD_BE(test == expect); 
 #ifdef LOGSTATUS
@@ -191,15 +191,15 @@ int SingleByte1()
     char hex1[]   = "1b37373331363f78151b7f2b783431333d78" \
                     "397828372d363c78373e783a393b3736";
     char expect[] = "Cooking MC's like a pound of bacon";
-    char *plaintext = singleByteXORDecode(hex1);
-    SHOULD_BE(!strcmp(plaintext, expect));
+    XOR_NODE *out = singleByteXORDecode(hex1);
+    SHOULD_BE(!strcmp(out->plaintext, expect));
 #ifdef LOGSTATUS
     printf("--------------------\n");
-    /* printf("found key =        %s\n",   true_key); */
-    /* printf("cfreq_score_min = %8.4f\n", cfreq_score_min); */
-    printf("Got:    %s\nExpect: %s\n", plaintext, expect);
+    printf("found key       = 0x%0.2X\n", out->key);
+    printf("cfreq_score_min = %8.4f\n",   out->score);
+    printf("Got:    %s\nExpect: %s\n",    out->plaintext, expect);
 #endif
-    free(plaintext);
+    free(out);
     END_TEST_CASE;
 }
 
@@ -208,13 +208,21 @@ int FileSingleByte1()
 {
     START_TEST_CASE;
     char filename[] = "../data/4.txt";
-    char expect[] = "Cooking MC's like a pound of bacon";
-    char *plaintext = findSingleByteXOR(filename);
-    SHOULD_BE(!strcmp(plaintext, expect));
+    /* char filename[] = "../data/4_test.txt"; */
+    char expect[] = "Now that the party is jumping";
+    XOR_NODE *out = findSingleByteXOR(filename);
+    size_t len1 = strlen(out->plaintext);
+    size_t len2 = strlen(expect);
+    size_t min_str_len = (len1 < len2) ? len1 : len2;
+    SHOULD_BE(!strncmp(out->plaintext, expect, min_str_len));
 #ifdef LOGSTATUS
-    printf("Got:    %s\nExpect: %s\n", plaintext, expect);
+    printf("--------------------\n");
+    printf("Line: %d\n",  out->file_line);
+    printf("found key       = 0x%0.2X\n", out->key);
+    printf("cfreq_score_min = %8.4f\n",   out->score);
+    printf("Got:    %s\nExpect: %s\n",    out->plaintext, expect);
 #endif
-    free(plaintext);
+    free(out);
     END_TEST_CASE;
 }
 /*------------------------------------------------------------------------------
@@ -231,10 +239,10 @@ int main(void)
     RUN_TEST(HexConvert3, "hex2b64_str() test case 2");
     RUN_TEST(FixedXOR1, "fixedXOR() test case 1");
     RUN_TEST(FindFreq1, "countChars() test case 1");
-    RUN_TEST(IsValid1, "isValid() test case 1");
+    RUN_TEST(IsPrintable1, "isprintable() test case 1");
     RUN_TEST(CharFreqScore1, "charFreqScore() test case 1");
     RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1");
-    RUN_TEST(FileSingleByte1, "singleByteXORDecode() test case 1");
+    RUN_TEST(FileSingleByte1, "findSingleByteXOR() test case 1");
 
     /* Count errors */
     if (!fails) {

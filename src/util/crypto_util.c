@@ -156,9 +156,10 @@ int *htoi(char *hex)
 /*------------------------------------------------------------------------------
  *          Determine if string is printable
  *----------------------------------------------------------------------------*/
-int isValid(const char *s)
+int isprintable(const char *s)
 {
-    while (*s && isprint((unsigned char)*s)) s++;
+    while (*s && (isprint((unsigned char)*s) || isspace((unsigned char)*s))) s++;
+    /* if (*s != '\0') printf("Found non-printable: %d\n", *s); */
     return (*s == '\0'); /* non-zero if true, zero if false */
 }
 
@@ -184,5 +185,13 @@ int *init_int(size_t len)
     return buffer;
 }
 
+/*------------------------------------------------------------------------------
+ *         Compare two integers 
+ *----------------------------------------------------------------------------*/
+int compare_int(const void *a, const void *b)
+{
+    /* if a > b, > 0, if a < b, < 0, if a == b, = 0 */
+    return ( *((int*)a) - *((int*)b) );
+}
 /*==============================================================================
  *============================================================================*/

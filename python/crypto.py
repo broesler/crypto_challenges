@@ -161,7 +161,7 @@ def char_freq_score(plaintext):
     freqOrder = get_frequency_order(plaintext)
 
     # Find matches in top N characters
-    N = 22
+    N = 22 # 22 works well
     score = 0
     for ch in etaoin[:N]:
         if ch in freqOrder[:N]:
@@ -234,7 +234,8 @@ def single_byte_XOR_decode(ciphertext):
         # Track maximum score and actual key
         if cfreq_score >= cfreq_score_max:
             cfreq_score_max   = cfreq_score # int
-            true_key          = key         # chr (in hex!)
+            # true_key          = key         # chr (in hex!)
+            true_key          = i         # integer
             plaintext_decrypt = plaintext   # str
 
     # Store output in named tuple

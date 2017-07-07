@@ -134,7 +134,8 @@ def main():
     # Returns namedtuple with fields key, score, decrypt, can also return those
     # fields as individual variables on LHS
     out = crp.single_byte_XOR_decode(ciphertext)
-    test(out.key.decode('hex'), 'X')
+    # test(out.key.decode('hex'), 'X')
+    test(out.key, 0x58)
     test(out.score, 14)
     test(out.decrypt, 'Cooking MC\'s like a pound of bacon')
 

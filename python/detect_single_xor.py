@@ -44,7 +44,8 @@ def main(filename):
             found_line = Nline
 
     print 'Line: \t', found_line
-    print 'Key: \t%s' % chr(int(true_key,16))
+    # print 'Key: \t%s' % chr(int(true_key,16))
+    print 'Key: \t0x%0.2X' % true_key
     print 'Score: \t', cfreq_score_max
     print 'String: \'%s\'' % plaintext_decrypt.strip()
 

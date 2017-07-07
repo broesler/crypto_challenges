@@ -40,13 +40,16 @@ char *htoa(char *str);
 int *htoi(char *hex);
 
 // Determine if string has non-printable characters
-int isValid(const char *s);
+int isprintable(const char *s);
 
 // Initialize string (char array)
 char *init_str(size_t len);
 
 // Initialize integer array
 int *init_int(size_t len);
+
+// Comparison function for sorting
+int compare_int(const void *a, const void *b);
 
 #endif
 //==============================================================================
