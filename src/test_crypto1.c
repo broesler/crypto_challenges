@@ -6,13 +6,14 @@
  *  Description: Tests of cryptography functions in crypto challenges
  *
  *============================================================================*/
+/* System headers */
 #include <math.h>
 #include <string.h>
 
 /* User-defined headers */
 #include "header.h"
 #include "crypto_util.h"
-#include "crypto.h"
+#include "crypto1.h"
 #include "unit_test.h"
 
 /*------------------------------------------------------------------------------
@@ -21,9 +22,15 @@
 int StrToUpper1()
 {
     START_TEST_CASE;
-    char str1[] = "test";
-    SHOULD_BE(!strcmp(strtoupper(str1), "TEST")); /* convert in-place */
-    SHOULD_BE(!strcmp(strtolower(str1), "test"));
+    char str1[] = "test!";
+    SHOULD_BE(!strcmp(strtoupper(str1), "TEST!")); /* convert in-place */
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", strtoupper(str1), "TEST!");
+#endif
+    SHOULD_BE(!strcmp(strtolower(str1), "test!"));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", strtolower(str1), "test!");
+#endif
     END_TEST_CASE;
 }
 
@@ -126,29 +133,14 @@ int FindFreq1()
 {
     START_TEST_CASE;
     char str1[] = "HelLo, World!";
-    CHARFREQ *cf = countChars(str1);
-    SHOULD_BE(cf['H'].letter == 'H');
-    SHOULD_BE(cf['H'].count == 1);
-    SHOULD_BE(cf['e'].letter == 'e');
-    SHOULD_BE(cf['e'].count == 1);
-    SHOULD_BE(cf['l'].letter == 'l');
-    SHOULD_BE(cf['l'].count == 2);
-    SHOULD_BE(cf['L'].letter == 'L');
-    SHOULD_BE(cf['L'].count == 1);
-    SHOULD_BE(cf['o'].letter == 'o');
-    SHOULD_BE(cf['o'].count == 2);
-    SHOULD_BE(cf[' '].letter == ' ');
-    SHOULD_BE(cf[' '].count == 1);
-    SHOULD_BE(cf[','].letter == ',');
-    SHOULD_BE(cf[','].count == 1);
-    SHOULD_BE(cf['W'].letter == 'W');
-    SHOULD_BE(cf['W'].count == 1);
-    SHOULD_BE(cf['r'].letter == 'r');
-    SHOULD_BE(cf['r'].count == 1);
-    SHOULD_BE(cf['d'].letter == 'd');
-    SHOULD_BE(cf['d'].count == 1);
-    SHOULD_BE(cf['!'].letter == '!');
-    SHOULD_BE(cf['!'].count == 1);
+    int *cf = countChars(str1);
+    SHOULD_BE(cf['H'-'A'] == 1);
+    SHOULD_BE(cf['e'-'a'] == 1);
+    SHOULD_BE(cf['L'-'A'] == 3);
+    SHOULD_BE(cf['o'-'a'] == 2);
+    SHOULD_BE(cf['W'-'A'] == 1);
+    SHOULD_BE(cf['r'-'a'] == 1);
+    SHOULD_BE(cf['d'-'a'] == 1);
     free(cf);
     END_TEST_CASE;
 }
@@ -198,17 +190,33 @@ int SingleByte1()
     START_TEST_CASE;
     char hex1[]   = "1b37373331363f78151b7f2b783431333d78" \
                     "397828372d363c78373e783a393b3736";
-    char expect[] = "COOKING MC'S LIKE A POUND OF BACON";
+    char expect[] = "Cooking MC's like a pound of bacon";
     char *plaintext = singleByteXORDecode(hex1);
-    /* compare all uppercase values */
-    SHOULD_BE(!strcmp(strtoupper(plaintext), expect));
+    SHOULD_BE(!strcmp(plaintext, expect));
 #ifdef LOGSTATUS
+    printf("--------------------\n");
+    /* printf("found key =        %s\n",   true_key); */
+    /* printf("cfreq_score_min = %8.4f\n", cfreq_score_min); */
     printf("Got:    %s\nExpect: %s\n", plaintext, expect);
 #endif
     free(plaintext);
     END_TEST_CASE;
 }
 
+/* This function tests the decoding of multiple strings in a file */
+int FileSingleByte1()
+{
+    START_TEST_CASE;
+    char filename[] = "../data/4.txt";
+    char expect[] = "Cooking MC's like a pound of bacon";
+    char *plaintext = findSingleByteXOR(filename);
+    SHOULD_BE(!strcmp(plaintext, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", plaintext, expect);
+#endif
+    free(plaintext);
+    END_TEST_CASE;
+}
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -226,6 +234,7 @@ int main(void)
     RUN_TEST(IsValid1, "isValid() test case 1");
     RUN_TEST(CharFreqScore1, "charFreqScore() test case 1");
     RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1");
+    RUN_TEST(FileSingleByte1, "singleByteXORDecode() test case 1");
 
     /* Count errors */
     if (!fails) {

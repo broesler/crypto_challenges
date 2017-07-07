@@ -21,7 +21,7 @@ CFLAGS = -Wall -pedantic -std=c99
 OPT = -I$(INCLDIR)
 
 # Define source files, utility files (function files)
-SRC = test_crypto1.c crypto.c
+SRC = test_crypto1.c crypto1.c
 UTIL = $(wildcard $(UTILDIR)*.c)
 
 # Define object files

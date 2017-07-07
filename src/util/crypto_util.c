@@ -6,6 +6,8 @@
  *  Description: Utility functions for cryptography challenges
  *
  *============================================================================*/
+#include <ctype.h>
+
 #include "crypto_util.h"
 #include "header.h"
 
@@ -20,6 +22,10 @@ char *strtoupper(char *s)
             *(s+i) -= 32;
         }
         i++;
+        /* option using functions */
+        /* if (islower(*(s+i))) { */
+            /* *(s+i) = toupper(*(s+i)); */
+        /* } */
     }
     return s;
 }
@@ -154,6 +160,28 @@ int isValid(const char *s)
 {
     while (*s && isprint((unsigned char)*s)) s++;
     return (*s == '\0'); /* non-zero if true, zero if false */
+}
+
+/*------------------------------------------------------------------------------
+ *         Allocate memory for string
+ *----------------------------------------------------------------------------*/
+char *init_str(size_t len)
+{
+    char *buffer = malloc(len*sizeof(char));
+    MALLOC_CHECK(buffer);
+    BZERO(buffer, len*sizeof(char));
+    return buffer;
+}
+
+/*------------------------------------------------------------------------------
+ *         Allocate memory for int
+ *----------------------------------------------------------------------------*/
+int *init_int(size_t len)
+{
+    int *buffer = malloc(len*sizeof(int));
+    MALLOC_CHECK(buffer);
+    BZERO(buffer, len*sizeof(int));
+    return buffer;
 }
 
 /*==============================================================================

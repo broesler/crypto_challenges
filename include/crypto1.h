@@ -1,31 +1,28 @@
 //==============================================================================
-//     File: crypto.h
+//     File: crypto1.h
 //  Created: 10/19/2016, 23:24
 //   Author: Bernie Roesler
 //
 //  Description: Utility functions for cryptography challenges
 //=============================================================================
-#ifndef _CRYPTO_H_
-#define _CRYPTO_H_
+#ifndef _CRYPTO1_H_
+#define _CRYPTO1_H_
 
 //------------------------------------------------------------------------------
 //      Constants
 //------------------------------------------------------------------------------
-#define NUM_LETTERS 0xFF
+#define NUM_LETTERS 26
+#define MAX_PAGE_NUM 1000
+#define MAX_WORD_LEN 10000
+
+// Global array
+extern const float ENGLISH_FREQ[];
+
 
 //------------------------------------------------------------------------------
 //      Structures
 //------------------------------------------------------------------------------
-// The character frequency structure contains the letter and its frequency
-typedef struct _CHARFREQ {
-    char letter;
-    int count;
-} CHARFREQ;
 
-// constant array
-// <https://en.wikipedia.org/wiki/Letter_frequency>
-// Indexed [A-Z] - 'A' == 0 -- 26
-extern const float ENGLISH_FREQ[];
 
 //------------------------------------------------------------------------------
 //      Function Definitions
@@ -40,7 +37,7 @@ char *hex2b64_str(char *hex_str);
 char *fixedXOR(char *str1, char *str2);
 
 // Character frequency list
-CHARFREQ *countChars(const char *s);
+int *countChars(const char *s);
 
 // Character frequency score
 float charFreqScore(char *str);
@@ -50,6 +47,9 @@ char *singleByteXOREncode(char *hex, int key);
 
 // Single byte XOR decode
 char *singleByteXORDecode(char *hex);
+
+// Search file for single byte XOR'd string
+char *findSingleByteXOR(char *filename);
 
 #endif
 //==============================================================================
