@@ -21,17 +21,17 @@ CFLAGS = -Wall -pedantic -std=c99
 OPT = -I$(INCLDIR)
 
 # Define source files, utility files (function files)
-SRC_CRYPTO = test_crypto.c crypto.c
+SRC = test_crypto1.c crypto.c
 UTIL = $(wildcard $(UTILDIR)*.c)
 
 # Define object files
-OBJ_CRYPTO = $(SRC_CRYPTO:%.c=%.o) $(UTIL:%.c=%.o) 
+OBJ = $(SRC:%.c=%.o) $(UTIL:%.c=%.o) 
 
 # Define header files
 INCL = $(wildcard $(INCLDIR)*.h)
 
 # Make options
-all: test_crypto
+all: test1
 debug: DEBUG = -DLOGSTATUS -g -ggdb
 debug: all
 
@@ -39,8 +39,8 @@ debug: all
 # 	Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test_crypto: $(OBJ_CRYPTO)
-	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $(OBJ_CRYPTO)
+test1: $(OBJ)
+	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $(OBJ)
 
 # object rules
 %.o: %.c $(INCL)
@@ -56,7 +56,7 @@ clean:
 	rm -f $(UTILDIR)*.o
 	rm -f $(UTILDIR)*.gch
 	rm -rf $(UTILDIR)*.dSYM/
-	rm -f test_crypto
+	rm -f test1
 
 #==============================================================================
 #==============================================================================

@@ -30,7 +30,6 @@ def main(filename):
     cfreq_score_max = 0
     found_line = 0
 
-
     # XOR each line in the file to find most likely candidate
     # Lines are already hex-encoded, so no need to further process them
     for line in fp:
