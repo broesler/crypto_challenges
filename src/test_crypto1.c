@@ -273,19 +273,19 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(StrToUpper1, "strtoupper() test case 1"); */
-    /* RUN_TEST(HexConvert1, "atoh(),htoa() test case 1"); */
-    /* RUN_TEST(HexConvert2, "hex2b64_str() test case 1"); */
-    /* RUN_TEST(HexConvert3, "hex2b64_str() test case 2"); */
-    /* RUN_TEST(FixedXOR1, "fixedXOR() test case 1"); */
+    RUN_TEST(StrToUpper1, "strtoupper() test case 1");
+    RUN_TEST(HexConvert1, "atoh(),htoa() test case 1");
+    RUN_TEST(HexConvert2, "hex2b64_str() test case 1");
+    RUN_TEST(HexConvert3, "hex2b64_str() test case 2");
+    RUN_TEST(FixedXOR1, "fixedXOR() test case 1");
     RUN_TEST(Strnrepeat1, "strnrepeat_hex() test case 1");
-    /* RUN_TEST(FindFreq1, "countChars() test case 1"); */
-    /* RUN_TEST(IsPrintable1, "isprintable() test case 1"); */
-    /* RUN_TEST(CharFreqScore1, "charFreqScore() test case 1"); */
-    /* RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1"); */
+    RUN_TEST(FindFreq1, "countChars() test case 1");
+    RUN_TEST(IsPrintable1, "isprintable() test case 1");
+    RUN_TEST(CharFreqScore1, "charFreqScore() test case 1");
+    RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1");
     /* Don't always run this file test, it's a bit slow */
     /* RUN_TEST(FileSingleByte1, "findSingleByteXOR() test case 1"); */
-    /* RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR() test case 1"); */
+    RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR() test case 1");
 
     /* Count errors */
     if (!fails) {

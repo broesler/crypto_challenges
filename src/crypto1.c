@@ -216,7 +216,9 @@ char *singleByteXOREncode(char *hex, char *key)
     char *key_str = strnrepeat_hex(key, key_len, len);
 
     /* XOR each byte in the ciphertext with the key */
-    return fixedXOR(hex, key_str);
+    char *xor = fixedXOR(hex, key_str);
+    free(key_str);
+    return xor;
 }
 
 /*------------------------------------------------------------------------------
@@ -357,7 +359,9 @@ char *repeatingKeyXOR(char *input_hex, char *key_hex)
     char *key_str = strnrepeat_hex(key_hex, key_len, len);
 
     /* XOR each byte in the ciphertext with the key */
-    return fixedXOR(input_hex, key_str);
+    char *xor = fixedXOR(input_hex, key_str);
+    free(key_str);
+    return xor;
 }
 /*==============================================================================
  *============================================================================*/
