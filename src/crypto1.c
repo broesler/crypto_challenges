@@ -119,6 +119,7 @@ char *fixedXOR(char *str1, char *str2)
            len2 = strlen(str2);
     int hex_xor, hex_int1, hex_int2;
     char hex_chars[3];
+    BZERO(hex_chars, 3);
 
     if (len1 != len2) { ERROR("Input strings must be the same length!"); }
 
@@ -146,10 +147,11 @@ int *countChars(const char *s)
     /* initialize array */
     int *cf = init_int(NUM_LETTERS);
 
-    /* Get frequency of letters in the string */
+    /* Count occurrences letters in the string */
     while (*s) {
         if      (*s >= 'A' && *s <= 'Z') { cf[*s-'A']++; }
         else if (*s >= 'a' && *s <= 'z') { cf[*s-'a']++; }
+        else if (*s == 32) { cf[NUM_LETTERS-1]++; } /* count spaces */
         s++;
     }
     return cf;
@@ -161,8 +163,11 @@ int *countChars(const char *s)
 float charFreqScore(char *str)
 {
     const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";  /* acceptable chars */
-    int len = strlen(etaoin);
-    float observed = 0.0,
+    float N = 0,
+          Nl = 0,
+          letter_frac = 1,
+          score = 1.0e9,
+          observed = 0.0,
           expected = 0.0,
           chi_sq = 0.0;
 
@@ -170,46 +175,45 @@ float charFreqScore(char *str)
     int *cf = countChars(str);
 
     /* Calculate score via chi-squared test */
-    float slen = (float)strlen(str); /* all chars in array */
+    N = (float)strlen(str); /* all chars in array */
 
-    /* Calculate slen just counting letters -- no difference in result */
-    /* float slen = 0; */
-    /* for (int j = 0; j < NUM_LETTERS; j++) { slen += (float)cf[j]; } */
+    /* Count just letters in string */
+    for (int j = 0; j < NUM_LETTERS; j++) { 
+        Nl += (float)cf[j]; 
+    }
+
+    /* Fraction of string that is just letters */
+    letter_frac = Nl/N;
 
     /* Sum the chi^2 values for each alphabetic character */
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < strlen(etaoin); i++) {
         int ch_ind = etaoin[i];
-        observed = cf[ch_ind-'A'];                  /* observed count */
-        expected = ENGLISH_FREQ[ch_ind-'A'] * slen; /* expected in English */
+        observed = cf[ch_ind-'A'];               /* observed count */
+        expected = ENGLISH_FREQ[ch_ind-'A'] * N; /* expected in English */
 
         /* sum actual letter counts, not frequencies */
         chi_sq += (observed - expected)*(observed - expected) / expected;
     }
+    
+    /* Weight strings with more letter in them (vs non-letter chars) */
+    score = chi_sq / (letter_frac*letter_frac);
 
     free(cf);
-    return chi_sq;
+    return score;
 }
 
 /*------------------------------------------------------------------------------
  *         Encode a string with a single byte XOR cipher 
  *----------------------------------------------------------------------------*/
-char *singleByteXOREncode(char *hex, int key_int)
+char *singleByteXOREncode(char *hex, char *key)
 {
     size_t len = strlen(hex);
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
-    if ((key_int < 0x00) || (key_int >= 0x100)) { ERROR("key is outside of valid range!"); }
-
-    int nbyte = len/2;
-    char key[3],            /* i.e. 0x01 --> '01' */
-         key_str[len+1];    /* i.e. if hex == "4D616E", key_str = "010101" */
-    BZERO(key, 3);
-    BZERO(key_str, len+1);
-
-    /* repeat key for each byte of input, so only one XOR is needed */
-    snprintf(key, 3, "%0.2X", key_int);
-    for (int j = 0; j < nbyte; j++) {
-        strncat(key_str, key, 2);
+    size_t key_len = strlen(key);
+    if ((len & 1) || (key_len & 1)) { 
+        ERROR("Input string is not a valid hex string!"); 
     }
+
+    char *key_str = strnrepeat_hex(key, key_len, len);
 
     /* XOR each byte in the ciphertext with the key */
     return fixedXOR(hex, key_str);
@@ -235,17 +239,20 @@ XOR_NODE *singleByteXORDecode(char *hex)
     BZERO(out->plaintext, sizeof(out->plaintext));
     out->score = FLT_MAX; /* initialize to large number */
 
+    char key[3];            /* i.e. 0x01 --> '01' */
+    BZERO(key, 3);
+
     /* test each possible character byte */
-    /* for (int i = 0x35; i < 0x36; i++) { #<{(| actual key for 4.txt |)}># */
     for (int i = 0x00; i < 0x100; i++) {
-        char *xor = singleByteXOREncode(hex, i); /* Decode hex string */
+        snprintf(key, 3, "%0.2X", i);
+        char *xor = singleByteXOREncode(hex, key); /* Decode hex string */
         char *ptext = htoa(xor);                 /* Convert to ASCII text */
         float cfreq_score = FLT_MAX;             /* initialize to high value */
 
         /* Make sure string is printable */
         if (isprintable(ptext)) {
             cfreq_score = charFreqScore(ptext);  /* calculate string score */
-            ptext[strcspn(ptext, "\n")] = 0;     /* remove trailing '\n' */
+            ptext[strcspn(ptext, "\n")] = 0;     /* remove any trailing '\n' */
 #ifdef LOGSTATUS
             printf("%0.2X\t%s\t%10.4e\n", i, ptext, cfreq_score);
 #endif
@@ -273,8 +280,10 @@ XOR_NODE *findSingleByteXOR(char *filename)
 {
     XOR_NODE *out = NULL;
     FILE *fp = NULL;
-    char *buffer = NULL;
+    char buffer[MAX_WORD_LEN];
     char message[2*MAX_PAGE_NUM];
+    BZERO(buffer, MAX_WORD_LEN);
+    BZERO(message, 2*MAX_PAGE_NUM);
 
     /* Allocate memory for the output */
     out = NEW(XOR_NODE);
@@ -295,16 +304,17 @@ XOR_NODE *findSingleByteXOR(char *filename)
         exit(-1);
     }
 
-    /* Initialize buffer */
-    buffer = init_str(MAX_WORD_LEN);
-
     int file_line = 1;
 
     /* For each line, run singleByteXORDecode, return {key, string, score} */
-    while ( (buffer = fgets(buffer, MAX_WORD_LEN*sizeof(char), fp)) )
+    while ( fgets(buffer, sizeof(buffer), fp) )
     {
-        printf("---------- Line: %3d\n", file_line);
         buffer[strcspn(buffer, "\n")] = 0;  /* remove trailing '\n' */
+        /* printf("%s\n", buffer); */
+
+#ifdef LOGSTATUS
+        printf("---------- Line: %3d\n", file_line);
+#endif
 
         /* Find most likely key for this line */
         XOR_NODE *temp = singleByteXORDecode(buffer);
@@ -317,16 +327,37 @@ XOR_NODE *findSingleByteXOR(char *filename)
                 out->score = temp->score;
                 out->file_line = file_line;
             }
-        } else { printf("\x1B[A\r"); /* erase title line */ }
-
-        free(temp);
+        } 
+#ifdef LOGSTATUS
+        else { printf("\x1B[A\r"); /* move cursor up and overwrite */ }
+#endif
+        free(temp); /* clean-up */
         file_line++;
     }
 
-    printf("\n");
-    free(buffer);
+#ifdef LOGSTATUS
+    printf("\x1B[A\r\n\n"); /* erase last title line */ 
+#endif
     fclose(fp);
     return out;
+}
+
+
+/*------------------------------------------------------------------------------
+ *         Encode hex string using repeating-key XOR 
+ *----------------------------------------------------------------------------*/
+char *repeatingKeyXOR(char *input_hex, char *key_hex)
+{
+    size_t len = strlen(input_hex);
+    size_t key_len = strlen(key_hex);
+    if ((len & 1) || (key_len & 1)) { 
+        ERROR("Input string is not a valid hex string!"); 
+    }
+
+    char *key_str = strnrepeat_hex(key_hex, key_len, len);
+
+    /* XOR each byte in the ciphertext with the key */
+    return fixedXOR(input_hex, key_str);
 }
 /*==============================================================================
  *============================================================================*/

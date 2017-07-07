@@ -48,8 +48,8 @@ char *init_str(size_t len);
 // Initialize integer array
 int *init_int(size_t len);
 
-// Comparison function for sorting
-int compare_int(const void *a, const void *b);
+// Repeat string N times
+char *strnrepeat_hex(char *src, size_t src_len, size_t len);
 
 #endif
 //==============================================================================

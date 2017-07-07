@@ -128,6 +128,23 @@ int FixedXOR1()
     END_TEST_CASE;
 }
 
+/* Test the string repeat function */
+int Strnrepeat1()
+{
+    START_TEST_CASE;
+    char *key_hex = atoh("ICE");
+    char *key_str = strnrepeat_hex(key_hex, strlen(key_hex), 16);
+    char *expect = atoh("ICEICEIC");
+    SHOULD_BE(!strcmp(key_str, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", key_str, expect);
+#endif
+    free(expect);
+    free(key_hex);
+    free(key_str);
+    END_TEST_CASE;
+}
+
 /* This function tests the function to find character frequency in a string */
 int FindFreq1()
 {
@@ -174,8 +191,9 @@ int CharFreqScore1()
     START_TEST_CASE;
     char str1[] = "Anything less than the best is a felony.";
     float test = charFreqScore(str1);
-    float tol = 1e-6;
-    float expect = 15.6190082292009702; /* length == all chars */
+    float tol = 1e-10;
+    float expect = 16.430251917634155; /* new score according to <char_test.m> */
+    /* float expect = 15.6190082292009702; #<{(| length == all chars |)}># */
     /* float expect = 17.5239402865012082; #<{(| length == just letters |)}># */
     SHOULD_BE(fabsf(test - expect) < tol); 
 #ifdef LOGSTATUS
@@ -194,10 +212,9 @@ int SingleByte1()
     XOR_NODE *out = singleByteXORDecode(hex1);
     SHOULD_BE(!strcmp(out->plaintext, expect));
 #ifdef LOGSTATUS
-    printf("--------------------\n");
-    printf("found key       = 0x%0.2X\n", out->key);
-    printf("cfreq_score_min = %8.4f\n",   out->score);
-    printf("Got:    %s\nExpect: %s\n",    out->plaintext, expect);
+    printf("key   = 0x%0.2X\n",        out->key);
+    printf("score = %8.4f\n",          out->score);
+    printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
     free(out);
     END_TEST_CASE;
@@ -216,15 +233,38 @@ int FileSingleByte1()
     size_t min_str_len = (len1 < len2) ? len1 : len2;
     SHOULD_BE(!strncmp(out->plaintext, expect, min_str_len));
 #ifdef LOGSTATUS
-    printf("--------------------\n");
-    printf("Line: %d\n",  out->file_line);
-    printf("found key       = 0x%0.2X\n", out->key);
-    printf("cfreq_score_min = %8.4f\n",   out->score);
-    printf("Got:    %s\nExpect: %s\n",    out->plaintext, expect);
+    printf("line  = %3d\n",            out->file_line);
+    printf("key   = 0x%0.2X\n",        out->key);
+    printf("score = %8.4f\n",          out->score);
+    printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
     free(out);
     END_TEST_CASE;
 }
+
+/* This function tests the implementation of repeating-key XOR */
+int RepeatingKeyXOR1()
+{
+    START_TEST_CASE;
+    char input[]  = "Burning 'em, if you ain't quick and nimble\n" \
+                    "I go crazy when I hear a cymbal";
+    char key[] = "ICE";
+    char *input_hex = atoh(input);
+    char *key_hex = atoh(key);
+    char expect[] = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d" \
+                    "63343c2a26226324272765272a282b2f20430a652e2c652a31" \
+                    "24333a653e2b2027630c692b20283165286326302e27282f";
+    char *xor = repeatingKeyXOR(input_hex, key_hex);
+    SHOULD_BE(!strcmp(xor, strtoupper(expect)));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", xor, expect);
+#endif
+    free(input_hex);
+    free(key_hex);
+    free(xor);
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -233,16 +273,19 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(StrToUpper1, "strtoupper() test case 1");
-    RUN_TEST(HexConvert1, "atoh(),htoa() test case 1");
-    RUN_TEST(HexConvert2, "hex2b64_str() test case 1");
-    RUN_TEST(HexConvert3, "hex2b64_str() test case 2");
-    RUN_TEST(FixedXOR1, "fixedXOR() test case 1");
-    RUN_TEST(FindFreq1, "countChars() test case 1");
-    RUN_TEST(IsPrintable1, "isprintable() test case 1");
-    RUN_TEST(CharFreqScore1, "charFreqScore() test case 1");
-    RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1");
-    RUN_TEST(FileSingleByte1, "findSingleByteXOR() test case 1");
+    /* RUN_TEST(StrToUpper1, "strtoupper() test case 1"); */
+    /* RUN_TEST(HexConvert1, "atoh(),htoa() test case 1"); */
+    /* RUN_TEST(HexConvert2, "hex2b64_str() test case 1"); */
+    /* RUN_TEST(HexConvert3, "hex2b64_str() test case 2"); */
+    /* RUN_TEST(FixedXOR1, "fixedXOR() test case 1"); */
+    RUN_TEST(Strnrepeat1, "strnrepeat_hex() test case 1");
+    /* RUN_TEST(FindFreq1, "countChars() test case 1"); */
+    /* RUN_TEST(IsPrintable1, "isprintable() test case 1"); */
+    /* RUN_TEST(CharFreqScore1, "charFreqScore() test case 1"); */
+    /* RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1"); */
+    /* Don't always run this file test, it's a bit slow */
+    /* RUN_TEST(FileSingleByte1, "findSingleByteXOR() test case 1"); */
+    /* RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR() test case 1"); */
 
     /* Count errors */
     if (!fails) {

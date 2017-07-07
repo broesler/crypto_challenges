@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------
 //      Constants
 //------------------------------------------------------------------------------
-#define NUM_LETTERS 26
+#define NUM_LETTERS 27      // include space!!
 #define MAX_PAGE_NUM 1000
 #define MAX_WORD_LEN 10000
 
@@ -50,13 +50,16 @@ int *countChars(const char *s);
 float charFreqScore(char *str);
 
 // Single byte XOR encode
-char *singleByteXOREncode(char *hex, int key);
+char *singleByteXOREncode(char *hex, char *key);
 
 // Single byte XOR decode
 XOR_NODE *singleByteXORDecode(char *hex);
 
 // Search file for single byte XOR'd string
 XOR_NODE *findSingleByteXOR(char *filename);
+
+// Encode hex string using repeating-key XOR
+char *repeatingKeyXOR(char *input_hex, char *key_hex);
 
 #endif
 //==============================================================================

@@ -168,9 +168,10 @@ int isprintable(const char *s)
  *----------------------------------------------------------------------------*/
 char *init_str(size_t len)
 {
-    char *buffer = malloc(len*sizeof(char));
+    size_t nbyte = len+1;
+    char *buffer = malloc(nbyte*sizeof(char));
     MALLOC_CHECK(buffer);
-    BZERO(buffer, len*sizeof(char));
+    BZERO(buffer, nbyte*sizeof(char));
     return buffer;
 }
 
@@ -186,12 +187,18 @@ int *init_int(size_t len)
 }
 
 /*------------------------------------------------------------------------------
- *         Compare two integers 
+ *         Repeat hex string 
  *----------------------------------------------------------------------------*/
-int compare_int(const void *a, const void *b)
+char *strnrepeat_hex(char *src, size_t src_len, size_t len)
 {
-    /* if a > b, > 0, if a < b, < 0, if a == b, = 0 */
-    return ( *((int*)a) - *((int*)b) );
+    char *dest = init_str(len);
+
+    /* Assumes strings are hex-encoded, so 2 chars == 1 byte */
+    for (int i = 0; i < len/2; i++) {
+        strncat(dest, &src[2*(i % (src_len/2))], 2);
+    }
+
+    return dest;
 }
 /*==============================================================================
  *============================================================================*/
