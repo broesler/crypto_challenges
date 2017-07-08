@@ -282,10 +282,15 @@ int SingleByte1()
                     "397828372d363c78373e783a393b3736";
     char expect[] = "Cooking MC's like a pound of bacon";
     XOR_NODE *out = singleByteXORDecode(hex1);
+    SHOULD_BE(out->key == 0x58);
     SHOULD_BE(!strcmp(out->plaintext, expect));
+    float tol = 1e-4;
+    float score_expect = 34.2697034515381986;
+    SHOULD_BE(fabsf(out->score - score_expect) < tol);
 #ifdef LOGSTATUS
     printf("key   = 0x%0.2X\n",        out->key);
-    printf("score = %8.4f\n",          out->score);
+    printf("score        = %20.16f\n",          out->score);
+    printf("score_expect = %20.16f\n",          score_expect);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
     free(out);
@@ -375,7 +380,7 @@ int main(void)
     RUN_TEST(CharFreqScore1,   "charFreqScore()       ");
     RUN_TEST(SingleByte1,      "singleByteXORDecode() ");
     /* Don't always run this file test, it's a bit slow */
-    /* RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   "); */
+    RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   ");
     RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     ");
     RUN_TEST(HammingDist1,     "hamming_dist()        ");
 

@@ -12,7 +12,7 @@
 #include "crypto_util.h"
 #include "header.h"
 
-/* Global variable */
+/* Globals */
 // <https://en.wikipedia.org/wiki/Letter_frequency>
 // Indexed [A-Z] - 'A' == 0 -- 25
 const float ENGLISH_FREQ[] = 
@@ -236,10 +236,11 @@ float charFreqScore(const char *str)
     float N = 0,
           Nl = 0,
           letter_frac = 1,
-          score = 1.0e9,
+          score = FLT_MAX,
           observed = 0.0,
           expected = 0.0,
-          chi_sq = 0.0;
+          chi_sq = 0.0,
+          tol = 1e-16;
 
     /* Count frequency of each letter in string */
     int *cf = countChars(str);
@@ -254,6 +255,7 @@ float charFreqScore(const char *str)
 
     /* Fraction of string that is just letters */
     letter_frac = Nl/N;
+    if (letter_frac < tol) { return score; } /* no letters present */
 
     /* Sum the chi^2 values for each alphabetic character */
     for (int i = 0; i < strlen(etaoin); i++) {

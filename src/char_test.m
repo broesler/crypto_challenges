@@ -11,6 +11,7 @@ clear; close all;
 str = { upper('Anything less than the best is a felony.');
         upper('Now that the party is jumping ');
         upper('nOWTHATTHEPARTYISJUMPING*');
+        upper('Cooking MC''s like a pound of bacon');
         upper('Hs>u1Y/orf:AP|m@?v:9') };
 
 alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -20,6 +21,7 @@ Ns = numel(str);
 cnt   = zeros(Na,Ns);
 chi_sq = zeros(Na,Ns);
 Chi_sq = zeros(1,Ns);
+score = zeros(1,Ns);
 
 english_freq = [ 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, ...
           0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, ...
@@ -43,8 +45,9 @@ for j = 1:Ns
     % multiply by N for standard definition ("counts" not "freqs")
     Chi_sq(j) = sum(chi_sq(:,j));
     letter_frac = Nl/N;
-    score = Chi_sq(j) / letter_frac^2
+    score(j) = Chi_sq(j) / letter_frac^2;
 end
 
+fprintf('%20.16f\n', score(:));
 %===============================================================================
 %===============================================================================
