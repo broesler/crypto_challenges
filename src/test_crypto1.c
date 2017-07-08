@@ -40,7 +40,7 @@ int HexConvert1()
     START_TEST_CASE;
     char str1[] = "Man";
     char *hex = atoh(str1);  /* any atoh call must be free'd! */
-    SHOULD_BE(!strcmp(hex,"4D616E"));    /* convert to hex */
+    SHOULD_BE(!strcasecmp(hex,"4D616E"));    /* convert to hex */
     char *str2 = htoa(hex);
     SHOULD_BE(!strcmp(str2,str1));       /* convert back to ascii */
     free(hex);
@@ -100,6 +100,62 @@ int HexConvert3()
     END_TEST_CASE;
 }
 
+/* This tests conversion of a base64 string to a hex string */
+int B64Convert1()
+{
+    START_TEST_CASE;
+    char b641[] = "TWFu";
+    char *hex1 = b642hex_str(b641);
+    char *str1 = htoa(hex1);
+    SHOULD_BE(!strcmp(str1, "Man"));
+#ifdef LOGSTATUS
+    printf("%-5s => %-7s => %-4s\n", b641, hex1, str1);
+#endif
+    char b642[] = "TWE=";
+    char *hex2 = b642hex_str(b642);
+    char *str2 = htoa(hex2);
+    SHOULD_BE(!strcmp(str2, "Ma"));
+#ifdef LOGSTATUS
+    printf("%-5s => %-7s => %-4s\n", b642, hex2, str2);
+#endif
+    char b643[] = "TQ==";
+    char *hex3 = b642hex_str(b643);
+    char *str3 = htoa(hex3);
+    SHOULD_BE(!strcmp(str3, "M"));
+#ifdef LOGSTATUS
+    printf("%-5s => %-7s => %-4s\n", b643, hex3, str3);
+#endif
+    free(hex1); 
+    free(hex2); 
+    free(hex3); 
+    free(str1);
+    free(str2);
+    free(str3);
+    END_TEST_CASE;
+}
+
+/* This tests conversion of a base64 string to a hex string */
+int B64Convert2()
+{
+    START_TEST_CASE;
+    char b641[] = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsa" \
+                  "WtlIGEgcG9pc29ub3VzIG11c2hyb29t";
+    char *hex1 = b642hex_str(b641);
+    char expect[] = "49276d206b696c6c696e6720796f75722" \
+                    "0627261696e206c696b65206120706f69" \
+                    "736f6e6f7573206d757368726f6f6d";
+    SHOULD_BE(!strncasecmp(hex1, expect, strlen(expect)));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", hex1, expect);
+    char *ascii = htoa(expect);
+    printf("ascii: %s\n", ascii);
+    free(ascii);
+#endif
+    free(hex1);
+    END_TEST_CASE;
+}
+
+
 /* This tests the XOR of two hex-encoded strings, as well as printing their
  * ASCII conversions */
 int FixedXOR1()
@@ -113,7 +169,7 @@ int FixedXOR1()
     char *ascii1 = htoa(hex1);
     char *ascii2 = htoa(hex2);
     char *ascii3 = htoa(xor);
-    SHOULD_BE(!strcmp(xor, expect));
+    SHOULD_BE(!strcasecmp(xor, expect));
     /* SHOULD_BE(!strcmp(ascii1, "KSSP")); // sketchy, non-printables */
     SHOULD_BE(!strcmp(ascii2, "hit the bull's eye"));
     SHOULD_BE(!strcmp(ascii3, "the kid don't play"));
@@ -135,7 +191,7 @@ int Strnrepeat1()
     char *key_hex = atoh("ICE");
     char *key_str = strnrepeat_hex(key_hex, strlen(key_hex), 16);
     char *expect = atoh("ICEICEIC");
-    SHOULD_BE(!strcmp(key_str, expect));
+    SHOULD_BE(!strcasecmp(key_str, expect));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", key_str, expect);
 #endif
@@ -255,7 +311,7 @@ int RepeatingKeyXOR1()
                     "63343c2a26226324272765272a282b2f20430a652e2c652a31" \
                     "24333a653e2b2027630c692b20283165286326302e27282f";
     char *xor = repeatingKeyXOR(input_hex, key_hex);
-    SHOULD_BE(!strcmp(xor, strtoupper(expect)));
+    SHOULD_BE(!strcasecmp(xor, expect)); /* hex strings don't care about case */
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", xor, expect);
 #endif
@@ -273,19 +329,21 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(StrToUpper1, "strtoupper() test case 1");
-    RUN_TEST(HexConvert1, "atoh(),htoa() test case 1");
-    RUN_TEST(HexConvert2, "hex2b64_str() test case 1");
-    RUN_TEST(HexConvert3, "hex2b64_str() test case 2");
-    RUN_TEST(FixedXOR1, "fixedXOR() test case 1");
-    RUN_TEST(Strnrepeat1, "strnrepeat_hex() test case 1");
-    RUN_TEST(FindFreq1, "countChars() test case 1");
-    RUN_TEST(IsPrintable1, "isprintable() test case 1");
-    RUN_TEST(CharFreqScore1, "charFreqScore() test case 1");
-    RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1");
+    RUN_TEST(StrToUpper1,      "strtoupper()          ");
+    RUN_TEST(HexConvert1,      "atoh(),htoa()         ");
+    RUN_TEST(HexConvert2,      "hex2b64_str() 1       ");
+    RUN_TEST(HexConvert3,      "hex2b64_str() 2       ");
+    RUN_TEST(B64Convert1,      "b642hex_str() 1       ");
+    RUN_TEST(B64Convert2,      "b642hex_str() 2       ");
+    RUN_TEST(FixedXOR1,        "fixedXOR()            ");
+    RUN_TEST(Strnrepeat1,      "strnrepeat_hex()      ");
+    RUN_TEST(FindFreq1,        "countChars()          ");
+    RUN_TEST(IsPrintable1,     "isprintable()         ");
+    RUN_TEST(CharFreqScore1,   "charFreqScore()       ");
+    RUN_TEST(SingleByte1,      "singleByteXORDecode() ");
     /* Don't always run this file test, it's a bit slow */
     /* RUN_TEST(FileSingleByte1, "findSingleByteXOR() test case 1"); */
-    RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR() test case 1");
+    RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     ");
 
     /* Count errors */
     if (!fails) {

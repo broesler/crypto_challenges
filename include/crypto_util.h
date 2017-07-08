@@ -49,7 +49,10 @@ char *init_str(size_t len);
 int *init_int(size_t len);
 
 // Repeat string N times
-char *strnrepeat_hex(char *src, size_t src_len, size_t len);
+char *strnrepeat_hex(const char *src, size_t src_len, size_t len);
+
+// Get index of character in string 
+size_t indexof(const char *str, char c);
 
 #endif
 //==============================================================================

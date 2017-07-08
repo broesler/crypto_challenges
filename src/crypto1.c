@@ -21,19 +21,20 @@ const float ENGLISH_FREQ[] =
       0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \
       0.00978, 0.02360, 0.00150, 0.01974, 0.00074 };
 
+const char B64_LUT[] = 
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+
 /*------------------------------------------------------------------------------
  *      Convert hexadecimal string to base64 string
  *----------------------------------------------------------------------------*/
 char *hex2b64_str(char *hex_str)
 {
-    const char *b64_lut = 
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
     int nchr_in,
         nbyte_in,
         nbyte_out,
         nchr_out,
-        b64_int;
-    int hex_int;
+        b64_int,
+        hex_int;
 
     if (hex_str) {
         nchr_in = strlen(hex_str);      /* Number of chars in encoded string */
@@ -61,7 +62,7 @@ char *hex2b64_str(char *hex_str)
 
         /* Add first character using first 6 bits of first byte */
         b64_int = (hex_int & 0xFC) >> 2;
-        strncat(b64_str, &b64_lut[b64_int], 1);
+        strncat(b64_str, &B64_LUT[b64_int], 1);
 
         /* get last 2 bits of first byte */
         b64_int = (hex_int & 0x03) << 4;
@@ -74,7 +75,7 @@ char *hex2b64_str(char *hex_str)
             /* Add second character using first 4 bits of second byte and
              * combine with 2 from above */
             b64_int |= (hex_int & 0xF0) >> 4;
-            strncat(b64_str, &b64_lut[b64_int], 1);
+            strncat(b64_str, &B64_LUT[b64_int], 1);
 
             /* get last 4 bits of second byte */
             b64_int = (hex_int & 0x0F) << 2;
@@ -86,28 +87,96 @@ char *hex2b64_str(char *hex_str)
                 /* Add third character */
                 /* get first 2 bits of third byte and combine with 4 from above */
                 b64_int |= (hex_int & 0xC0) >> 6;
-                strncat(b64_str, &b64_lut[b64_int], 1);
+                strncat(b64_str, &B64_LUT[b64_int], 1);
 
                 /* Add fourth character using last 6 bits of third byte */
                 b64_int = (hex_int & 0x3F);
-                strncat(b64_str, &b64_lut[b64_int], 1);
+                strncat(b64_str, &B64_LUT[b64_int], 1);
 
             /* There are only 2 bytes of input, so interpret 3rd character with
              * a "0x00" byte appended, and pad with an '=' character */
             } else {
-                strncat(b64_str, &b64_lut[b64_int], 1);
+                strncat(b64_str, &B64_LUT[b64_int], 1);
                 strncat(b64_str, "=", 1);
             }
 
         /* There is only 1 byte of input, so interpret 2nd character with two
          * "0x00" bytes appended, and pad with an '=' character */
         } else {
-            strncat(b64_str, &b64_lut[b64_int], 1);
+            strncat(b64_str, &B64_LUT[b64_int], 1);
             strncat(b64_str, "==", 2);
         }
     }
 
     return b64_str;
+}
+
+/*------------------------------------------------------------------------------
+ *         Convert base64 string to hexadecimal 
+ *----------------------------------------------------------------------------*/
+char *b642hex_str(char *b64_str)
+{
+    size_t nchr_in,
+           nbyte,
+           nchr_out;
+    char hex_chr[3];
+    BZERO(hex_chr, 3);
+    char *hex_str = NULL;
+    int hex_int, i;
+
+    /* Input checking */
+    if (b64_str) {
+        nchr_in = strlen(b64_str);
+    } else {
+        return NULL;
+    }
+
+    if (nchr_in % 4) {
+        ERROR("Input string is not a valid b64 string!");
+    } else {
+        /* 4 b64 chars --> 3 bytes */
+        /* check for "=" padding in b64 string -- if we find one, s will point
+         * to the end of the string, or 2nd to last character.   */
+        char *s = strchr(b64_str, '=');
+        nbyte = nchr_in*3/4 - (s ? (nchr_in - (s - b64_str)) : 0); 
+    }
+
+    /* hex output is longer, so we'll have exactly the right bytes */
+    nchr_out = 2*nbyte;  /* hex takes 2 chars per byte */
+
+    /* Get integer array from B64_LUT */
+    int *b64_int = init_int(nchr_in);         /* byte array */
+    for (i = 0; i < nchr_in; i++) {
+        b64_int[i] = indexof(B64_LUT, b64_str[i]);
+    }
+
+    hex_str = init_str(nchr_out);     /* character array */
+
+    /* Operate in chunks of 4 bytes in ==> 3 bytes out */
+    for (i = 0; i < nchr_in; i+=4) {
+        /* First char of output */
+        /* NOTE mask off MSBs for left-shifts so we don't keep large #s */
+        hex_int = ((b64_int[i] << 2) & 0xFF) | (b64_int[i+1] >> 4);
+        snprintf(hex_chr, 3, "%0.2X", hex_int);
+        strncat(hex_str, hex_chr, 2);
+
+        /* Second char */
+        if ((b64_int[i+2] < 64) && (b64_int[i+2] > 0)) {
+            hex_int = ((b64_int[i+1] << 4) & 0xFF) | (b64_int[i+2] >> 2);
+            snprintf(hex_chr, 3, "%0.2X", hex_int);
+            strncat(hex_str, hex_chr, 2);
+
+            /* Third char */
+            if ((b64_int[i+3] < 64) && (b64_int[i+3] > 0)) {
+                hex_int = ((b64_int[i+2] << 6) & 0xFF) | b64_int[i+3];
+                snprintf(hex_chr, 3, "%0.2X", hex_int);
+                strncat(hex_str, hex_chr, 2);
+            }
+        }
+    }
+
+    free(b64_int);
+    return hex_str;
 }
 
 /*------------------------------------------------------------------------------
@@ -343,7 +412,6 @@ XOR_NODE *findSingleByteXOR(char *filename)
     fclose(fp);
     return out;
 }
-
 
 /*------------------------------------------------------------------------------
  *         Encode hex string using repeating-key XOR 

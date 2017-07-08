@@ -94,16 +94,17 @@ for j in range(0, keylen):
     str_trans = ''.join([fstr_hex[i:i+2] for i in range(2*j, N, 2*keylen)])
 
     out = crp.single_byte_XOR_decode(str_trans)
-    key += out.key
+    key += chr(out.key)
     # print 'score: ', out.score
     # print 'decrypt: ', out.decrypt
 
-print key.decode('hex')
+# print key.decode('hex')
+print key
 
 #--------------------------------------------------------------------------
 #        XOR encrypted text with key to get decrypted text!
 #--------------------------------------------------------------------------
-plaintext = crp.repeating_key_XOR(fstr_hex, key)
+plaintext = crp.repeating_key_XOR(fstr_hex, key.encode('hex'))
 print plaintext.decode('hex')
 
 #==============================================================================

@@ -15,8 +15,9 @@
 #define MAX_PAGE_NUM 1000
 #define MAX_WORD_LEN 10000
 
-// Global array
+// Globals
 extern const float ENGLISH_FREQ[];
+extern const char  B64_LUT[];
 
 //------------------------------------------------------------------------------
 //      Structures
@@ -38,7 +39,7 @@ typedef struct _XOR_NODE XOR_NODE;
 char *hex2b64_str(char *hex_str);
 
 // Convert base-64 string to hex string??
-// char *b642hex_str(char *b64_str);
+char *b642hex_str(char *b64_str);
 
 // XOR two strings
 char *fixedXOR(char *str1, char *str2);

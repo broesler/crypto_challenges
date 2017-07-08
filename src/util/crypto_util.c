@@ -189,7 +189,7 @@ int *init_int(size_t len)
 /*------------------------------------------------------------------------------
  *         Repeat hex string 
  *----------------------------------------------------------------------------*/
-char *strnrepeat_hex(char *src, size_t src_len, size_t len)
+char *strnrepeat_hex(const char *src, size_t src_len, size_t len)
 {
     char *dest = init_str(len);
 
@@ -199,6 +199,15 @@ char *strnrepeat_hex(char *src, size_t src_len, size_t len)
     }
 
     return dest;
+}
+
+/*------------------------------------------------------------------------------
+ *         Get index of character in string 
+ *----------------------------------------------------------------------------*/
+size_t indexof(const char *str, char c)
+{
+    char *s = strchr(str, c);
+    return (s ? (s - str) : -1);
 }
 /*==============================================================================
  *============================================================================*/
