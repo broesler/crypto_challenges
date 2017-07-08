@@ -44,7 +44,7 @@ char *strtolower(char *s)
 *-----------------------------------------------------------------------------*/
 int getHexByte(const char *hex)
 {
-    int out = 0,
+    int u = 0,
         c = 0;
 
     int nmax = (strlen(hex) > 1) ? 2 : 1;
@@ -57,11 +57,11 @@ int getHexByte(const char *hex)
         else if (c >= '0' && c <= '9') { c = c - '0'; }
         else { ERROR("Invalid hex character!"); } 
 
-        out *= 16;
-        out += (int)c;
+        u *= 16;
+        u += (int)c;
         hex++;
     }
-    return out;
+    return u;
 }
 
 /*------------------------------------------------------------------------------ 
