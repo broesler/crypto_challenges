@@ -284,7 +284,7 @@ int main(void)
     RUN_TEST(CharFreqScore1, "charFreqScore() test case 1");
     RUN_TEST(SingleByte1, "singleByteXORDecode() test case 1");
     /* Don't always run this file test, it's a bit slow */
-    /* RUN_TEST(FileSingleByte1, "findSingleByteXOR() test case 1"); */
+    RUN_TEST(FileSingleByte1, "findSingleByteXOR() test case 1");
     RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR() test case 1");
 
     /* Count errors */
