@@ -39,18 +39,46 @@ char *strtolower(char *s)
     return s;
 }
 
+/*------------------------------------------------------------------------------
+*         Get an integer from 2 hex characters in a string
+*-----------------------------------------------------------------------------*/
+int getHexByte(const char *hex)
+{
+    int out = 0,
+        c = 0;
+
+    int nmax = (strlen(hex) > 1) ? 2 : 1;
+
+    for (int i = 0; i < nmax; i++)
+    {
+        c = *hex;
+        if      (c >= 'a' && c <= 'f') { c = c - 'a' + 10; } 
+        else if (c >= 'A' && c <= 'F') { c = c - 'A' + 10; } 
+        else if (c >= '0' && c <= '9') { c = c - '0'; }
+        else { ERROR("Invalid hex character!"); } 
+
+        out *= 16;
+        out += (int)c;
+        hex++;
+    }
+    return out;
+}
+
 /*------------------------------------------------------------------------------ 
- *          Get an integer from 2 hex characters in a string
+ *          Get an integer from hex string
  *----------------------------------------------------------------------------*/
 int htoi(const char *s, unsigned long *out)
 {
+    /* Will get integer from ENTIRE hex string. We just want a single byte */
     unsigned long temp = 0;
     int c;
 
-    /* while (*s) */
-    for(; (c = *s) != '\0'; s++)
+    /* Check for leading "0x" */
+    if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) { s+=2; }
+
+    while (*s)
     {
-        /* c = *s; */
+        c = *s;
         if      (c >= 'a' && c <= 'f') { c = c - 'a' + 10; } 
         else if (c >= 'A' && c <= 'F') { c = c - 'A' + 10; } 
         else if (c >= '0' && c <= '9') { c = c - '0'; }
@@ -58,7 +86,7 @@ int htoi(const char *s, unsigned long *out)
 
         temp *= 16;
         temp += (unsigned long)c;
-        /* s++; */
+        s++;
     }
     *out = temp;
     return EXIT_SUCCESS;
@@ -87,7 +115,7 @@ char *atoh(char *str)
 /*------------------------------------------------------------------------------ 
  *          Decode hex-encoded string into ASCII string
  *----------------------------------------------------------------------------*/
-char *htoa(char *hex)
+char *htoa(const char *hex)
 {
     size_t len = strlen(hex);
 
@@ -96,14 +124,11 @@ char *htoa(char *hex)
 
     size_t nbyte = len/2;
     char *str = init_str(nbyte); /* allocate memory */
-    unsigned long x;
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
     for (size_t i = 0; i < nbyte; i++)
     {
-        /* str[i] = (char)getHexByte(hex+2*i); */
-        htoi(hex+2*i, &x);
-        str[i] = (char)x;
+        str[i] = (char)getHexByte(hex+2*i);
     }
 
     return str;
@@ -117,6 +142,7 @@ int isprintable(const char *s)
     while (*s && (isprint((unsigned char)*s) || isspace((unsigned char)*s))) s++;
     return (*s == '\0'); /* non-zero if true, zero if false */
 }
+
 
 /*------------------------------------------------------------------------------
  *         Allocate memory for string
@@ -166,17 +192,17 @@ size_t indexof(const char *str, char c)
 /*------------------------------------------------------------------------------
  *         Hamming weight of hex string 
  *----------------------------------------------------------------------------*/
-unsigned long hamming_weight(char *a)
+size_t hamming_weight(const char *a)
 {
-    unsigned long weight = 0, 
-                  x = 0,
-                  count = 0;
+    size_t weight = 0;
+    int x = 0,
+        count = 0;
 
     /* Wegner (1960), x & x-1 zeros LSB, so repeat until convergence
      * <https://en.wikipedia.org/wiki/Hamming_weight> */
     /* For each byte in string, sum the weights */
     for (size_t i = 0; i < strlen(a); i+=2) { 
-        htoi(a+i, &x); 
+        x = getHexByte(a+i); 
         for (count = 0; x; count++) {
             x &= x - 1;
         }

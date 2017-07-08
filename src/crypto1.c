@@ -27,14 +27,14 @@ const char B64_LUT[] =
 /*------------------------------------------------------------------------------
  *      Convert hexadecimal string to base64 string
  *----------------------------------------------------------------------------*/
-char *hex2b64_str(char *hex_str)
+char *hex2b64_str(const char *hex_str)
 {
     int nchr_in,
         nbyte_in,
         nbyte_out,
         nchr_out,
-        b64_int;
-    unsigned long hex_int;
+        b64_int,
+        hex_int;
 
     if (hex_str) {
         nchr_in = strlen(hex_str);      /* Number of chars in encoded string */
@@ -59,7 +59,7 @@ char *hex2b64_str(char *hex_str)
     /* Operate in chunks of 3 bytes in ==> 4 bytes out */
     for (int i = 0; i < nbyte_in; i+=3) {
         int j = 0;
-        htoi(hex_str+2*i+2*j, &hex_int);
+        hex_int = getHexByte(hex_str+2*i+2*j);
 
         /* Add first character using first 6 bits of first byte */
         b64_int = (hex_int & 0xFC) >> 2;
@@ -71,7 +71,7 @@ char *hex2b64_str(char *hex_str)
         /* if we have more bytes to go */
         if (j+1 < nbyte_in) {
             j++;
-            htoi(hex_str+2*i+2*j, &hex_int);
+            hex_int = getHexByte(hex_str+2*i+2*j);
 
             /* Add second character using first 4 bits of second byte and
              * combine with 2 from above */
@@ -84,7 +84,7 @@ char *hex2b64_str(char *hex_str)
             /* if we have more bytes to go */
             if (j+1 < nbyte_in) {
                 j++;
-                htoi(hex_str+2*i+2*j, &hex_int);
+                hex_int = getHexByte(hex_str+2*i+2*j);
                 /* Add third character */
                 /* get first 2 bits of third byte and combine with 4 from above */
                 b64_int |= (hex_int & 0xC0) >> 6;
@@ -115,12 +115,12 @@ char *hex2b64_str(char *hex_str)
 /*------------------------------------------------------------------------------
  *         Convert base64 string to hexadecimal 
  *----------------------------------------------------------------------------*/
-char *b642hex_str(char *b64_str)
+char *b642hex_str(const char *b64_str)
 {
     size_t nchr_in,
            nbyte,
            nchr_out;
-    unsigned long hex_int;
+    int hex_int, i;
     char hex_chr[3];
     BZERO(hex_chr, 3);
     char *hex_str = NULL;
@@ -147,30 +147,30 @@ char *b642hex_str(char *b64_str)
 
     /* Get integer array from B64_LUT */
     int *b64_int = init_int(nchr_in);         /* byte array */
-    for (int i = 0; i < nchr_in; i++) {
+    for (i = 0; i < nchr_in; i++) {
         b64_int[i] = indexof(B64_LUT, b64_str[i]);
     }
 
     hex_str = init_str(nchr_out);     /* character array */
 
     /* Operate in chunks of 4 bytes in ==> 3 bytes out */
-    for (int i = 0; i < nchr_in; i+=4) {
+    for (i = 0; i < nchr_in; i+=4) {
         /* First char of output */
         /* NOTE mask off MSBs for left-shifts so we don't keep large #s */
         hex_int = ((b64_int[i] << 2) & 0xFF) | (b64_int[i+1] >> 4);
-        snprintf(hex_chr, 3, "%0.2lX", hex_int);
+        snprintf(hex_chr, 3, "%0.2X", hex_int);
         strncat(hex_str, hex_chr, 2);
 
         /* Second char */
         if ((b64_int[i+2] < 64) && (b64_int[i+2] > 0)) {
             hex_int = ((b64_int[i+1] << 4) & 0xFF) | (b64_int[i+2] >> 2);
-            snprintf(hex_chr, 3, "%0.2lX", hex_int);
+            snprintf(hex_chr, 3, "%0.2X", hex_int);
             strncat(hex_str, hex_chr, 2);
 
             /* Third char */
             if ((b64_int[i+3] < 64) && (b64_int[i+3] > 0)) {
                 hex_int = ((b64_int[i+2] << 6) & 0xFF) | b64_int[i+3];
-                snprintf(hex_chr, 3, "%0.2lX", hex_int);
+                snprintf(hex_chr, 3, "%0.2X", hex_int);
                 strncat(hex_str, hex_chr, 2);
             }
         }
@@ -183,11 +183,11 @@ char *b642hex_str(char *b64_str)
 /*------------------------------------------------------------------------------
  *      XOR two equal-length hex-encoded buffers
  *----------------------------------------------------------------------------*/
-char *fixedXOR(char *str1, char *str2)
+char *fixedXOR(const char *str1, const char *str2)
 {
     size_t len1 = strlen(str1),
            len2 = strlen(str2);
-    unsigned long hex_xor, hex_int1, hex_int2;
+    int hex_xor, hex_int1, hex_int2;
     char hex_chars[3];
     BZERO(hex_chars, 3);
 
@@ -198,10 +198,10 @@ char *fixedXOR(char *str1, char *str2)
 
     /* XOR each byte in the input string */
     for (int i = 0; i < len1; i+=2) {
-        htoi(str1+i, &hex_int1); /* 2 chars per byte */
-        htoi(str2+i, &hex_int2);
+        hex_int1 = getHexByte(str1+i); /* 2 chars per byte */
+        hex_int2 = getHexByte(str2+i);
         hex_xor = hex_int1 ^ hex_int2;
-        snprintf(hex_chars, 3, "%0.2lX", hex_xor);  /* convert to hex chars */
+        snprintf(hex_chars, 3, "%0.2X", hex_xor);  /* convert to hex chars */
         strncat(hex_str, hex_chars, 2);            /* append to output string */
     }
 
@@ -230,7 +230,7 @@ int *countChars(const char *s)
 /*------------------------------------------------------------------------------
  *         Get character frequency score of string
  *----------------------------------------------------------------------------*/
-float charFreqScore(char *str)
+float charFreqScore(const char *str)
 {
     const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";  /* acceptable chars */
     float N = 0,
@@ -275,7 +275,7 @@ float charFreqScore(char *str)
 /*------------------------------------------------------------------------------
  *         Encode a string with a single byte XOR cipher 
  *----------------------------------------------------------------------------*/
-char *singleByteXOREncode(char *hex, char *key)
+char *singleByteXOREncode(const char *hex, const char *key)
 {
     size_t len = strlen(hex);
     size_t key_len = strlen(key);
@@ -294,8 +294,7 @@ char *singleByteXOREncode(char *hex, char *key)
 /*------------------------------------------------------------------------------
  *         Decode a string XOR'd against a single character
  *----------------------------------------------------------------------------*/
-/* char *singleByteXORDecode(char *hex) */
-XOR_NODE *singleByteXORDecode(char *hex)
+XOR_NODE *singleByteXORDecode(const char *hex)
 {
     XOR_NODE *out = NULL;
     size_t len = strlen(hex);
@@ -348,7 +347,7 @@ XOR_NODE *singleByteXORDecode(char *hex)
 /*------------------------------------------------------------------------------
  *         Find single byte XOR string in a file
  *----------------------------------------------------------------------------*/
-XOR_NODE *findSingleByteXOR(char *filename)
+XOR_NODE *findSingleByteXOR(const char *filename) 
 {
     XOR_NODE *out = NULL;
     FILE *fp = NULL;
@@ -417,7 +416,7 @@ XOR_NODE *findSingleByteXOR(char *filename)
 /*------------------------------------------------------------------------------
  *         Encode hex string using repeating-key XOR 
  *----------------------------------------------------------------------------*/
-char *repeatingKeyXOR(char *input_hex, char *key_hex)
+char *repeatingKeyXOR(const char *input_hex, const char *key_hex)
 {
     size_t len = strlen(input_hex);
     size_t key_len = strlen(key_hex);
@@ -436,7 +435,7 @@ char *repeatingKeyXOR(char *input_hex, char *key_hex)
 /*------------------------------------------------------------------------------
  *         Compute Hamming distance between strings 
  *----------------------------------------------------------------------------*/
-unsigned long hamming_dist(char *a, char *b)
+size_t hamming_dist(const char *a, const char *b)
 {
     char *xor = fixedXOR(a, b); /* XOR returns differing bits */
     return hamming_weight(xor);

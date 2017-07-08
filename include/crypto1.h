@@ -38,34 +38,34 @@ typedef struct _XOR_NODE XOR_NODE;
 //      Function Definitions
 //------------------------------------------------------------------------------
 // Convert hex string to base-64 string
-char *hex2b64_str(char *hex_str);
+char *hex2b64_str(const char *hex_str);
 
 // Convert base-64 string to hex string??
-char *b642hex_str(char *b64_str);
+char *b642hex_str(const char *b64_str);
 
 // XOR two strings
-char *fixedXOR(char *str1, char *str2);
+char *fixedXOR(const char *str1, const char *str2);
 
 // Character frequency list
 int *countChars(const char *s);
 
 // Character frequency score
-float charFreqScore(char *str);
+float charFreqScore(const char *str);
 
 // Single byte XOR encode
-char *singleByteXOREncode(char *hex, char *key);
+char *singleByteXOREncode(const char *hex, const char *key);
 
 // Single byte XOR decode
-XOR_NODE *singleByteXORDecode(char *hex);
+XOR_NODE *singleByteXORDecode(const char *hex);
 
 // Search file for single byte XOR'd string
-XOR_NODE *findSingleByteXOR(char *filename);
+XOR_NODE *findSingleByteXOR(const char *filename);
 
 // Encode hex string using repeating-key XOR
-char *repeatingKeyXOR(char *input_hex, char *key_hex);
+char *repeatingKeyXOR(const char *input_hex, const char *key_hex);
 
 // Compute Hamming distance between strings 
-size_t hamming_dist(char *a, char *b);
+size_t hamming_dist(const char *a, const char *b);
 #endif
 //==============================================================================
 //==============================================================================

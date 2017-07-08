@@ -42,6 +42,22 @@ int GetHexInt1()
     unsigned long hex_int = 0;
     htoi(hex1, &hex_int);
     SHOULD_BE(hex_int == 77);
+    char hex2[] = "0xFFFF";
+    htoi(hex2, &hex_int);
+    SHOULD_BE(hex_int == 65535);
+    END_TEST_CASE;
+}
+
+/* Test htoi function */
+int GetHexByte1()
+{
+    START_TEST_CASE;
+    char hex1[] = "4D";
+    int hex_int = getHexByte(hex1);
+    SHOULD_BE(hex_int == 77);
+    char hex2[] = "4D616E";
+    hex_int = getHexByte(hex2);
+    SHOULD_BE(hex_int == 77);
     END_TEST_CASE;
 }
 
@@ -359,23 +375,24 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(StrToUpper1,      "strtoupper()          "); */
+    RUN_TEST(StrToUpper1,      "strtoupper()          ");
     RUN_TEST(GetHexInt1,       "htoi()                ");
+    RUN_TEST(GetHexByte1,      "getHexByte()          ");
     RUN_TEST(HexConvert1,      "atoh(),htoa()         ");
-    /* RUN_TEST(HexConvert2,      "hex2b64_str() 1       "); */
-    /* RUN_TEST(HexConvert3,      "hex2b64_str() 2       "); */
-    /* RUN_TEST(B64Convert1,      "b642hex_str() 1       "); */
-    /* RUN_TEST(B64Convert2,      "b642hex_str() 2       "); */
-    /* RUN_TEST(FixedXOR1,        "fixedXOR()            "); */
-    /* RUN_TEST(Strnrepeat1,      "strnrepeat_hex()      "); */
-    /* RUN_TEST(FindFreq1,        "countChars()          "); */
-    /* RUN_TEST(IsPrintable1,     "isprintable()         "); */
-    /* RUN_TEST(CharFreqScore1,   "charFreqScore()       "); */
-    /* RUN_TEST(SingleByte1,      "singleByteXORDecode() "); */
+    RUN_TEST(HexConvert2,      "hex2b64_str() 1       ");
+    RUN_TEST(HexConvert3,      "hex2b64_str() 2       ");
+    RUN_TEST(B64Convert1,      "b642hex_str() 1       ");
+    RUN_TEST(B64Convert2,      "b642hex_str() 2       ");
+    RUN_TEST(FixedXOR1,        "fixedXOR()            ");
+    RUN_TEST(Strnrepeat1,      "strnrepeat_hex()      ");
+    RUN_TEST(FindFreq1,        "countChars()          ");
+    RUN_TEST(IsPrintable1,     "isprintable()         ");
+    RUN_TEST(CharFreqScore1,   "charFreqScore()       ");
+    RUN_TEST(SingleByte1,      "singleByteXORDecode() ");
     /* Don't always run this file test, it's a bit slow */
-    /* RUN_TEST(FileSingleByte1, "findSingleByteXOR() test case 1"); */
-    /* RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     "); */
-    RUN_TEST(HammingDist1, "hamming_dist()     ");
+    /* RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   "); */
+    RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     ");
+    RUN_TEST(HammingDist1,     "hamming_dist()        ");
 
     /* Count errors */
     if (!fails) {
