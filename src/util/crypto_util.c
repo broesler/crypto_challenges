@@ -57,7 +57,7 @@ int getHexByte(const char *hex)
         else if (c >= '0' && c <= '9') { c = c - '0'; }
         else { ERROR("Invalid hex character!"); } 
 
-        u *= 16;
+        u <<= 4;
         u += (int)c;
         hex++;
     }
@@ -96,14 +96,23 @@ char *htoa(const char *hex)
 
     size_t nbyte = len/2;
     char *str = init_str(nbyte); /* allocate memory */
+    char *str_t = init_str(nbyte); /* allocate memory */
+    char *p = str_t;
+
+    char ascii[2];
+    BZERO(ascii, 2);
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
     for (size_t i = 0; i < nbyte; i++)
     {
-        str[i] = (char)getHexByte(hex+2*i);
+        /* *(str+i) = (char)getHexByte(hex+2*i); */
+        *p++ = getHexByte(hex+2*i);
+        int u = getHexByte(hex+2*i);        /* get integer value of byte */
+        snprintf(ascii, 2, "%c", u);        /* convert to ascii character */
+        strncat(str, ascii, 1);             /* append to output string */
     }
 
-    return str;
+    return str_t;
 }
 
 /*------------------------------------------------------------------------------

@@ -317,13 +317,14 @@ XOR_NODE *singleByteXORDecode(const char *hex)
 
     /* test each possible character byte */
     for (int i = 0x00; i < 0x100; i++) {
+    /* for (int i = 0x1B; i < 0x1C; i++) { */
         snprintf(key, 3, "%0.2X", i);
         char *xor = singleByteXOREncode(hex, key); /* Decode hex string */
         char *ptext = htoa(xor);                 /* Convert to ASCII text */
         float cfreq_score = FLT_MAX;             /* initialize to high value */
 
         /* Make sure string is printable */
-        if (isprintable(ptext)) {
+        if (*ptext && isprintable(ptext)) {
             cfreq_score = charFreqScore(ptext);  /* calculate string score */
             ptext[strcspn(ptext, "\n")] = 0;     /* remove any trailing '\n' */
 #ifdef LOGSTATUS
