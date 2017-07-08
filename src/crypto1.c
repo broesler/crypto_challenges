@@ -194,6 +194,7 @@ char *fixedXOR(const char *str1, const char *str2)
 
     /* TODO try strtoul(str1) ^ strtoul(str2) */
     char *endptr = NULL;
+    printf("%s\n%s\n", str1, str2);
     unsigned long test_a = strtoul(str1, &endptr, 16);
     unsigned long test_b = strtoul(str2, &endptr, 16);
     unsigned long test_xor = test_a ^ test_b;
