@@ -6,8 +6,6 @@
  *  Description: Utility functions for cryptography challenges
  *
  *============================================================================*/
-#include <ctype.h>
-
 #include "crypto_util.h"
 #include "header.h"
 
@@ -48,7 +46,7 @@ char *strtolower(char *s)
 /*------------------------------------------------------------------------------ 
  *          Get an integer from 2 hex characters in a string
  *----------------------------------------------------------------------------*/
-int getHexByte(char *hex) 
+int getHexByte(const char *hex) 
 {
     int u = 0; 
     char substr[3];
@@ -209,5 +207,7 @@ size_t indexof(const char *str, char c)
     char *s = strchr(str, c);
     return (s ? (s - str) : -1);
 }
+
+
 /*==============================================================================
  *============================================================================*/

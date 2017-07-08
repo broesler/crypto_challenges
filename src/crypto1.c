@@ -182,7 +182,7 @@ char *b642hex_str(char *b64_str)
 /*------------------------------------------------------------------------------
  *      XOR two equal-length hex-encoded buffers
  *----------------------------------------------------------------------------*/
-char *fixedXOR(char *str1, char *str2)
+char *fixedXOR(const char *str1, const char *str2)
 {
     size_t len1 = strlen(str1),
            len2 = strlen(str2);
@@ -191,6 +191,14 @@ char *fixedXOR(char *str1, char *str2)
     BZERO(hex_chars, 3);
 
     if (len1 != len2) { ERROR("Input strings must be the same length!"); }
+
+    /* TODO try strtoul(str1) ^ strtoul(str2) */
+    char *endptr = NULL;
+    unsigned long test_a = strtoul(str1, &endptr, 16);
+    unsigned long test_b = strtoul(str2, &endptr, 16);
+    unsigned long test_xor = test_a ^ test_b;
+    char *test_str = init_str(len1);
+    snprintf(test_str, len1+1, "%lX", test_xor);
 
     /* allocate memory for string output */
     char *hex_str = init_str(len1);
@@ -204,6 +212,9 @@ char *fixedXOR(char *str1, char *str2)
         strncat(hex_str, hex_chars, 2);            /* append to output string */
     }
 
+    printf("test_xor: %lX\n", test_xor);
+    printf("test_str: %s\n", test_str);
+    printf("hex_str:  %s\n", hex_str);
     /* return hex-encoded string */
     return hex_str;
 }
@@ -430,6 +441,21 @@ char *repeatingKeyXOR(char *input_hex, char *key_hex)
     char *xor = fixedXOR(input_hex, key_str);
     free(key_str);
     return xor;
+}
+
+/*------------------------------------------------------------------------------
+ *         Compute Hamming distance between strings 
+ *----------------------------------------------------------------------------*/
+size_t hamming_dist(const char *a, const char *b)
+{
+    size_t dist = 0;
+    /* XOR returns differing bits */
+    char *xor = fixedXOR(a, b);
+    printf("%s\n", xor);
+    for (int i = 0; i < strlen(xor); i++) { 
+        dist += getHexByte(&xor[i]); 
+    }
+    return dist;
 }
 /*==============================================================================
  *============================================================================*/

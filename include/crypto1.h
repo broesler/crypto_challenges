@@ -8,6 +8,8 @@
 #ifndef _CRYPTO1_H_
 #define _CRYPTO1_H_
 
+#include <ctype.h>
+
 //------------------------------------------------------------------------------
 //      Constants
 //------------------------------------------------------------------------------
@@ -42,7 +44,7 @@ char *hex2b64_str(char *hex_str);
 char *b642hex_str(char *b64_str);
 
 // XOR two strings
-char *fixedXOR(char *str1, char *str2);
+char *fixedXOR(const char *str1, const char *str2);
 
 // Character frequency list
 int *countChars(const char *s);
@@ -62,6 +64,8 @@ XOR_NODE *findSingleByteXOR(char *filename);
 // Encode hex string using repeating-key XOR
 char *repeatingKeyXOR(char *input_hex, char *key_hex);
 
+// Compute Hamming distance between strings 
+size_t hamming_dist(const char *a, const char *b);
 #endif
 //==============================================================================
 //==============================================================================

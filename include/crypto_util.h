@@ -28,7 +28,7 @@ char *strtoupper(char *s);
 char *strtolower(char *s);
 
 // Get single hex byte from a string
-int getHexByte(char *hex);
+int getHexByte(const char *hex);
 
 // Encode ASCII string as hexadecimal
 char *atoh(char *str);
