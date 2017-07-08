@@ -40,7 +40,7 @@ int HexConvert1()
     START_TEST_CASE;
     char str1[] = "Man";
     char *hex = atoh(str1);  /* any atoh call must be free'd! */
-    SHOULD_BE(!strcasecmp(hex,"4D616E"));    /* convert to hex */
+    SHOULD_BE(!strcasecmp(hex,"4d616e"));    /* convert to hex */
     char *str2 = htoa(hex);
     SHOULD_BE(!strcmp(str2,str1));       /* convert back to ascii */
     free(hex);
@@ -346,12 +346,12 @@ int main(void)
     int total = 0;
 
     /* RUN_TEST(StrToUpper1,      "strtoupper()          "); */
-    /* RUN_TEST(HexConvert1,      "atoh(),htoa()         "); */
+    RUN_TEST(HexConvert1,      "atoh(),htoa()         ");
     /* RUN_TEST(HexConvert2,      "hex2b64_str() 1       "); */
     /* RUN_TEST(HexConvert3,      "hex2b64_str() 2       "); */
     /* RUN_TEST(B64Convert1,      "b642hex_str() 1       "); */
     /* RUN_TEST(B64Convert2,      "b642hex_str() 2       "); */
-    RUN_TEST(FixedXOR1,        "fixedXOR()            ");
+    /* RUN_TEST(FixedXOR1,        "fixedXOR()            "); */
     /* RUN_TEST(Strnrepeat1,      "strnrepeat_hex()      "); */
     /* RUN_TEST(FindFreq1,        "countChars()          "); */
     /* RUN_TEST(IsPrintable1,     "isprintable()         "); */

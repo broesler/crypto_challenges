@@ -54,6 +54,7 @@ char *hex2b64_str(char *hex_str)
 
     /* allocate memory for output */
     char *b64_str = init_str(nchr_out);
+    char *p = b64_str; /* moveable pointer for concatenation */
 
     /* Operate in chunks of 3 bytes in ==> 4 bytes out */
     for (int i = 0; i < nbyte_in; i+=3) {
@@ -62,7 +63,7 @@ char *hex2b64_str(char *hex_str)
 
         /* Add first character using first 6 bits of first byte */
         b64_int = (hex_int & 0xFC) >> 2;
-        strncat(b64_str, &B64_LUT[b64_int], 1);
+        *p++ = B64_LUT[b64_int];
 
         /* get last 2 bits of first byte */
         b64_int = (hex_int & 0x03) << 4;
@@ -75,7 +76,7 @@ char *hex2b64_str(char *hex_str)
             /* Add second character using first 4 bits of second byte and
              * combine with 2 from above */
             b64_int |= (hex_int & 0xF0) >> 4;
-            strncat(b64_str, &B64_LUT[b64_int], 1);
+            *p++ = B64_LUT[b64_int];
 
             /* get last 4 bits of second byte */
             b64_int = (hex_int & 0x0F) << 2;
@@ -87,23 +88,23 @@ char *hex2b64_str(char *hex_str)
                 /* Add third character */
                 /* get first 2 bits of third byte and combine with 4 from above */
                 b64_int |= (hex_int & 0xC0) >> 6;
-                strncat(b64_str, &B64_LUT[b64_int], 1);
+                *p++ = B64_LUT[b64_int];
 
                 /* Add fourth character using last 6 bits of third byte */
                 b64_int = (hex_int & 0x3F);
-                strncat(b64_str, &B64_LUT[b64_int], 1);
+                *p++ = B64_LUT[b64_int];
 
             /* There are only 2 bytes of input, so interpret 3rd character with
              * a "0x00" byte appended, and pad with an '=' character */
             } else {
-                strncat(b64_str, &B64_LUT[b64_int], 1);
-                strncat(b64_str, "=", 1);
+                *p++ = B64_LUT[b64_int];
+                *p++ = '=';
             }
 
         /* There is only 1 byte of input, so interpret 2nd character with two
          * "0x00" bytes appended, and pad with an '=' character */
         } else {
-            strncat(b64_str, &B64_LUT[b64_int], 1);
+            *p++ = B64_LUT[b64_int];
             strncat(b64_str, "==", 2);
         }
     }
@@ -119,10 +120,10 @@ char *b642hex_str(char *b64_str)
     size_t nchr_in,
            nbyte,
            nchr_out;
+    int hex_int, i;
     char hex_chr[3];
     BZERO(hex_chr, 3);
     char *hex_str = NULL;
-    int hex_int, i;
 
     /* Input checking */
     if (b64_str) {
@@ -192,15 +193,6 @@ char *fixedXOR(const char *str1, const char *str2)
 
     if (len1 != len2) { ERROR("Input strings must be the same length!"); }
 
-    /* TODO try strtoul(str1) ^ strtoul(str2) */
-    char *endptr = NULL;
-    printf("%s\n%s\n", str1, str2);
-    unsigned long test_a = strtoul(str1, &endptr, 16);
-    unsigned long test_b = strtoul(str2, &endptr, 16);
-    unsigned long test_xor = test_a ^ test_b;
-    char *test_str = init_str(len1);
-    snprintf(test_str, len1+1, "%lX", test_xor);
-
     /* allocate memory for string output */
     char *hex_str = init_str(len1);
 
@@ -213,9 +205,6 @@ char *fixedXOR(const char *str1, const char *str2)
         strncat(hex_str, hex_chars, 2);            /* append to output string */
     }
 
-    printf("test_xor: %lX\n", test_xor);
-    printf("test_str: %s\n", test_str);
-    printf("hex_str:  %s\n", hex_str);
     /* return hex-encoded string */
     return hex_str;
 }
@@ -449,14 +438,8 @@ char *repeatingKeyXOR(char *input_hex, char *key_hex)
  *----------------------------------------------------------------------------*/
 size_t hamming_dist(const char *a, const char *b)
 {
-    size_t dist = 0;
-    /* XOR returns differing bits */
-    char *xor = fixedXOR(a, b);
-    printf("%s\n", xor);
-    for (int i = 0; i < strlen(xor); i++) { 
-        dist += getHexByte(&xor[i]); 
-    }
-    return dist;
+    char *xor = fixedXOR(a, b); /* XOR returns differing bits */
+    return hamming_weight(xor);
 }
 /*==============================================================================
  *============================================================================*/

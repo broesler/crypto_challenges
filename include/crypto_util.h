@@ -28,7 +28,7 @@ char *strtoupper(char *s);
 char *strtolower(char *s);
 
 // Get single hex byte from a string
-int getHexByte(const char *hex);
+int getHexByte(char *hex);
 
 // Encode ASCII string as hexadecimal
 char *atoh(char *str);
@@ -54,6 +54,8 @@ char *strnrepeat_hex(const char *src, size_t src_len, size_t len);
 // Get index of character in string 
 size_t indexof(const char *str, char c);
 
+// Hamming weight of hex string 
+size_t hamming_weight(const char *a);
 #endif
 //==============================================================================
 //==============================================================================

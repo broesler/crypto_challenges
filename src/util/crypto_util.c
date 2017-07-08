@@ -46,14 +46,15 @@ char *strtolower(char *s)
 /*------------------------------------------------------------------------------ 
  *          Get an integer from 2 hex characters in a string
  *----------------------------------------------------------------------------*/
-int getHexByte(const char *hex) 
+int getHexByte(char *hex) 
 {
     int u = 0; 
-    char substr[3];
-    BZERO(substr, 3);
-    strncpy(substr, hex, 2);                /* take 2 chars */
-    strtoupper(substr);                     /* convert to uppercase only */
-    if (sscanf(substr, "%2X", &u)) {        /* convert to integer */
+    /* char substr[3]; */
+    /* BZERO(substr, 3); */
+    /* strncpy(substr, hex, 2);                #<{(| take 2 chars |)}># */
+    /* strtoupper(substr);                     #<{(| convert to uppercase only |)}># */
+    /* if (sscanf(substr, "%2X", &u)) {        #<{(| convert to integer |)}># */
+    if (sscanf(strtoupper(hex), "%2X", &u)) {        /* convert to integer */
         return u;
     } else {
         ERROR("Invalid hex character!");
@@ -66,19 +67,17 @@ int getHexByte(const char *hex)
 /* Take each 8-bit character and convert it to 2, 4-bit characters */
 char *atoh(char *str)
 {
-    static const char *lut = "0123456789ABCDEF";
+    static const char *lut = "0123456789abcdef";
     size_t len = strlen(str);
 
-    /* allocate memory */
-    char *hex = (char *)calloc(2*len, sizeof(char));
-    MALLOC_CHECK(hex);
-    BZERO(hex, sizeof(*hex));
+    char *hex = calloc(2*len, sizeof(char)); /* allocate memory */
+    char *p = hex;                           /* moveable pointer */
 
     for (size_t i = 0; i < len; i++)
     {
         char c = str[i];
-        strncat(hex, &lut[c >> 0x04], 1); /* take first 4 bits */
-        strncat(hex, &lut[c  & 0x0F], 1); /* take next 4 bits */
+        *p++ = lut[c >> 0x04]; /* take first 4 bits */
+        *p++ = lut[c  & 0x0F]; /* take next 4 bits */
     }
     return hex;
 }
@@ -101,7 +100,7 @@ char *htoa(char *hex)
     char hex_upper[len];
     BZERO(hex_upper, len);
     strncpy(hex_upper, hex, len);   /* copy string in as-is */
-    strtoupper(hex_upper);          /* make string uppercase */
+    /* strtoupper(hex_upper);          #<{(| make string uppercase |)}># */
 
     /* Allocate memory */
     char *str = malloc(len/2 * sizeof(char));
@@ -111,7 +110,9 @@ char *htoa(char *hex)
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
     for (size_t i = 0; i < len; i+=2)
     {
+        printf("%s\n", hex_upper+i);
         u = getHexByte(hex_upper+i);        /* get integer value of byte */
+        printf("%s\n", hex_upper+i);
         snprintf(ascii, 2, "%c", u);        /* convert to ascii character */
         strncat(str, ascii, 1);             /* append to output string */
     }
@@ -208,6 +209,32 @@ size_t indexof(const char *str, char c)
     return (s ? (s - str) : -1);
 }
 
+/*------------------------------------------------------------------------------
+ *         Hamming weight of hex string 
+ *----------------------------------------------------------------------------*/
+size_t hamming_weight(const char *a)
+{
+    size_t weight = 0;
+    int x = 0,
+        count = 0;
+
+    /* Wegner (1960), x & x-1 zeros LSB, so repeat until convergence
+     * <https://en.wikipedia.org/wiki/Hamming_weight> */
+    /* For each byte in string, sum the weights */
+    for (size_t i = 0; i < strlen(a); i+=2) { 
+        x = getHexByte(a+i); 
+        for (count = 0; x; count++) {
+            x &= x - 1;
+        }
+        weight += count;
+    }
+
+    return weight;
+}
+
+/*------------------------------------------------------------------------------
+ *         Convert hex to binary string 
+ *----------------------------------------------------------------------------*/
 
 /*==============================================================================
  *============================================================================*/
