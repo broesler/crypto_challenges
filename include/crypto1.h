@@ -44,7 +44,7 @@ char *hex2b64_str(char *hex_str);
 char *b642hex_str(char *b64_str);
 
 // XOR two strings
-char *fixedXOR(const char *str1, const char *str2);
+char *fixedXOR(char *str1, char *str2);
 
 // Character frequency list
 int *countChars(const char *s);
@@ -65,7 +65,7 @@ XOR_NODE *findSingleByteXOR(char *filename);
 char *repeatingKeyXOR(char *input_hex, char *key_hex);
 
 // Compute Hamming distance between strings 
-size_t hamming_dist(const char *a, const char *b);
+size_t hamming_dist(char *a, char *b);
 #endif
 //==============================================================================
 //==============================================================================

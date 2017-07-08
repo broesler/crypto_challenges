@@ -34,6 +34,17 @@ int StrToUpper1()
     END_TEST_CASE;
 }
 
+/* Test htoi function */
+int GetHexInt1()
+{
+    START_TEST_CASE;
+    char hex1[] = "4D";
+    unsigned long hex_int = 0;
+    htoi(hex1, &hex_int);
+    SHOULD_BE(hex_int == 77);
+    END_TEST_CASE;
+}
+
 /* This tests conversion of an ASCII string to a hex string, and vice versa */
 int HexConvert1()
 {
@@ -43,6 +54,9 @@ int HexConvert1()
     SHOULD_BE(!strcasecmp(hex,"4d616e"));    /* convert to hex */
     char *str2 = htoa(hex);
     SHOULD_BE(!strcmp(str2,str1));       /* convert back to ascii */
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", str2, str1);
+#endif
     free(hex);
     free(str2);
     END_TEST_CASE;
@@ -327,7 +341,7 @@ int HammingDist1()
     START_TEST_CASE;
     char *a = atoh("this is a test");
     char *b = atoh("wokka wokka!!!");
-    size_t dist = hamming_dist(a,b);
+    unsigned long dist = hamming_dist(a,b);
     SHOULD_BE(dist == 37);
 #ifdef LOGSTATUS
     printf("Got:    %zu\nExpect: %d\n", dist, 37);
@@ -346,6 +360,7 @@ int main(void)
     int total = 0;
 
     /* RUN_TEST(StrToUpper1,      "strtoupper()          "); */
+    RUN_TEST(GetHexInt1,       "htoi()                ");
     RUN_TEST(HexConvert1,      "atoh(),htoa()         ");
     /* RUN_TEST(HexConvert2,      "hex2b64_str() 1       "); */
     /* RUN_TEST(HexConvert3,      "hex2b64_str() 2       "); */
