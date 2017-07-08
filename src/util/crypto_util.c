@@ -65,34 +65,6 @@ int getHexByte(const char *hex)
 }
 
 /*------------------------------------------------------------------------------ 
- *          Get an integer from hex string
- *----------------------------------------------------------------------------*/
-int htoi(const char *s, unsigned long *out)
-{
-    /* Will get integer from ENTIRE hex string. We just want a single byte */
-    unsigned long temp = 0;
-    int c;
-
-    /* Check for leading "0x" */
-    if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) { s+=2; }
-
-    while (*s)
-    {
-        c = *s;
-        if      (c >= 'a' && c <= 'f') { c = c - 'a' + 10; } 
-        else if (c >= 'A' && c <= 'F') { c = c - 'A' + 10; } 
-        else if (c >= '0' && c <= '9') { c = c - '0'; }
-        else { ERROR("Invalid hex character!"); } 
-
-        temp *= 16;
-        temp += (unsigned long)c;
-        s++;
-    }
-    *out = temp;
-    return EXIT_SUCCESS;
-}
-
-/*------------------------------------------------------------------------------ 
  *          Encode ASCII string into hex string
  *----------------------------------------------------------------------------*/
 /* Take each 8-bit character and convert it to 2, 4-bit characters */

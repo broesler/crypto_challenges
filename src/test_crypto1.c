@@ -34,21 +34,7 @@ int StrToUpper1()
     END_TEST_CASE;
 }
 
-/* Test htoi function */
-int GetHexInt1()
-{
-    START_TEST_CASE;
-    char hex1[] = "4D";
-    unsigned long hex_int = 0;
-    htoi(hex1, &hex_int);
-    SHOULD_BE(hex_int == 77);
-    char hex2[] = "0xFFFF";
-    htoi(hex2, &hex_int);
-    SHOULD_BE(hex_int == 65535);
-    END_TEST_CASE;
-}
-
-/* Test htoi function */
+/* Test getHexByte function */
 int GetHexByte1()
 {
     START_TEST_CASE;
@@ -376,7 +362,6 @@ int main(void)
     int total = 0;
 
     RUN_TEST(StrToUpper1,      "strtoupper()          ");
-    RUN_TEST(GetHexInt1,       "htoi()                ");
     RUN_TEST(GetHexByte1,      "getHexByte()          ");
     RUN_TEST(HexConvert1,      "atoh(),htoa()         ");
     RUN_TEST(HexConvert2,      "hex2b64_str() 1       ");
