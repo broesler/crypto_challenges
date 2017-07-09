@@ -14,7 +14,8 @@
 /*******************************************************************************
  * NOTE on string assignment:
  * Method 1: words as expected for assigning to ascii_str
- * Method 2: ascii_str has values shifted by 5 relative to pointer assignment
+ * Method 2: identical to method 1
+ * Mehtod 3: 
  ******************************************************************************/
 
 /* Test getHexByte function */
@@ -22,38 +23,50 @@ int StrassignTest()
 {
     START_TEST_CASE;
     /* Method 1: Single char */
-    /* char ascii; */
+    char ascii;
 
     /* Method 2: String of length 1 */
-    char ascii[2];
-    BZERO(ascii, 2*sizeof(char));
+    /* char ascii[2]; */
+    /* BZERO(ascii, 2*sizeof(char)); */
 
     /* String initializations are identical functionally */
     /* full string of ascii chars */
-    /* char ascii_str[0x100]; */
-    char *ascii_str = malloc(0x100*sizeof(char));
-    MALLOC_CHECK(ascii_str);
-    BZERO(ascii_str, 0x100*sizeof(char));
+    char ascii_str[0x101];
+    BZERO(ascii_str, 0x101*sizeof(char));
 
     /* Method 3: pointer for assignment */
     /* full string of ascii chars */
-    /* char test_str[0x100]; */
-    char *test_str = malloc(0x100*sizeof(char));
-    MALLOC_CHECK(test_str);
-    BZERO(test_str, 0x100*sizeof(char));
+    char test_str[0x101];
+    BZERO(test_str, 0x101*sizeof(char));
 
     char *p = test_str;   /* pointer to start of string */
 
-    /* loop over all possible ascii chars */
-    for (size_t i = 0x00; i < 0x100; i++)
+    /* NOTE Need to start at '0x01'!!! If we start at 0x00, the strncat method
+     * finds the end of ascii_str at ascii_str[0], because it's NULL (== 0x00),
+     * and concatenates another NULL, which effectively does nothing because we
+     * BZERO'd the string. At i = 0x01, everything proceeds as normal, and
+     * since we can't print a NULL, it looks as if we've perfectly gotten every
+     * character. 
+     *
+     * For the pointer method, on the other hand, when we set and move the
+     * pointer to the next memory location (*p++ = ...), we just skip over the
+     * slot we assigned to NULL == 0x00, so the string test_str APPEARS to end
+     * at test_str[0] with the NULL we left there!
+     *
+     * So, in regards to crypto code, the pointer method does more faithfully
+     * copy character-by-character into the memory slots alotted; however, we
+     * should build in a check that strlen(xor) == strlen(inputs) before
+     * accepting a string as valid output */
+    /* loop over all possible ascii chars (except 0x00 == NULL) */
+    for (size_t i = 0x01; i < 0x100; i++)
     {
         /* Method 1: */
-        /* ascii = (char)i; */
-        /* strncat(ascii_str, &ascii, 1); */
+        ascii = (char)i;
+        strncat(ascii_str, &ascii, 1);
 
         /* Method 2: */
-        snprintf(ascii, 2, "%c", (char)i);
-        strncat(ascii_str, ascii, 1);
+        /* snprintf(ascii, 2, "%c", (char)i); */
+        /* strncat(ascii_str, ascii, 1); */
 
         /* Assignment method 3: */
         *p++ = (char)i;
@@ -61,12 +74,11 @@ int StrassignTest()
         /* Print character table */
         if (isprint(i)) {
             /* Method 1: */
-            /* printf("%0.2zX\t%0.3zu\t'%c'\t'%c'\n", i, i, ascii, *(p-1)); */
+            printf("%0.2zX\t%0.3zu\t'%c'\t'%c'\n", i, i, ascii, *(p-1));
             /* Method 2: */
-            printf("%0.2zX\t%0.3zu\t'%c'\t'%c'\n", i, i, ascii[i], *(p-1));
+            /* printf("%0.2zX\t%0.3zu\t'%c'\t'%c'\n", i, i, ascii[0], *(p-1)); */
             /* Method 3: */
-            /* This line prints NOTHING for last char */
-            /* printf("%0.2X\t%0.3d\t'%c'\t'%c'\n", i, i, ascii, *(test_str+i)); */
+            /* printf("%0.2zX\t%0.3zu\t'%c'\t'%c'\n", i, i, ascii, *(test_str+(i-1))); */
         /* } else { */
         /*     #<{(| funky double cast otherwise we'll get \\xfffffff instead of right value |)}># */
         /*     unsigned int c1 = (unsigned int)(unsigned char)ascii[i]; */
@@ -76,8 +88,8 @@ int StrassignTest()
     }
 
     /* Print entire strings to make sure assignment happened */
-    printf("ascii: %s\n", ascii_str);
-    printf(" test: %s\n", test_str);
+    printf("ascii: |||%s|||\n", ascii_str);
+    printf("test: |||%s|||\n", test_str);
     SHOULD_BE(!strcmp(ascii_str, test_str));
     printf("strcmp =  %d\n", strcmp(ascii_str, test_str));
     /* Clean-up if using [cm]alloc */

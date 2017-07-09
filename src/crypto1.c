@@ -316,15 +316,16 @@ XOR_NODE *singleByteXORDecode(const char *hex)
     BZERO(key, 3);
 
     /* test each possible character byte */
-    for (int i = 0x00; i < 0x100; i++) {
-    /* for (int i = 0x1B; i < 0x1C; i++) { */
+    for (int i = 0x01; i < 0x100; i++) {
         snprintf(key, 3, "%0.2X", i);
         char *xor = singleByteXOREncode(hex, key); /* Decode hex string */
         char *ptext = htoa(xor);                 /* Convert to ASCII text */
         float cfreq_score = FLT_MAX;             /* initialize to high value */
 
-        /* Make sure string is printable */
-        if (*ptext && isprintable(ptext)) {
+        /* Make sure string does not contain NULL chars, and is printable */
+        int test = ((strlen(ptext) == len/2) && (isprintable(ptext)));
+
+        if (test) {
             cfreq_score = charFreqScore(ptext);  /* calculate string score */
             ptext[strcspn(ptext, "\n")] = 0;     /* remove any trailing '\n' */
 #ifdef LOGSTATUS

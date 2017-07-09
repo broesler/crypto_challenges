@@ -46,19 +46,21 @@ int getHexByte(const char *hex)
 {
     int u = 0,
         c = 0;
+    char p;
 
+    /* Take 1 or 2 chars, error if input is length 0 */
     int nmax = (strlen(hex) > 1) ? 2 : 1;
 
     for (int i = 0; i < nmax; i++)
     {
-        c = *hex;
-        if      (c >= 'a' && c <= 'f') { c = c - 'a' + 10; } 
-        else if (c >= 'A' && c <= 'F') { c = c - 'A' + 10; } 
-        else if (c >= '0' && c <= '9') { c = c - '0'; }
+        p = *hex;
+        if      (p >= 'a' && p <= 'f') { c = p - 'a' + 10; } 
+        else if (p >= 'A' && p <= 'F') { c = p - 'A' + 10; } 
+        else if (p >= '0' && p <= '9') { c = p - '0'; }
         else { ERROR("Invalid hex character!"); } 
 
         u <<= 4;
-        u += (int)c;
+        u += c;
         hex++;
     }
     return u;
@@ -95,18 +97,17 @@ char *htoa(const char *hex)
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
 
     size_t nbyte = len/2;
-    char *str   = init_str(nbyte); /* allocate memory */
 
-    char ascii;
+    char *str_t = init_str(nbyte); /* allocate memory */
+    char *p = str_t;
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
     for (size_t i = 0; i < nbyte; i++) /*use hex+2*i in assignment */
     {
-        ascii = (char)getHexByte(hex+2*i);  /* get integer value of byte */
-        strncat(str, &ascii, 1);            /* append to output string */
+        *p++ = (char)getHexByte(hex+2*i);
     }
 
-    return str;
+    return str_t;
 }
 
 /*------------------------------------------------------------------------------
