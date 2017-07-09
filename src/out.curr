@@ -95,3 +95,48 @@ Expect: Cooking MC's like a pound of bacon
 ✓ Test singleByteXORDecode()  passed.
 All 2 tests passed!
 
+# with "challenge5" (working branch)
+[bernardroesler@t1854: ~/src/crypto_challenges/src]$ ./test1
+✓ Test atoh(),htoa() test case 1 passed.
+47      \pptvqx?R\8l?svtz?~?opjq{?py?}~|pq      1.1740e+03
+4A      Q}}y{|u2_Q5a2~{yw2s2b}g|v2}t2psq}|      1.5486e+03
+4D      Vzz~|{r5XV2f5y|~p5t5ez`{q5zs5wtvz{      3.4435e+03
+4F      Txx|~yp7ZT0d7{~|r7v7gxbys7xq7uvtxy      1.4018e+03
+50      Kggcafo(EK/{(dacm(i(xg}fl(gn(jikgf      2.1558e+02
+51      Jffb`gn)DJ.z)e`bl)h)yf|gm)fo)khjfg      5.2926e+02
+53      Hdd`bel+FH,x+gb`n+j+{d~eo+dm+ijhde      2.6679e+02
+55      Nbbfdcj-@N*~-adfh-l-}bxci-bk-olnbc      2.0870e+02
+56      Maaeg`i.CM)}.bgek.o.~a{`j.ah.loma`      1.2591e+02
+58      Cooking MC's like a pound of bacon      3.4270e+01
+59      Bnnjhof!LB&r!mhjd!`!qntoe!ng!c`bno      2.4688e+02
+5A      Ammikle"OA%q"nkig"c"rmwlf"md"`caml      1.3811e+02
+5B      @llhjmd#N@$p#ojhf#b#slvmg#le#ab`lm      2.2451e+02
+5C      Gkkomjc$IG#w$hmoa$e$tkqj`$kb$fegkj      5.2827e+02
+5D      Fjjnlkb%HF"v%iln`%d%ujpka%jc%gdfjk      9.0212e+02
+5E      Eiimoha&KE!u&jomc&g&vishb&i`&dgeih      7.3413e+01
+5F      Dhhlni`'JD t'knlb'f'whric'ha'efdhi      6.7793e+01
+72      iEEACDM 1.1286e+02
+73      hDD@BEL
+               fh
+                 X
+                  GB@N
+                      J
+                       [D^EO
+                            DM
+                              IJHDE     2.6679e+02
+74      oCCGEBK
+               ao
+                 _
+                  @EGI
+                      M
+                       \CYBH
+                            CJ
+                              NMOCB     1.4365e+02
+`n      2.0870e+02
+key   = 0x58
+score =  34.2697
+Got:    Cooking MC's like a pound of bacon
+Expect: Cooking MC's like a pound of bacon
+✓ Test singleByteXORDecode() test case 1 passed.
+All 2 tests passed!
+

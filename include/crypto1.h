@@ -17,10 +17,6 @@
 #define MAX_PAGE_NUM 1000
 #define MAX_WORD_LEN 10000
 
-// Globals
-extern const float ENGLISH_FREQ[];
-extern const char  B64_LUT[];
-
 //------------------------------------------------------------------------------
 //      Structures
 //------------------------------------------------------------------------------

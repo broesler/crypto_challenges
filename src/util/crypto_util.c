@@ -95,24 +95,35 @@ char *htoa(const char *hex)
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
 
     size_t nbyte = len/2;
-    char *str = init_str(nbyte); /* allocate memory */
-    char *str_t = init_str(nbyte); /* allocate memory */
+    char *str   = init_str(nbyte); /* allocate memory */
+
+    /* Try moving pointer along string instead of strncat() */
+    char *str_t = init_str(nbyte);
     char *p = str_t;
 
-    char ascii[2];
-    BZERO(ascii, 2);
+    char ascii;
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
-    for (size_t i = 0; i < nbyte; i++)
+    for (size_t i = 0; i < nbyte; i++) /*use hex+2*i in assignment */
+    /* for (size_t i = 0; i < len; i+=2)  #<{(| use hex+i in assignment |)}># */
     {
-        /* *(str+i) = (char)getHexByte(hex+2*i); */
-        *p++ = getHexByte(hex+2*i);
-        int u = getHexByte(hex+2*i);        /* get integer value of byte */
-        snprintf(ascii, 2, "%c", u);        /* convert to ascii character */
-        strncat(str, ascii, 1);             /* append to output string */
+        /* this method works! */
+        /* int u = getHexByte(hex+i);        #<{(| get integer value of byte |)}># */
+        /* ascii = (char)u;                  #<{(| convert to ascii character |)}># */
+        /* this method works and is cleaner! */
+        ascii = (char)getHexByte(hex+2*i);   /* get integer value of byte */
+        strncat(str, &ascii, 1);           /* append to output string */
+
+        /* These method don't... they work for simple string like "Man", but not
+         * for non-printable characters? */
+        /* *(str_t+i) = (char)getHexByte(hex+2*i); */
+        /* *(str_t+i) = getHexByte(hex+2*i); */
+        /* *p++ = getHexByte(hex+2*i); */
+        *p++ = (char)getHexByte(hex+2*i);
+        /* *p++ = (char)u; */
     }
 
-    return str_t;
+    return str;
 }
 
 /*------------------------------------------------------------------------------
