@@ -118,6 +118,26 @@ int HexConvert3()
     END_TEST_CASE;
 }
 
+/* This tests conversion of a hex string to a base64 string */
+int HexConvert4()
+{
+    START_TEST_CASE;
+    char hex1[] = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d" \
+                   "63343c2a26226324272765272a282b2f20430a652e2c652a31" \
+                   "24333a653e2b2027630c692b20283165286326302e27282f";
+    char *b641 = hex2b64_str(hex1);
+    char expect[] = "CzY3JyorLmNiLC5paSojaToqPGMkIC1iPWM0PComImMkJydlJy" \
+                    "ooKy8gQwplLixlKjEkMzplPisgJ2MMaSsgKDFlKGMmMC4nKC8=";
+    /* char ascii[] = "Burning 'em, if you ain't quick and nimble\n" \ */
+    /*                "I go crazy when I hear a cymbal"; */
+    SHOULD_BE(!strcmp(b641, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", b641, expect);
+#endif
+    free(b641);
+    END_TEST_CASE;
+}
+
 /* This tests conversion of a base64 string to a hex string */
 int B64Convert1()
 {
@@ -172,7 +192,6 @@ int B64Convert2()
     free(hex1);
     END_TEST_CASE;
 }
-
 
 /* This tests the XOR of two hex-encoded strings, as well as printing their
  * ASCII conversions */
@@ -367,23 +386,26 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(StrToUpper1,      "strtoupper()          ");
-    RUN_TEST(GetHexByte1,      "getHexByte()          ");
-    RUN_TEST(HexConvert1,      "atoh(),htoa()         ");
-    RUN_TEST(HexConvert2,      "hex2b64_str() 1       ");
-    RUN_TEST(HexConvert3,      "hex2b64_str() 2       ");
-    RUN_TEST(B64Convert1,      "b642hex_str() 1       ");
-    RUN_TEST(B64Convert2,      "b642hex_str() 2       ");
-    RUN_TEST(FixedXOR1,        "fixedXOR()            ");
-    RUN_TEST(Strnrepeat1,      "strnrepeat_hex()      ");
-    RUN_TEST(FindFreq1,        "countChars()          ");
-    RUN_TEST(IsPrintable1,     "isprintable()         ");
-    RUN_TEST(CharFreqScore1,   "charFreqScore()       ");
-    RUN_TEST(SingleByte1,      "singleByteXORDecode() ");
+    /* RUN_TEST(StrToUpper1,      "strtoupper()          "); */
+    /* RUN_TEST(GetHexByte1,      "getHexByte()          "); */
+    /* RUN_TEST(HexConvert1,      "atoh(),htoa()         "); */
+    /* RUN_TEST(HexConvert2,      "hex2b64_str() 1       "); */
+    /* RUN_TEST(HexConvert3,      "hex2b64_str() 2       "); */
+    RUN_TEST(HexConvert4,      "hex2b64_str() 3       ");
+    /* RUN_TEST(B64Convert1,      "b642hex_str() 1       "); */
+    /* RUN_TEST(B64Convert2,      "b642hex_str() 2       "); */
+    /* RUN_TEST(FixedXOR1,        "fixedXOR()            "); */
+    /* RUN_TEST(Strnrepeat1,      "strnrepeat_hex()      "); */
+    /* RUN_TEST(FindFreq1,        "countChars()          "); */
+    /* RUN_TEST(IsPrintable1,     "isprintable()         "); */
+    /* RUN_TEST(CharFreqScore1,   "charFreqScore()       "); */
+    /* RUN_TEST(SingleByte1,      "singleByteXORDecode() "); */
     /* Don't always run this file test, it's a bit slow */
-    RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   ");
-    RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     ");
-    RUN_TEST(HammingDist1,     "hamming_dist()        ");
+    /* RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   "); */
+    /* RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     "); */
+    /* RUN_TEST(HammingDist1,     "hamming_dist()        "); */
+    /* RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 "); */
+    /* RUN_TEST(BreakRepeatingXOR2,"breakRepeatingXOR() 2 "); */
 
     /* Count errors */
     if (!fails) {

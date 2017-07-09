@@ -69,7 +69,7 @@ char *hex2b64_str(const char *hex_str)
         b64_int = (hex_int & 0x03) << 4;
 
         /* if we have more bytes to go */
-        if (j+1 < nbyte_in) {
+        if (i+j+1 < nbyte_in) {
             j++;
             hex_int = getHexByte(hex_str+2*i+2*j);
 
@@ -82,7 +82,7 @@ char *hex2b64_str(const char *hex_str)
             b64_int = (hex_int & 0x0F) << 2;
 
             /* if we have more bytes to go */
-            if (j+1 < nbyte_in) {
+            if (i+j+1 < nbyte_in) {
                 j++;
                 hex_int = getHexByte(hex_str+2*i+2*j);
                 /* Add third character */
@@ -102,7 +102,7 @@ char *hex2b64_str(const char *hex_str)
             }
 
         /* There is only 1 byte of input, so interpret 2nd character with two
-         * "0x00" bytes appended, and pad with an '=' character */
+         * "0x00" bytes appended, and pad with two '=' characters */
         } else {
             *p++ = B64_LUT[b64_int];
             strncat(b64_str, "==", 2);
