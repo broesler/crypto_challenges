@@ -9,6 +9,8 @@
 #include "crypto_util.h"
 #include "header.h"
 
+static const char *HEX_LUT = "0123456789ABCDEF";
+
 /*------------------------------------------------------------------------------ 
  *          Convert string to uppercase (in-place)
  *----------------------------------------------------------------------------*/
@@ -57,7 +59,10 @@ int getHexByte(const char *hex)
         if      (p >= 'a' && p <= 'f') { c = p - 'a' + 10; } 
         else if (p >= 'A' && p <= 'F') { c = p - 'A' + 10; } 
         else if (p >= '0' && p <= '9') { c = p - '0'; }
-        else { ERROR("Invalid hex character!"); } 
+        else { 
+            errno = ERANGE; 
+            ERROR("Invalid hex character!"); 
+        } 
 
         u <<= 4;
         u += c;
@@ -72,7 +77,6 @@ int getHexByte(const char *hex)
 /* Take each 8-bit character and convert it to 2, 4-bit characters */
 char *atoh(char *str)
 {
-    static const char *lut = "0123456789ABCDEF";
     size_t len = strlen(str);
 
     char *hex = init_str(2*len); /* allocate memory */
@@ -80,8 +84,8 @@ char *atoh(char *str)
 
     for (char *c = str; *c; c++)
     {
-        *p++ = lut[*c >> 0x04]; /* take first nibble (4 bits) */
-        *p++ = lut[*c  & 0x0F]; /* take next  nibble */
+        *p++ = HEX_LUT[*c >> 0x04]; /* take first nibble (4 bits) */
+        *p++ = HEX_LUT[*c  & 0x0F]; /* take next  nibble */
     }
     return hex;
 }
@@ -111,6 +115,12 @@ char *htoa(const char *hex)
 }
 
 /*------------------------------------------------------------------------------
+ *         Convert hex to binary string??
+ *----------------------------------------------------------------------------*/
+/* char *htob(const char *hex) */
+/* { return NULL; } */
+
+/*------------------------------------------------------------------------------
  *          Determine if string is printable
  *----------------------------------------------------------------------------*/
 int isprintable(const char *s)
@@ -118,7 +128,6 @@ int isprintable(const char *s)
     while (*s && (isprint((unsigned char)*s) || isspace((unsigned char)*s))) s++;
     return (*s == '\0'); /* non-zero if true, zero if false */
 }
-
 
 /*------------------------------------------------------------------------------
  *         Allocate memory for string
@@ -140,6 +149,7 @@ int *init_int(size_t len)
     MALLOC_CHECK(buffer);
     return buffer;
 }
+
 
 /*------------------------------------------------------------------------------
  *         Repeat hex string 
@@ -189,8 +199,48 @@ size_t hamming_weight(const char *a)
 }
 
 /*------------------------------------------------------------------------------
- *         Convert hex to binary string 
+ *         Read file as single string 
  *----------------------------------------------------------------------------*/
+char *fileToString(char *filename, long *file_length)
+{
+    FILE *fp = NULL;
+    char *buffer = NULL;
+    int result = 0;
+    char message[2*MAX_STR_LEN];
+
+    /*------ Determine length of temp file -------------*/
+    fp = fopen(filename, "r");
+    if (fp == NULL) {
+        snprintf(message, 2*MAX_STR_LEN, "File %s could not be read!", filename);
+        LOG(message);
+        exit(-1);
+    }
+
+    fseek(fp, 0, SEEK_END);   /* move pointer to end of file */
+    *file_length = ftell(fp);
+    rewind(fp);               /* reset to top of file */
+
+    /*------ malloc buffer to file_length+1 ------------*/
+    buffer = malloc(*file_length*sizeof(char) + 1);
+    MALLOC_CHECK(buffer);
+
+    /* set the memory to zero before you copy in. The file_length+1 byte will be
+     * 0 which is NULL '\0' */
+    BZERO(buffer, *file_length*sizeof(char));
+
+    /*------ read temp into buffer ------*/
+    result = fread(buffer, sizeof(char), *file_length, fp);
+
+    if (result != *file_length) {
+        WARNING("File read error!");
+        free(buffer);
+        return NULL;
+    }
+
+    /* free file pointer */
+    fclose(fp);
+    return buffer;
+}
 
 /*==============================================================================
  *============================================================================*/

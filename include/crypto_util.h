@@ -9,6 +9,7 @@
 #define _CRYPTO_UTIL_H_
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,7 +39,7 @@ char *htoa(const char *str);
 
 // Decode hexadecimal string to integer array
 // int *htoi(char *hex);
-int htoi(const char *s, unsigned long *out);
+// int htoi(const char *s, unsigned long *out);
 
 // Determine if string has non-printable characters
 int isprintable(const char *s);
@@ -57,6 +58,10 @@ size_t indexof(const char *str, char c);
 
 // Hamming weight of hex string 
 size_t hamming_weight(const char *a);
+
+// Read file as single string 
+char *fileToString(char *filename, long *file_length);
+
 #endif
 //==============================================================================
 //==============================================================================

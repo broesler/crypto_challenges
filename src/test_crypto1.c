@@ -15,6 +15,8 @@
 #include "crypto1.h"
 #include "unit_test.h"
 
+/* TODO split into "test_util" and "test_crypto1" for better maintenance */
+
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
@@ -302,12 +304,13 @@ int SingleByte1()
     char hex1[]   = "1b37373331363f78151b7f2b783431333d78" \
                     "397828372d363c78373e783a393b3736";
     char expect[] = "Cooking MC's like a pound of bacon";
+    float tol = 1e-4;
+    float score_expect = 34.2697034515381986;
     XOR_NODE *out = singleByteXORDecode(hex1);
     SHOULD_BE(out->key == 0x58);
     SHOULD_BE(!strcmp(out->plaintext, expect));
-    float tol = 1e-4;
-    float score_expect = 34.2697034515381986;
     SHOULD_BE(fabsf(out->score - score_expect) < tol);
+    SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
     printf("key   = 0x%0.2X\n",        out->key);
     printf("score = %20.16f\n",        out->score);
@@ -378,6 +381,58 @@ int HammingDist1()
     END_TEST_CASE;
 }
 
+/* Test break repeating key XOR */
+int BreakRepeatingXOR1()
+{
+    START_TEST_CASE;
+    char input_hex[] = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d" \
+                       "63343c2a26226324272765272a282b2f20430a652e2c652a31" \
+                       "24333a653e2b2027630c692b20283165286326302e27282f";
+    char *input_b64 = hex2b64_str(input_hex);
+    char key[] = "ICE";
+    char *key_hex = atoh(key);
+    char expect[] = "Burning 'em, if you ain't quick and nimble\n" \
+                    "I go crazy when I hear a cymbal";
+    XOR_NODE *out = breakRepeatingXOR(input_b64);
+    SHOULD_BE(out->key == 0x494345);
+    SHOULD_BE(!strcmp(out->plaintext, expect));
+    /* SHOULD_BE(fabsf(out->score - score_expect) < tol); */
+    SHOULD_BE(out->file_line == 0);
+#ifdef LOGSTATUS
+    printf("key   = 0x%0.2X\n",        out->key);
+    printf("score = %20.16f\n",        out->score);
+    printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
+#endif
+    free(input_b64);
+    free(key_hex);
+    free(out);
+    END_TEST_CASE;
+}
+
+/* Test break repeating key XOR */
+int BreakRepeatingXOR2()
+{
+    START_TEST_CASE;
+    /* char doc[MAX_STR_LEN]; */
+    char message[2*MAX_STR_LEN];
+    /* load document as string */
+    /* BZERO(doc, MAX_STR_LEN*sizeof(char)); */
+    /* MYASSERT( snprintf(doc, MAX_STR_LEN, "../data/6.txt") ); */
+    char *doc = "../data/6.txt";
+    long file_length = 0;
+    char *page = fileToString(doc, &file_length);
+    if (page == NULL) {
+        snprintf(message, 2*MAX_STR_LEN, "File %s not read correctly.", doc);
+        ERROR(message);
+    }
+    /* printf("%s\nlength: %ld\n", page, file_length); */
+    SHOULD_BE(file_length == 3900);
+    XOR_NODE *out = breakRepeatingXOR(page);
+    free(page);
+    free(out);
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -391,7 +446,7 @@ int main(void)
     /* RUN_TEST(HexConvert1,      "atoh(),htoa()         "); */
     /* RUN_TEST(HexConvert2,      "hex2b64_str() 1       "); */
     /* RUN_TEST(HexConvert3,      "hex2b64_str() 2       "); */
-    RUN_TEST(HexConvert4,      "hex2b64_str() 3       ");
+    /* RUN_TEST(HexConvert4,      "hex2b64_str() 3       "); */
     /* RUN_TEST(B64Convert1,      "b642hex_str() 1       "); */
     /* RUN_TEST(B64Convert2,      "b642hex_str() 2       "); */
     /* RUN_TEST(FixedXOR1,        "fixedXOR()            "); */
@@ -404,7 +459,7 @@ int main(void)
     /* RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   "); */
     /* RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     "); */
     /* RUN_TEST(HammingDist1,     "hamming_dist()        "); */
-    /* RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 "); */
+    RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 ");
     /* RUN_TEST(BreakRepeatingXOR2,"breakRepeatingXOR() 2 "); */
 
     /* Count errors */

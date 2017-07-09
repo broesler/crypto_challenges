@@ -13,15 +13,8 @@
 #include "header.h"
 
 /* Globals */
-// <https://en.wikipedia.org/wiki/Letter_frequency>
-// Indexed [A-Z] - 'A' == 0 -- 25
-const float ENGLISH_FREQ[] = 
-    { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \
-      0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \
-      0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \
-      0.00978, 0.02360, 0.00150, 0.01974, 0.00074 };
-
-const char B64_LUT[] = 
+/* Used in hex2b64_str() and b642hex_str(): */
+static const char B64_LUT[] = 
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
 /*------------------------------------------------------------------------------
@@ -232,7 +225,15 @@ int *countChars(const char *s)
  *----------------------------------------------------------------------------*/
 float charFreqScore(const char *str)
 {
-    const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";  /* acceptable chars */
+    /* <https://en.wikipedia.org/wiki/Letter_frequency> */
+    /* Indexed [A-Z] - 'A' == 0 -- 25 */
+    static const float ENGLISH_FREQ[] = 
+        { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \
+        0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \
+        0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \
+        0.00978, 0.02360, 0.00150, 0.01974, 0.00074 };
+    /* ordering by frequency of acceptable chars */
+    static const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
     float N = 0,
           Nl = 0,
           letter_frac = 1,
@@ -294,6 +295,27 @@ char *singleByteXOREncode(const char *hex, const char *key)
 }
 
 /*------------------------------------------------------------------------------
+ *         Allocate memory and initialize an XOR_NODE 
+ *----------------------------------------------------------------------------*/
+XOR_NODE *init_xor_node(void)
+{
+    XOR_NODE *out = NULL;
+
+    /* Allocate memory for the output */
+    out = NEW(XOR_NODE);
+    MALLOC_CHECK(out);
+    BZERO(out, sizeof(XOR_NODE));
+
+    /* Initialize fields */
+    out->key = 0;
+    BZERO(out->plaintext, sizeof(out->plaintext));
+    out->score = FLT_MAX; /* initialize to large number */
+    out->file_line = 0;
+
+    return out;
+}
+
+/*------------------------------------------------------------------------------
  *         Decode a string XOR'd against a single character
  *----------------------------------------------------------------------------*/
 XOR_NODE *singleByteXORDecode(const char *hex)
@@ -302,15 +324,7 @@ XOR_NODE *singleByteXORDecode(const char *hex)
     size_t len = strlen(hex);
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
 
-    /* Allocate memory for the output */
-    out = NEW(XOR_NODE);
-    MALLOC_CHECK(out);
-    BZERO(out, sizeof(XOR_NODE));
-
-    /* initialize fields */
-    out->key = 0;
-    BZERO(out->plaintext, sizeof(out->plaintext));
-    out->score = FLT_MAX; /* initialize to large number */
+    out = init_xor_node();
 
     char key[3];            /* i.e. 0x01 --> '01' */
     BZERO(key, 3);
@@ -319,8 +333,8 @@ XOR_NODE *singleByteXORDecode(const char *hex)
     for (int i = 0x01; i < 0x100; i++) {
         snprintf(key, 3, "%0.2X", i);
         char *xor = singleByteXOREncode(hex, key); /* Decode hex string */
-        char *ptext = htoa(xor);                 /* Convert to ASCII text */
-        float cfreq_score = FLT_MAX;             /* initialize to high value */
+        char *ptext = htoa(xor);                   /* Convert to ASCII text */
+        float cfreq_score = FLT_MAX;               /* initialize large value */
 
         /* Make sure string does not contain NULL chars, and is printable */
         int test = ((strlen(ptext) == len/2) && (isprintable(ptext)));
@@ -360,16 +374,7 @@ XOR_NODE *findSingleByteXOR(const char *filename)
     BZERO(buffer, MAX_WORD_LEN);
     BZERO(message, 2*MAX_PAGE_NUM);
 
-    /* Allocate memory for the output */
-    out = NEW(XOR_NODE);
-    MALLOC_CHECK(out);
-    BZERO(out, sizeof(XOR_NODE));
-
-    /* Initialize fields */
-    out->key = 0;
-    BZERO(out->plaintext, sizeof(out->plaintext));
-    out->score = FLT_MAX; /* initialize to large number */
-    out->file_line = 0;
+    out = init_xor_node();
 
     /* open file stream */
     fp = fopen(filename, "r");
@@ -444,5 +449,38 @@ size_t hamming_dist(const char *a, const char *b)
     char *xor = fixedXOR(a, b); /* XOR returns differing bits */
     return hamming_weight(xor);
 }
+
+/*------------------------------------------------------------------------------
+ *         Break repeating key XOR cipher 
+ *----------------------------------------------------------------------------*/
+XOR_NODE *breakRepeatingXOR(const char *b64_str)
+{
+    XOR_NODE *out = NULL;
+
+    /* TODO change XOR_NODE.plaintext to just pointer and malloc appropriate
+     * size each time? i.e. only need 60 chars or so for single strings. Pass
+     * in string size to init function*/
+    out = init_xor_node();
+
+    /* convert file from b64 to hex */
+    char *hex = b642hex_str(b64_str);
+    size_t len = strlen(hex);
+
+    /* Determine probable key length */
+    int n_chunks = 4;
+    int max_key_len = (int)min(40.0, (float)len/(2*(float)n_chunks)) ;
+    printf("max_key_len = %d\n", max_key_len);
+    /* for (int k = 2; k < max_key_len; k++) */
+    /* { */
+    /* } */
+    /* Get average of Hamming distances from all possible pairs? */
+    /* Take key with minimum mean Hamming distance. */
+    /* Take every kth char of hex into array and run singleByteXORDecode to get
+     * each byte of key + actual message! */
+
+    free(hex);
+    return out;
+}
+
 /*==============================================================================
  *============================================================================*/

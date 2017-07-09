@@ -17,6 +17,9 @@
 #define MAX_PAGE_NUM 1000
 #define MAX_WORD_LEN 10000
 
+// Take minimum, but don't bother with type checking
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 //------------------------------------------------------------------------------
 //      Structures
 //------------------------------------------------------------------------------
@@ -51,6 +54,9 @@ float charFreqScore(const char *str);
 // Single byte XOR encode
 char *singleByteXOREncode(const char *hex, const char *key);
 
+// Allocate memory and initialize an XOR_NODE
+XOR_NODE *init_xor_node(void);
+
 // Single byte XOR decode
 XOR_NODE *singleByteXORDecode(const char *hex);
 
@@ -62,6 +68,11 @@ char *repeatingKeyXOR(const char *input_hex, const char *key_hex);
 
 // Compute Hamming distance between strings 
 size_t hamming_dist(const char *a, const char *b);
+
+//  Break repeating key XOR cipher 
+XOR_NODE *breakRepeatingXOR(const char *b64_str);
+
+
 #endif
 //==============================================================================
 //==============================================================================
