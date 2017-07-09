@@ -8,7 +8,6 @@
  *============================================================================*/
 /* System headers */
 #include <math.h>
-#include <string.h>
 
 /* User-defined headers */
 #include "header.h"
@@ -47,49 +46,6 @@ int GetHexByte1()
     char hex3[] = "4d616E";
     hex_int = getHexByte(hex3);
     SHOULD_BE(hex_int == 77);
-    END_TEST_CASE;
-}
-
-/* Test getHexByte function */
-int GetHexByte2()
-{
-    START_TEST_CASE;
-    char **hex1 = calloc(0x100, sizeof(char*));
-    MALLOC_CHECK(hex1);
-    int hex_int;
-    char ascii;
-    /* char ascii[2]; */
-    /* BZERO(ascii, 2); */
-    /* char ascii_str[0x100]; */
-    /* BZERO(ascii_str, 0x100); */
-    char *ascii_str = init_str(0x100);
-    /* char test_str[0x100]; */
-    char *test_str = init_str(0x100);
-    char *p = test_str;
-    for (size_t i = 0; i < 0x100; i++)
-    {
-        hex1[i] = init_str(2);
-        snprintf(hex1[i], 3, "%0.2zX", i);
-        hex_int = getHexByte(hex1[i]);
-        ascii = (char)hex_int;
-        /* snprintf(ascii, 2, "%c", hex_int); */
-        strncat(ascii_str, &ascii, 1);
-        *p++ = (char)getHexByte(hex1[i]);
-        if (isprint(hex_int)) {
-            printf("%s\t%0.3d\t'%c'\t'%c'\n", hex1[i], hex_int, ascii, *(p-1));
-            /* This line prints NOTHING for last char */
-            /* printf("%s\t%0.3d\t'%c'\t'%c'\n", hex1[i], hex_int, ascii, *(test_str+i)); */
-        /* } else { */
-        /*     printf("%s\t%0.3d\n", hex1[i], hex_int); */
-        }
-        free(hex1[i]);
-    }
-    printf("ascii: %s\n", ascii_str);
-    printf(" test: %s\n", test_str);
-    printf("strcmp =  %d\n", strcmp(ascii_str, test_str));
-    SHOULD_BE(!strcmp(ascii_str, test_str));
-    free(test_str);
-    free(hex1);
     END_TEST_CASE;
 }
 
@@ -412,8 +368,7 @@ int main(void)
     int total = 0;
 
     /* RUN_TEST(StrToUpper1,      "strtoupper()          "); */
-    RUN_TEST(GetHexByte1,      "getHexByte() 1        ");
-    RUN_TEST(GetHexByte2,      "getHexByte() 2        ");
+    RUN_TEST(GetHexByte1,      "getHexByte()          ");
     RUN_TEST(HexConvert1,      "atoh(),htoa()         ");
     /* RUN_TEST(HexConvert2,      "hex2b64_str() 1       "); */
     /* RUN_TEST(HexConvert3,      "hex2b64_str() 2       "); */
@@ -426,7 +381,7 @@ int main(void)
     /* RUN_TEST(CharFreqScore1,   "charFreqScore()       "); */
     RUN_TEST(SingleByte1,      "singleByteXORDecode() ");
     /* Don't always run this file test, it's a bit slow */
-    RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   ");
+    /* RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   "); */
     /* RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     "); */
     /* RUN_TEST(HammingDist1,     "hamming_dist()        "); */
 
