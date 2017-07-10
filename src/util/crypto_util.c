@@ -95,12 +95,12 @@ char *atoh(char *str)
  *----------------------------------------------------------------------------*/
 char *htoa(const char *hex)
 {
-    size_t len = strlen(hex);
+    size_t nchar = strlen(hex);
 
     /* Check for odd-length inputs */
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
+    if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
 
-    size_t nbyte = len/2;
+    size_t nbyte = nchar/2;
 
     char *str_t = init_str(nbyte); /* allocate memory */
     char *p = str_t;
@@ -141,6 +141,33 @@ char *init_str(size_t len)
 }
 
 /*------------------------------------------------------------------------------
+ *         Allocate memory for array of strings of given length
+ *----------------------------------------------------------------------------*/
+char **init_str_arr(size_t nstr, size_t len)
+{
+    char **str_arr = malloc(nstr*sizeof(char *));
+    MALLOC_CHECK(str_arr);
+    BZERO(str_arr, nstr*sizeof(char *));
+
+    for (size_t i = 0; i < nstr; i++) {
+        *(str_arr+i) = init_str(len);
+    }
+    return str_arr;
+}
+
+/*------------------------------------------------------------------------------
+ *         Free string array 
+ *----------------------------------------------------------------------------*/
+void free_str_arr(char **str_arr, size_t nstr)
+{
+    for (size_t i = 0; i < nstr; i++) { 
+        if (*(str_arr+i)) { free(*(str_arr+i)); }
+        /* if (str_arr[i]) free(str_arr[i]); */
+    }
+    free(str_arr);
+}
+
+/*------------------------------------------------------------------------------
  *         Allocate memory for int
  *----------------------------------------------------------------------------*/
 int *init_int(size_t len)
@@ -154,15 +181,13 @@ int *init_int(size_t len)
 /*------------------------------------------------------------------------------
  *         Repeat hex string 
  *----------------------------------------------------------------------------*/
-char *strnrepeat_hex(const char *src, size_t src_len, size_t len)
+char *strnrepeat_hex(const char *src, size_t src_len, size_t nchar)
 {
-    char *dest = init_str(len);
-
+    char *dest = init_str(nchar);
     /* Assumes strings are hex-encoded, so 2 chars == 1 byte */
-    for (int i = 0; i < len/2; i++) {
+    for (int i = 0; i < nchar/2; i++) {
         strncat(dest, &src[2*(i % (src_len/2))], 2);
     }
-
     return dest;
 }
 
@@ -180,10 +205,10 @@ size_t indexof(const char *str, char c)
  *----------------------------------------------------------------------------*/
 size_t hamming_weight(const char *hex)
 {
-    size_t len = strlen(hex);
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
+    size_t nchar = strlen(hex);
+    if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
 
-    size_t nbyte = len/2;
+    size_t nbyte = nchar/2;
     size_t weight = 0;
     int x = 0,
         count = 0;

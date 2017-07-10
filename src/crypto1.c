@@ -7,6 +7,7 @@
  *
  *============================================================================*/
 #include <float.h>
+#include <math.h>
 
 #include "crypto1.h"
 #include "crypto_util.h"
@@ -275,24 +276,6 @@ float charFreqScore(const char *str)
     return score;
 }
 
-/*------------------------------------------------------------------------------
- *         Encode a string with a single byte XOR cipher
- *----------------------------------------------------------------------------*/
-char *singleByteXOREncode(const char *hex, const char *key)
-{
-    size_t len = strlen(hex);
-    size_t key_len = strlen(key);
-    if ((len & 1) || (key_len & 1)) {
-        ERROR("Input string is not a valid hex string!");
-    }
-
-    char *key_str = strnrepeat_hex(key, key_len, len);
-
-    /* XOR each byte in the ciphertext with the key */
-    char *xor = fixedXOR(hex, key_str);
-    free(key_str);
-    return xor;
-}
 
 /*------------------------------------------------------------------------------
  *         Allocate memory and initialize an XOR_NODE
@@ -321,8 +304,8 @@ XOR_NODE *init_xor_node(void)
 XOR_NODE *singleByteXORDecode(const char *hex)
 {
     XOR_NODE *out = NULL;
-    size_t len = strlen(hex);
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
+    size_t nchar = strlen(hex);
+    if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
 
     out = init_xor_node();
 
@@ -332,12 +315,12 @@ XOR_NODE *singleByteXORDecode(const char *hex)
     /* test each possible character byte */
     for (int i = 0x01; i < 0x100; i++) {
         snprintf(key, 3, "%0.2X", i);
-        char *xor = singleByteXOREncode(hex, key); /* Decode hex string */
-        char *ptext = htoa(xor);                   /* Convert to ASCII text */
-        float cfreq_score = FLT_MAX;               /* initialize large value */
+        char *xor = repeatingKeyXOR(hex, key);  /* Decode hex string */
+        char *ptext = htoa(xor);               /* Convert to ASCII text */
+        float cfreq_score = FLT_MAX;           /* initialize large value */
 
         /* Make sure string does not contain NULL chars, and is printable */
-        int test = ((strlen(ptext) == len/2) && (isprintable(ptext)));
+        int test = ((strlen(ptext) == nchar/2) && (isprintable(ptext)));
 
         if (test) {
             cfreq_score = charFreqScore(ptext);  /* calculate string score */
@@ -426,17 +409,17 @@ XOR_NODE *findSingleByteXOR(const char *filename)
 /*------------------------------------------------------------------------------
  *         Encode hex string using repeating-key XOR
  *----------------------------------------------------------------------------*/
-char *repeatingKeyXOR(const char *input_hex, const char *key_hex)
+char *repeatingKeyXOR(const char *hex, const char *key_hex)
 {
-    size_t len = strlen(input_hex);
+    size_t nchar   = strlen(hex);
     size_t key_len = strlen(key_hex);
-    if ((len & 1) || (key_len & 1)) {
+    if ((nchar & 1) || (key_len & 1)) {
         ERROR("Input string is not a valid hex string!");
     }
 
     /* XOR each byte in the ciphertext with the key */
-    char *key_str = strnrepeat_hex(key_hex, key_len, len);
-    char *xor = fixedXOR(input_hex, key_str);
+    char *key_str = strnrepeat_hex(key_hex, key_len, nchar);
+    char *xor = fixedXOR(hex, key_str);
     free(key_str);
     return xor;
 }
@@ -456,25 +439,25 @@ size_t hamming_dist(const char *a, const char *b)
 /*------------------------------------------------------------------------------
  *         Get most probable key length of repeating XOR 
  *----------------------------------------------------------------------------*/
-unsigned int getKeyLength(const char *hex)
+size_t getKeyLength(const char *hex)
 {
     int n_samples = 7;   /* number of Hamming distances to take */
-    unsigned int key_len = -1;
+    size_t key_byte = 0;
     float min_mean_dist = FLT_MAX;
 
-    size_t len = strlen(hex);
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
-    size_t nbyte = len/2;
+    size_t nchar = strlen(hex);
+    if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
+    size_t nbyte = nchar/2;
 
     /*---------- Determine probable key length ----------*/
     /* key length in bytes */
-    unsigned int max_key_len = (unsigned int)min(40.0, nbyte/(2.0*n_samples));
+    size_t max_key_len = (unsigned int)min(40.0, nbyte/(2.0*n_samples));
 
     /* Allocate 2 strings of max key length bytes */
     char *a = init_str(2*max_key_len);
     char *b = init_str(2*max_key_len);
 
-    for (unsigned int k = 2; k <= max_key_len; k++) {
+    for (size_t k = 2; k <= max_key_len; k++) {
         /* Get total Hamming distance of all samples */
         unsigned long tot_dist = 0;
 
@@ -488,24 +471,24 @@ unsigned int getKeyLength(const char *hex)
         float norm_tot = tot_dist / (8.0*k);
         float mean_dist = norm_tot / n_samples;
 #ifdef LOGSTATUS
-        printf("%3d\t%5lu\t%8.4f\t%8.4f\n", k, tot_dist, norm_tot, mean_dist);
+        printf("%3zu\t%5lu\t%8.4f\t%8.4f\n", k, tot_dist, norm_tot, mean_dist);
 #endif
 
         /* Take key with minimum mean Hamming distance. */
         if (mean_dist < min_mean_dist) {
             min_mean_dist = mean_dist;
-            key_len = k;
+            key_byte = k;
         }
     }
 
 #ifdef LOGSTATUS
-    printf("key_len  = %d\n", key_len);
+    printf("key_byte  = %zu\n", key_byte);
     printf("min_dist = %6.4f\n", min_mean_dist);
 #endif
 
     free(a);
     free(b);
-    return key_len;
+    return key_byte;
 }
 
 /*------------------------------------------------------------------------------
@@ -513,21 +496,47 @@ unsigned int getKeyLength(const char *hex)
  *----------------------------------------------------------------------------*/
 XOR_NODE *breakRepeatingXOR(const char *b64_str)
 {
-    XOR_NODE *out = NULL;
-    /* TODO change XOR_NODE.plaintext to just pointer and malloc appropriate
-     * size each time? i.e. only need 60 chars or so for single strings. Pass
-     * in string size to init function*/
-    out = init_xor_node();
-
     char *hex = b642hex_str(b64_str);
+    size_t nchar = strlen(hex);
 
     /* Get most probably key length -- could get 2-3 most probable, but try just
      * taking the best one first */
-    unsigned int key_len = getKeyLength(hex);
+    size_t key_byte = getKeyLength(hex);
 
-    /* Take every kth char of hex into array and run singleByteXORDecode to get
-     * each byte of key + actual message! */
+    /* Number of hex chars in each substring */
+    size_t strlen = (size_t)ceil(nchar/(2.0*key_byte));
 
+    /* TODO change XOR_NODE.plaintext to just pointer and malloc appropriate
+     * size each time? i.e. only need 60 chars or so for single strings. Pass
+     * in string size to init function*/
+    XOR_NODE *out = init_xor_node();
+
+    /* Initialize string array for decoding */
+    /* char **str_trans = init_str_arr(key_byte, strlen); */
+
+    for (size_t k = 0; k < key_byte; k++) {
+        /* Get every kth char from hex */
+        char *str = init_str(strlen);
+        for (size_t i = 0; i < strlen; i++) {
+            /* strncpy(*(str_trans+k)+2*i, hex+2*k+2*key_byte*i, 2); */
+            strncpy(str+2*i, hex+2*k+2*key_byte*i, 2);
+        }
+
+        /* Run single byte xor on each chunk */
+        /* XOR_NODE *temp = singleByteXORDecode(*(str_trans+k)); */
+        XOR_NODE *temp = singleByteXORDecode(str);
+        if (*temp->plaintext) {
+            /* keep kth byte of key */
+            strncpy(&out->key[2*k], temp->key, 2);
+        }
+        free(temp);
+    }
+
+    /* XOR original string with found key! */
+    /* char *ptext = repeatingKeyXOR(hex, out->key); */
+    /* strncpy(out->plaintext, ptext, strlen(ptext)); */
+
+    /* free_str_arr(str_trans, key_byte); */
     free(hex);
     return out;
 }

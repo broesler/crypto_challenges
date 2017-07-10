@@ -35,6 +35,28 @@ int StrToUpper1()
     END_TEST_CASE;
 }
 
+int StrArray1()
+{
+    START_TEST_CASE;
+    size_t nstr = 3;
+    size_t len = 30;
+    char **str_arr = init_str_arr(nstr, len);
+    strncpy(*(str_arr)  , "Hello, ",  len);
+    strncpy(*(str_arr+1), "World!",   len);
+    strncpy(*(str_arr+2), " Goodbye.", len);
+#ifdef LOGSTATUS
+    for (size_t i = 0; i < nstr; i++) {
+        printf("%s", *(str_arr+i));
+    }
+    printf("\n");
+#endif
+    SHOULD_BE(!strncmp(*(str_arr)  , "Hello, ",  len));
+    SHOULD_BE(!strncmp(*(str_arr+1), "World!",   len));
+    SHOULD_BE(!strncmp(*(str_arr+2), " Goodbye.", len));
+    free_str_arr(str_arr, nstr);
+    END_TEST_CASE;
+}
+
 /* Test getHexByte function */
 int GetHexByte1()
 {
@@ -439,6 +461,7 @@ int main(void)
     int total = 0;
 
     /* RUN_TEST(StrToUpper1,      "strtoupper()          "); */
+    /* RUN_TEST(StrArray1,      "init_str_arr()          "); */
     /* RUN_TEST(GetHexByte1,      "getHexByte()          "); */
     /* RUN_TEST(HexConvert1,      "atoh(),htoa()         "); */
     /* RUN_TEST(HexConvert2,      "hex2b64_str() 1       "); */

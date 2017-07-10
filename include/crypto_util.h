@@ -47,6 +47,12 @@ int isprintable(const char *s);
 // Initialize string (char array)
 char *init_str(const size_t len);
 
+// Allocate memory for array of strings of given length
+char **init_str_arr(size_t nstr, size_t len);
+
+// Free string array 
+void free_str_arr(char **str_arr, size_t nstr);
+
 // Initialize integer array
 int *init_int(const size_t len);
 

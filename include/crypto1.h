@@ -52,9 +52,6 @@ int *countChars(const char *s);
 // Character frequency score
 float charFreqScore(const char *str);
 
-// Single byte XOR encode
-char *singleByteXOREncode(const char *hex, const char *key);
-
 // Allocate memory and initialize an XOR_NODE
 XOR_NODE *init_xor_node(void);
 
@@ -71,7 +68,7 @@ char *repeatingKeyXOR(const char *input_hex, const char *key_hex);
 size_t hamming_dist(const char *a, const char *b);
 
 // Get most probable key length of repeating XOR 
-unsigned int getKeyLength(const char *hex);
+size_t getKeyLength(const char *hex);
 
 //  Break repeating key XOR cipher 
 XOR_NODE *breakRepeatingXOR(const char *b64_str);
