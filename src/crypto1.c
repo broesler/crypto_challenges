@@ -203,23 +203,6 @@ char *fixedXOR(const char *str1, const char *str2)
     return hex_str;
 }
 
-/*------------------------------------------------------------------------------
- *         Find character frequency in string
- *----------------------------------------------------------------------------*/
-int *countChars(const char *s)
-{
-    /* initialize array */
-    int *cf = init_int(NUM_LETTERS);
-
-    /* Count occurrences letters in the string */
-    while (*s) {
-        if      (*s >= 'A' && *s <= 'Z') { cf[*s-'A']++; }
-        else if (*s >= 'a' && *s <= 'z') { cf[*s-'a']++; }
-        else if (*s == 32) { cf[NUM_LETTERS-1]++; } /* count spaces */
-        s++;
-    }
-    return cf;
-}
 
 /*------------------------------------------------------------------------------
  *         Get character frequency score of string

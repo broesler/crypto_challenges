@@ -18,6 +18,7 @@
 //      Constants
 //------------------------------------------------------------------------------
 #define MAX_STR_LEN 4096
+#define NUM_LETTERS 27      // include space!!
 
 //------------------------------------------------------------------------------
 //      Function Definitions
@@ -62,8 +63,14 @@ char *strnrepeat_hex(const char *src, size_t src_len, size_t len);
 // Get index of character in string 
 size_t indexof(const char *str, char c);
 
+// Character frequency list
+int *countChars(const char *s);
+
 // Hamming weight of hex string 
 size_t hamming_weight(const char *a);
+
+// Compute Hamming distance between strings 
+size_t hamming_dist(const char *a, const char *b);
 
 // Read file as single string 
 char *fileToString(char *filename, long *file_length);
