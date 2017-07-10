@@ -146,6 +146,20 @@ int Strnrepeat1()
     END_TEST_CASE;
 }
 
+/* Test Hamming weight function */
+int HammingWeight1()
+{
+    START_TEST_CASE;
+    char *a = atoh("this is a test");
+    size_t dist = hamming_weight(a);
+    SHOULD_BE(dist == 48);
+#ifdef LOGSTATUS
+    printf("Got:    %zu\nExpect: %d\n", dist, 48);
+#endif
+    free(a);
+    END_TEST_CASE;
+}
+
 
 /*------------------------------------------------------------------------------
  *        Run tests
@@ -155,14 +169,14 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(StrToUpper1,  "strtoupper()     ");
-    RUN_TEST(StrArray1,    "init_str_arr()   ");
-    RUN_TEST(IsPrintable1, "isprintable()    ");
-    RUN_TEST(FindFreq1,    "countChars()     ");
-    RUN_TEST(GetHexByte1,  "getHexByte()     ");
-    RUN_TEST(HexConvert1,  "atoh(),htoa()    ");
-    RUN_TEST(Strnrepeat1,  "strnrepeat_hex() ");
-    /* RUN_TEST(HammingDist1, "hamming_dist()   "); */
+    RUN_TEST(StrToUpper1,    "strtoupper()     ");
+    RUN_TEST(StrArray1,      "init_str_arr()   ");
+    RUN_TEST(IsPrintable1,   "isprintable()    ");
+    RUN_TEST(FindFreq1,      "countChars()     ");
+    RUN_TEST(GetHexByte1,    "getHexByte()     ");
+    RUN_TEST(HexConvert1,    "atoh(),htoa()    ");
+    RUN_TEST(Strnrepeat1,    "strnrepeat_hex() ");
+    RUN_TEST(HammingWeight1, "hamming_dist()   ");
 
     /* Count errors */
     if (!fails) {

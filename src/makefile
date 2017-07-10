@@ -22,7 +22,7 @@ OPT = -I$(INCLDIR)
 
 # Define source files, utility files (function files)
 SRC = test_crypto1.c crypto1.c
-UTIL = $(wildcard $(UTILDIR)*.c)
+UTIL = $(UTILDIR)/crypto_util.c
 
 # Define object files
 OBJ = $(SRC:%.c=%.o) $(UTIL:%.c=%.o) 
