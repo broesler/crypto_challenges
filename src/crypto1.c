@@ -307,7 +307,7 @@ XOR_NODE *init_xor_node(void)
     BZERO(out, sizeof(XOR_NODE));
 
     /* Initialize fields */
-    out->key = 0;
+    BZERO(out->key, sizeof(out->key));
     BZERO(out->plaintext, sizeof(out->plaintext));
     out->score = FLT_MAX; /* initialize to large number */
     out->file_line = 0;
@@ -347,7 +347,8 @@ XOR_NODE *singleByteXORDecode(const char *hex)
 #endif
             /* Track minimum chi-squared score and actual key */
             if (cfreq_score < out->score) {
-                out->key = i;
+                BZERO(out->key, sizeof(out->key));
+                strncpy(out->key, key, strlen(key));
                 BZERO(out->plaintext, sizeof(out->plaintext));
                 strncpy(out->plaintext, ptext, strlen(ptext));
                 out->score = cfreq_score;
@@ -401,13 +402,14 @@ XOR_NODE *findSingleByteXOR(const char *filename)
         if (*temp->plaintext) {
             /* Track {key, string, score} by lowest score */
             if (temp->score < out->score) {
-                out->key = temp->key;
+                BZERO(out->key, sizeof(out->key));
+                strncpy(out->key, temp->key, strlen(temp->key));
                 BZERO(out->plaintext, sizeof(out->plaintext));
                 strncpy(out->plaintext, temp->plaintext, strlen(temp->plaintext));
                 out->score = temp->score;
                 out->file_line = file_line;
             }
-        } 
+        }
 #ifdef LOGSTATUS
         else { printf("\x1B[A\r"); /* move cursor up and overwrite */ }
 #endif

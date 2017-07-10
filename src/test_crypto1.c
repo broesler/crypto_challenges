@@ -307,12 +307,12 @@ int SingleByte1()
     float tol = 1e-4;
     float score_expect = 34.2697034515381986;
     XOR_NODE *out = singleByteXORDecode(hex1);
-    SHOULD_BE(out->key == 0x58);
+    SHOULD_BE(!strcmp(out->key, "58"));
     SHOULD_BE(!strcmp(out->plaintext, expect));
     SHOULD_BE(fabsf(out->score - score_expect) < tol);
     SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
-    printf("key   = 0x%0.2X\n",        out->key);
+    printf("key   = 0x%s\n",           out->key);
     printf("score = %20.16f\n",        out->score);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
@@ -334,7 +334,7 @@ int FileSingleByte1()
     SHOULD_BE(!strncmp(out->plaintext, expect, min_str_len));
 #ifdef LOGSTATUS
     printf("line  = %3d\n",            out->file_line);
-    printf("key   = 0x%0.2X\n",        out->key);
+    printf("key   = 0x%s\n",           out->key);
     printf("score = %8.4f\n",          out->score);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
@@ -394,13 +394,13 @@ int BreakRepeatingXOR1()
     char expect[] = "Burning 'em, if you ain't quick and nimble\n" \
                     "I go crazy when I hear a cymbal";
     XOR_NODE *out = breakRepeatingXOR(input_b64);
-    SHOULD_BE(out->key == 0x494345);
+    SHOULD_BE(!strcmp(out->key, "494345"));
     SHOULD_BE(!strcmp(out->plaintext, expect));
     /* SHOULD_BE(fabsf(out->score - score_expect) < tol); */
     SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
-    printf("key   = 0x%0.2X\n",        out->key);
-    printf("score = %20.16f\n",        out->score);
+    printf("key   = 0x%s\n",           out->key);
+    printf("score = %8.4f\n",          out->score);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
     free(input_b64);

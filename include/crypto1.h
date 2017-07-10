@@ -14,6 +14,7 @@
 //      Constants
 //------------------------------------------------------------------------------
 #define NUM_LETTERS 27      // include space!!
+#define MAX_KEY_LEN 100
 #define MAX_PAGE_NUM 1000
 #define MAX_WORD_LEN 10000
 
@@ -25,7 +26,7 @@
 //------------------------------------------------------------------------------
 // The character frequency structure contains the letter and its frequency
 typedef struct _XOR_NODE {
-    int key;
+    char key[MAX_KEY_LEN];
     char plaintext[MAX_WORD_LEN];
     float score;
     int file_line;
