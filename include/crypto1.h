@@ -70,6 +70,9 @@ char *repeatingKeyXOR(const char *input_hex, const char *key_hex);
 // Compute Hamming distance between strings 
 size_t hamming_dist(const char *a, const char *b);
 
+// Get most probable key length of repeating XOR 
+unsigned int getKeyLength(const char *hex);
+
 //  Break repeating key XOR cipher 
 XOR_NODE *breakRepeatingXOR(const char *b64_str);
 

@@ -14,7 +14,7 @@
 
 /* Globals */
 /* Used in hex2b64_str() and b642hex_str(): */
-static const char B64_LUT[] = 
+static const char B64_LUT[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
 /*------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ char *hex2b64_str(const char *hex_str)
 }
 
 /*------------------------------------------------------------------------------
- *         Convert base64 string to hexadecimal 
+ *         Convert base64 string to hexadecimal
  *----------------------------------------------------------------------------*/
 char *b642hex_str(const char *b64_str)
 {
@@ -132,7 +132,7 @@ char *b642hex_str(const char *b64_str)
         /* check for "=" padding in b64 string -- if we find one, s will point
          * to the end of the string, or 2nd to last character.   */
         char *s = strchr(b64_str, '=');
-        nbyte = nchr_in*3/4 - (s ? (nchr_in - (s - b64_str)) : 0); 
+        nbyte = nchr_in*3/4 - (s ? (nchr_in - (s - b64_str)) : 0);
     }
 
     /* hex output is longer, so we'll have exactly the right bytes */
@@ -203,7 +203,7 @@ char *fixedXOR(const char *str1, const char *str2)
 }
 
 /*------------------------------------------------------------------------------
- *         Find character frequency in string 
+ *         Find character frequency in string
  *----------------------------------------------------------------------------*/
 int *countChars(const char *s)
 {
@@ -227,7 +227,7 @@ float charFreqScore(const char *str)
 {
     /* <https://en.wikipedia.org/wiki/Letter_frequency> */
     /* Indexed [A-Z] - 'A' == 0 -- 25 */
-    static const float ENGLISH_FREQ[] = 
+    static const float ENGLISH_FREQ[] =
         { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \
         0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \
         0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \
@@ -250,8 +250,8 @@ float charFreqScore(const char *str)
     N = (float)strlen(str); /* all chars in array */
 
     /* Count just letters in string */
-    for (int j = 0; j < NUM_LETTERS; j++) { 
-        Nl += (float)cf[j]; 
+    for (int j = 0; j < NUM_LETTERS; j++) {
+        Nl += (float)cf[j];
     }
 
     /* Fraction of string that is just letters */
@@ -267,7 +267,7 @@ float charFreqScore(const char *str)
         /* sum actual letter counts, not frequencies */
         chi_sq += (observed - expected)*(observed - expected) / expected;
     }
-    
+
     /* Weight strings with more letter in them (vs non-letter chars) */
     score = chi_sq / (letter_frac*letter_frac);
 
@@ -276,14 +276,14 @@ float charFreqScore(const char *str)
 }
 
 /*------------------------------------------------------------------------------
- *         Encode a string with a single byte XOR cipher 
+ *         Encode a string with a single byte XOR cipher
  *----------------------------------------------------------------------------*/
 char *singleByteXOREncode(const char *hex, const char *key)
 {
     size_t len = strlen(hex);
     size_t key_len = strlen(key);
-    if ((len & 1) || (key_len & 1)) { 
-        ERROR("Input string is not a valid hex string!"); 
+    if ((len & 1) || (key_len & 1)) {
+        ERROR("Input string is not a valid hex string!");
     }
 
     char *key_str = strnrepeat_hex(key, key_len, len);
@@ -295,7 +295,7 @@ char *singleByteXOREncode(const char *hex, const char *key)
 }
 
 /*------------------------------------------------------------------------------
- *         Allocate memory and initialize an XOR_NODE 
+ *         Allocate memory and initialize an XOR_NODE
  *----------------------------------------------------------------------------*/
 XOR_NODE *init_xor_node(void)
 {
@@ -366,7 +366,7 @@ XOR_NODE *singleByteXORDecode(const char *hex)
 /*------------------------------------------------------------------------------
  *         Find single byte XOR string in a file
  *----------------------------------------------------------------------------*/
-XOR_NODE *findSingleByteXOR(const char *filename) 
+XOR_NODE *findSingleByteXOR(const char *filename)
 {
     XOR_NODE *out = NULL;
     FILE *fp = NULL;
@@ -391,7 +391,6 @@ XOR_NODE *findSingleByteXOR(const char *filename)
     while ( fgets(buffer, sizeof(buffer), fp) )
     {
         buffer[strcspn(buffer, "\n")] = 0;  /* remove trailing '\n' */
-        /* printf("%s\n", buffer); */
 
 #ifdef LOGSTATUS
         printf("---------- Line: %3d\n", file_line);
@@ -418,68 +417,103 @@ XOR_NODE *findSingleByteXOR(const char *filename)
     }
 
 #ifdef LOGSTATUS
-    printf("\x1B[A\r\n\n"); /* erase last title line */ 
+    printf("\x1B[A\r\n\n"); /* erase last title line */
 #endif
     fclose(fp);
     return out;
 }
 
 /*------------------------------------------------------------------------------
- *         Encode hex string using repeating-key XOR 
+ *         Encode hex string using repeating-key XOR
  *----------------------------------------------------------------------------*/
 char *repeatingKeyXOR(const char *input_hex, const char *key_hex)
 {
     size_t len = strlen(input_hex);
     size_t key_len = strlen(key_hex);
-    if ((len & 1) || (key_len & 1)) { 
-        ERROR("Input string is not a valid hex string!"); 
+    if ((len & 1) || (key_len & 1)) {
+        ERROR("Input string is not a valid hex string!");
     }
 
-    char *key_str = strnrepeat_hex(key_hex, key_len, len);
-
     /* XOR each byte in the ciphertext with the key */
+    char *key_str = strnrepeat_hex(key_hex, key_len, len);
     char *xor = fixedXOR(input_hex, key_str);
     free(key_str);
     return xor;
 }
 
 /*------------------------------------------------------------------------------
- *         Compute Hamming distance between strings 
+ *         Compute Hamming distance between strings
  *----------------------------------------------------------------------------*/
 size_t hamming_dist(const char *a, const char *b)
 {
     char *xor = fixedXOR(a, b); /* XOR returns differing bits */
-    return hamming_weight(xor);
+    size_t weight = hamming_weight(xor);
+    free(xor);
+    return weight;
 }
 
 /*------------------------------------------------------------------------------
- *         Break repeating key XOR cipher 
+ *         Break repeating key XOR cipher
  *----------------------------------------------------------------------------*/
 XOR_NODE *breakRepeatingXOR(const char *b64_str)
 {
     XOR_NODE *out = NULL;
+    int n_samples = 7;   /* number of Hamming distances to take */
+    int key_len = 0;
+    float min_mean_dist = FLT_MAX;
+
+    char *hex = b642hex_str(b64_str);   /* convert file from b64 to hex */
+
+    size_t len = strlen(hex);
+    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
+    size_t nbyte = len/2;
 
     /* TODO change XOR_NODE.plaintext to just pointer and malloc appropriate
      * size each time? i.e. only need 60 chars or so for single strings. Pass
      * in string size to init function*/
     out = init_xor_node();
 
-    /* convert file from b64 to hex */
-    char *hex = b642hex_str(b64_str);
-    size_t len = strlen(hex);
+    /*---------- Determine probable key length ----------*/
+    int max_key_len = (int)min(40.0, nbyte/(2.0*n_samples));   /* bytes */
 
-    /* Determine probable key length */
-    int n_chunks = 4;
-    int max_key_len = (int)min(40.0, (float)len/(2*(float)n_chunks)) ;
-    printf("max_key_len = %d\n", max_key_len);
-    /* for (int k = 2; k < max_key_len; k++) */
-    /* { */
-    /* } */
-    /* Get average of Hamming distances from all possible pairs? */
-    /* Take key with minimum mean Hamming distance. */
+    /* Allocate 2 strings of max key length bytes */
+    char *a = init_str(2*max_key_len);
+    char *b = init_str(2*max_key_len);
+
+    for (int k = 2; k <= max_key_len; k++) {
+        /* Get total Hamming distance of all samples */
+        unsigned long tot_dist = 0;
+
+        for (int i = 0; i < n_samples; i++) {
+            strncpy(a, hex+2*k*i,     2*k);   /* 2 hex chars == 1 byte */
+            strncpy(b, hex+2*k*(i+1), 2*k);
+            tot_dist += hamming_dist(a,b);
+        }
+
+        /* Average Hamming distances normalized by total bits in key */
+        float norm_tot = tot_dist / (8.0*k);
+        float mean_dist = norm_tot / n_samples;
+#ifdef LOGSTATUS
+        printf("%3d\t%5lu\t%8.4f\t%8.4f\n", k, tot_dist, norm_tot, mean_dist);
+#endif
+
+        /* Take key with minimum mean Hamming distance. */
+        if (mean_dist < min_mean_dist) {
+            min_mean_dist = mean_dist;
+            key_len = k;
+        }
+    }
+
+#ifdef LOGSTATUS
+    printf("key_len  = %d\n", key_len);
+    printf("min_dist = %6.4f\n", min_mean_dist);
+#endif
+
     /* Take every kth char of hex into array and run singleByteXORDecode to get
      * each byte of key + actual message! */
 
+    free(a);
+    free(b);
     free(hex);
     return out;
 }

@@ -413,13 +413,10 @@ int BreakRepeatingXOR1()
 int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
-    /* char doc[MAX_STR_LEN]; */
     char message[2*MAX_STR_LEN];
-    /* load document as string */
-    /* BZERO(doc, MAX_STR_LEN*sizeof(char)); */
-    /* MYASSERT( snprintf(doc, MAX_STR_LEN, "../data/6.txt") ); */
-    char *doc = "../data/6.txt";
+    char doc[] = "../data/6.txt";
     long file_length = 0;
+    /* load document as string */
     char *page = fileToString(doc, &file_length);
     if (page == NULL) {
         snprintf(message, 2*MAX_STR_LEN, "File %s not read correctly.", doc);
@@ -458,7 +455,7 @@ int main(void)
     /* Don't always run this file test, it's a bit slow */
     /* RUN_TEST(FileSingleByte1,  "findSingleByteXOR()   "); */
     /* RUN_TEST(RepeatingKeyXOR1, "repeatingKeyXOR()     "); */
-    /* RUN_TEST(HammingDist1,     "hamming_dist()        "); */
+    /* RUN_TEST(HammingDist1,      "hamming_dist()        "); */
     RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 ");
     /* RUN_TEST(BreakRepeatingXOR2,"breakRepeatingXOR() 2 "); */
 

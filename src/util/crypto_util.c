@@ -178,17 +178,21 @@ size_t indexof(const char *str, char c)
 /*------------------------------------------------------------------------------
  *         Hamming weight of hex string 
  *----------------------------------------------------------------------------*/
-size_t hamming_weight(const char *a)
+size_t hamming_weight(const char *hex)
 {
+    size_t len = strlen(hex);
+    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
+
+    size_t nbyte = len/2;
     size_t weight = 0;
     int x = 0,
         count = 0;
 
-    /* Wegner (1960), x & x-1 zeros LSB, so repeat until convergence
+    /* Wegner (1960), x & x-1 zeros LSB, so repeat until x = 0
      * <https://en.wikipedia.org/wiki/Hamming_weight> */
     /* For each byte in string, sum the weights */
-    for (size_t i = 0; i < strlen(a); i+=2) { 
-        x = getHexByte(a+i); 
+    for (size_t i = 0; i < nbyte; i++) { 
+        x = getHexByte(hex+2*i);
         for (count = 0; x; count++) {
             x &= x - 1;
         }
@@ -210,7 +214,7 @@ char *fileToString(char *filename, long *file_length)
 
     /*------ Determine length of temp file -------------*/
     fp = fopen(filename, "r");
-    if (fp == NULL) {
+    if (!fp) {
         snprintf(message, 2*MAX_STR_LEN, "File %s could not be read!", filename);
         LOG(message);
         exit(-1);
@@ -223,9 +227,6 @@ char *fileToString(char *filename, long *file_length)
     /*------ malloc buffer to file_length+1 ------------*/
     buffer = malloc(*file_length*sizeof(char) + 1);
     MALLOC_CHECK(buffer);
-
-    /* set the memory to zero before you copy in. The file_length+1 byte will be
-     * 0 which is NULL '\0' */
     BZERO(buffer, *file_length*sizeof(char));
 
     /*------ read temp into buffer ------*/
