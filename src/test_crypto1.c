@@ -295,7 +295,6 @@ int BreakRepeatingXOR1()
     SHOULD_BE(out->file_line == 0);   /* unchanged */
 #ifdef LOGSTATUS
     printf("key   = 0x%s\n",           out->key);
-    /* printf("score = %8.4f\n",          out->score); */
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
     free(input_b64);
@@ -308,18 +307,18 @@ int BreakRepeatingXOR1()
 int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
-    char message[2*MAX_STR_LEN];
     char doc[] = "../data/6.txt";
     long file_length = 0;
-    /* load document as string */
     char *page = fileToString(doc, &file_length);
-    if (page == NULL) {
-        snprintf(message, 2*MAX_STR_LEN, "File %s not read correctly.", doc);
-        ERROR(message);
-    }
-    /* printf("%s\nlength: %ld\n", page, file_length); */
     SHOULD_BE(file_length == 3900);
     XOR_NODE *out = breakRepeatingXOR(page);
+    SHOULD_BE(out->score == FLT_MAX); /* unchanged */
+    SHOULD_BE(out->file_line == 0);   /* unchanged */
+    char expect[] = "???";
+#ifdef LOGSTATUS
+    printf("key   = 0x%s\n",           out->key);
+    printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
+#endif
     free(page);
     free(out);
     END_TEST_CASE;

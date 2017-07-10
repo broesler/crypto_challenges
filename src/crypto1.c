@@ -310,9 +310,9 @@ XOR_NODE *singleByteXORDecode(const char *hex)
             ptext[strcspn(ptext, "\n")] = 0;     /* remove any trailing '\n' */
             /* TODO organize statements like these that print a LOT of data into
              * a "VVERBOSE" flag for extra output */
-/* #ifdef LOGSTATUS */
-/*             printf("%0.2X\t%s\t%10.4e\n", i, ptext, cfreq_score); */
-/* #endif */
+#ifdef LOGSTATUS
+            printf("%0.2X\t%s\t%10.4e\n", i, ptext, cfreq_score);
+#endif
             /* Track minimum chi-squared score and actual key */
             if (cfreq_score < out->score) {
                 BZERO(out->key, sizeof(out->key));
@@ -467,8 +467,9 @@ size_t getKeyLength(const char *hex)
     }
 
 #ifdef LOGSTATUS
-    printf("key_byte  = %zu\n", key_byte);
-    printf("min_dist = %6.4f\n", min_mean_dist);
+    printf("n_samples = %d\n",    n_samples);
+    printf("key_byte  = %zu\n",   key_byte);
+    printf("min_dist  = %6.4f\n", min_mean_dist);
 #endif
 
     free(a);
