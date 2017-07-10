@@ -452,35 +452,29 @@ size_t hamming_dist(const char *a, const char *b)
     return weight;
 }
 
-/*------------------------------------------------------------------------------
- *         Break repeating key XOR cipher
- *----------------------------------------------------------------------------*/
-XOR_NODE *breakRepeatingXOR(const char *b64_str)
-{
-    XOR_NODE *out = NULL;
-    int n_samples = 7;   /* number of Hamming distances to take */
-    int key_len = 0;
-    float min_mean_dist = FLT_MAX;
 
-    char *hex = b642hex_str(b64_str);   /* convert file from b64 to hex */
+/*------------------------------------------------------------------------------
+ *         Get most probable key length of repeating XOR 
+ *----------------------------------------------------------------------------*/
+unsigned int getKeyLength(const char *hex)
+{
+    int n_samples = 7;   /* number of Hamming distances to take */
+    unsigned int key_len = -1;
+    float min_mean_dist = FLT_MAX;
 
     size_t len = strlen(hex);
     if (len & 1) { ERROR("Input string is not a valid hex string!"); }
     size_t nbyte = len/2;
 
-    /* TODO change XOR_NODE.plaintext to just pointer and malloc appropriate
-     * size each time? i.e. only need 60 chars or so for single strings. Pass
-     * in string size to init function*/
-    out = init_xor_node();
-
     /*---------- Determine probable key length ----------*/
-    int max_key_len = (int)min(40.0, nbyte/(2.0*n_samples));   /* bytes */
+    /* key length in bytes */
+    unsigned int max_key_len = (unsigned int)min(40.0, nbyte/(2.0*n_samples));
 
     /* Allocate 2 strings of max key length bytes */
     char *a = init_str(2*max_key_len);
     char *b = init_str(2*max_key_len);
 
-    for (int k = 2; k <= max_key_len; k++) {
+    for (unsigned int k = 2; k <= max_key_len; k++) {
         /* Get total Hamming distance of all samples */
         unsigned long tot_dist = 0;
 
@@ -509,11 +503,31 @@ XOR_NODE *breakRepeatingXOR(const char *b64_str)
     printf("min_dist = %6.4f\n", min_mean_dist);
 #endif
 
+    free(a);
+    free(b);
+    return key_len;
+}
+
+/*------------------------------------------------------------------------------
+ *         Break repeating key XOR cipher
+ *----------------------------------------------------------------------------*/
+XOR_NODE *breakRepeatingXOR(const char *b64_str)
+{
+    XOR_NODE *out = NULL;
+    /* TODO change XOR_NODE.plaintext to just pointer and malloc appropriate
+     * size each time? i.e. only need 60 chars or so for single strings. Pass
+     * in string size to init function*/
+    out = init_xor_node();
+
+    char *hex = b642hex_str(b64_str);
+
+    /* Get most probably key length -- could get 2-3 most probable, but try just
+     * taking the best one first */
+    unsigned int key_len = getKeyLength(hex);
+
     /* Take every kth char of hex into array and run singleByteXORDecode to get
      * each byte of key + actual message! */
 
-    free(a);
-    free(b);
     free(hex);
     return out;
 }
