@@ -287,7 +287,8 @@ int BreakRepeatingXOR1()
     char expect[] = "Burning 'em, if you ain't quick and nimble\n" \
                     "I go crazy when I hear a cymbal";
     XOR_NODE *out = breakRepeatingXOR(input_b64);
-    SHOULD_BE(!strcmp(out->key, "494345"));
+    /* SHOULD_BE(!strcmp(out->key, "494345")); */
+    SHOULD_BE(!strcmp(out->key, key_hex));
     SHOULD_BE(!strcmp(out->plaintext, expect));
     /* SHOULD_BE(fabsf(out->score - score_expect) < tol); */
     SHOULD_BE(out->file_line == 0);

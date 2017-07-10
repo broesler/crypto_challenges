@@ -7,7 +7,7 @@
  *
  *============================================================================*/
 #include <float.h>
-#include <math.h>
+/* #include <math.h> */
 
 #include "crypto1.h"
 #include "crypto_util.h"
@@ -481,45 +481,53 @@ XOR_NODE *breakRepeatingXOR(const char *b64_str)
 {
     char *hex = b642hex_str(b64_str);
     size_t nchar = strlen(hex);
+    size_t nbyte = nchar/2;
+    printf("nbyte = %zu\n", nbyte);
 
     /* Get most probably key length -- could get 2-3 most probable, but try just
      * taking the best one first */
     size_t key_byte = getKeyLength(hex);
 
-    /* Number of hex chars in each substring */
-    size_t strlen = (size_t)ceil(nchar/(2.0*key_byte));
+    /* Number of bytes in each substring */
+    size_t str_byte = (nbyte + (key_byte - (nbyte % key_byte))) / key_byte;
+    printf("str_byte = %zu\n", str_byte);
+    size_t str_len = 2*str_byte;
 
     /* TODO change XOR_NODE.plaintext to just pointer and malloc appropriate
      * size each time? i.e. only need 60 chars or so for single strings. Pass
      * in string size to init function*/
     XOR_NODE *out = init_xor_node();
 
-    /* Initialize string array for decoding */
-    /* char **str_trans = init_str_arr(key_byte, strlen); */
-
     for (size_t k = 0; k < key_byte; k++) {
+        printf("---------- k = %zu\n", k);
         /* Get every kth char from hex */
-        char *str = init_str(strlen);
-        for (size_t i = 0; i < strlen; i++) {
-            /* strncpy(*(str_trans+k)+2*i, hex+2*k+2*key_byte*i, 2); */
-            strncpy(str+2*i, hex+2*k+2*key_byte*i, 2);
+        char *str = init_str(str_len);
+        for (size_t i = 0; i < str_byte; i++) {
+            size_t ind = 2*k+2*i*key_byte;
+            printf("i = %zu\n", i);
+            printf("ind = %zu\n", ind);
+            if (ind < nchar) {
+                *(str+2*i)   = *(hex+ind);
+                *(str+2*i+1) = *(hex+ind+1);
+                printf("hex: %s\nstr: %s\n", hex+ind, str);
+            }
         }
 
-        /* Run single byte xor on each chunk */
-        /* XOR_NODE *temp = singleByteXORDecode(*(str_trans+k)); */
-        XOR_NODE *temp = singleByteXORDecode(str);
-        if (*temp->plaintext) {
-            /* keep kth byte of key */
-            strncpy(&out->key[2*k], temp->key, 2);
-        }
-        free(temp);
+        /* #<{(| Run single byte xor on each chunk |)}># */
+        /* XOR_NODE *temp = singleByteXORDecode(str); */
+        /* if (*temp->plaintext) { */
+        /*     #<{(| keep kth byte of key |)}># */
+        /*     strncpy(&out->key[2*k], temp->key, 2); */
+        /* } */
+        /* free(temp); */
+
+        free(str); /* get ready for next chunk */
     }
 
     /* XOR original string with found key! */
     /* char *ptext = repeatingKeyXOR(hex, out->key); */
     /* strncpy(out->plaintext, ptext, strlen(ptext)); */
 
-    /* free_str_arr(str_trans, key_byte); */
     free(hex);
     return out;
 }
