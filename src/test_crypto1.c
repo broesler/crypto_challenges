@@ -294,8 +294,10 @@ int BreakRepeatingXOR1()
     SHOULD_BE(out->score == FLT_MAX); /* unchanged */
     SHOULD_BE(out->file_line == 0);   /* unchanged */
 #ifdef LOGSTATUS
-    printf("key   = 0x%s\n",           out->key);
+    char *out_key_ascii = htoa(out->key);
+    printf("key   = 0x%s = %s\n",           out->key, out_key_ascii);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
+    free(out_key_ascii);
 #endif
     free(input_b64);
     free(key_hex);
@@ -332,17 +334,17 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(HexConvert2,       "hex2b64_str() 1       "); */
-    /* RUN_TEST(HexConvert3,       "hex2b64_str() 2       "); */
-    /* RUN_TEST(HexConvert4,       "hex2b64_str() 3       "); */
-    /* RUN_TEST(B64Convert1,       "b642hex_str() 1       "); */
-    /* RUN_TEST(B64Convert2,       "b642hex_str() 2       "); */
-    /* RUN_TEST(FixedXOR1,         "fixedXOR()            "); */
-    /* RUN_TEST(CharFreqScore1,    "charFreqScore()       "); */
-    /* RUN_TEST(SingleByte1,       "singleByteXORDecode() "); */
-    /* RUN_TEST(FileSingleByte1,   "findSingleByteXOR()   "); #<{(| SLOW |)}># */
-    /* RUN_TEST(RepeatingKeyXOR1,  "repeatingKeyXOR()     "); */
-    /* RUN_TEST(HammingDist1,      "hamming_dist()        "); */
+    RUN_TEST(HexConvert2,       "hex2b64_str() 1       ");
+    RUN_TEST(HexConvert3,       "hex2b64_str() 2       ");
+    RUN_TEST(HexConvert4,       "hex2b64_str() 3       ");
+    RUN_TEST(B64Convert1,       "b642hex_str() 1       ");
+    RUN_TEST(B64Convert2,       "b642hex_str() 2       ");
+    RUN_TEST(FixedXOR1,         "fixedXOR()            ");
+    RUN_TEST(CharFreqScore1,    "charFreqScore()       ");
+    RUN_TEST(SingleByte1,       "singleByteXORDecode() ");
+    RUN_TEST(FileSingleByte1,   "findSingleByteXOR()   "); /* SLOW */
+    RUN_TEST(RepeatingKeyXOR1,  "repeatingKeyXOR()     ");
+    RUN_TEST(HammingDist1,      "hamming_dist()        ");
     RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 ");
     /* RUN_TEST(BreakRepeatingXOR2,"breakRepeatingXOR() 2 "); */
 

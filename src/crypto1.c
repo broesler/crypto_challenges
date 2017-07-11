@@ -303,11 +303,9 @@ XOR_NODE *singleByteXORDecode(const char *hex)
         float cfreq_score = FLT_MAX;           /* initialize large value */
 
         /* Make sure string does not contain NULL chars, and is printable */
-        int test = ((strlen(ptext) == nchar/2) && (isprintable(ptext)));
-
-        if (test) {
+        if ((strlen(ptext) == nchar/2) && (isprintable(ptext))) {
             cfreq_score = charFreqScore(ptext);  /* calculate string score */
-            ptext[strcspn(ptext, "\n")] = 0;     /* remove any trailing '\n' */
+            /* ptext[strcspn(ptext, "\n")] = 0;     #<{(| remove any trailing '\n' |)}># */
             /* TODO organize statements like these that print a LOT of data into
              * a "VVERBOSE" flag for extra output */
 #ifdef LOGSTATUS
@@ -315,11 +313,11 @@ XOR_NODE *singleByteXORDecode(const char *hex)
 #endif
             /* Track minimum chi-squared score and actual key */
             if (cfreq_score < out->score) {
+                out->score = cfreq_score;
                 BZERO(out->key, sizeof(out->key));
                 strncpy(out->key, key, strlen(key));
                 BZERO(out->plaintext, sizeof(out->plaintext));
                 strncpy(out->plaintext, ptext, strlen(ptext));
-                out->score = cfreq_score;
             }
         }
 
@@ -501,6 +499,9 @@ XOR_NODE *breakRepeatingXOR(const char *b64_str)
 
     for (size_t k = 0; k < key_byte; k++) {
         /* Get every kth char from hex */
+#ifdef LOGSTATUS
+        printf("---------- k = %zu\n", k);
+#endif
         char *str = init_str(str_len);
         for (size_t i = 0; i < str_byte; i++) {
             size_t ind = 2*k+2*i*key_byte;
@@ -513,6 +514,8 @@ XOR_NODE *breakRepeatingXOR(const char *b64_str)
         /* Run single byte xor on each chunk */
         XOR_NODE *temp = singleByteXORDecode(str);
         if (*temp->plaintext) {
+            /* Getting 0x4E4345, not 0x494345... but first byte "49" shows up as
+             * best option for first chunk (k = 0) */
             strncpy(out->key+2*k, temp->key, 2);  /* keep kth byte of key */
         }
 
