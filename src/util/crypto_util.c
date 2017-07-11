@@ -16,7 +16,7 @@ static const char *HEX_LUT = "0123456789ABCDEF";
  *----------------------------------------------------------------------------*/
 char *strtoupper(char *s)
 {
-    int i = 0;
+    size_t i = 0;
     while (*(s+i)) {
         if (*(s+i) >= 'a' && *(s+i) <= 'z') {
             *(s+i) -= 32;
@@ -31,7 +31,7 @@ char *strtoupper(char *s)
  *----------------------------------------------------------------------------*/
 char *strtolower(char *s)
 {
-    int i = 0;
+    size_t i = 0;
     while (*(s+i)) {
         if (*(s+i) >= 'A' && *(s+i) <= 'Z') {
             *(s+i) += 32;
@@ -190,8 +190,8 @@ char *strnrepeat_hex(const char *src, size_t src_len, size_t nchar)
 {
     char *dest = init_str(nchar);
     /* Assumes strings are hex-encoded, so 2 chars == 1 byte */
-    for (int i = 0; i < nchar/2; i++) {
-        strncat(dest, &src[2*(i % (src_len/2))], 2);
+    for (size_t i = 0; i < nchar/2; i++) {
+        strncat(dest, src+2*(i % (src_len/2)), 2);
     }
     return dest;
 }

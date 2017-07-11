@@ -305,12 +305,13 @@ XOR_NODE *singleByteXORDecode(const char *hex)
         /* Make sure string does not contain NULL chars, and is printable */
         if ((strlen(ptext) == nchar/2) && (isprintable(ptext))) {
             cfreq_score = charFreqScore(ptext);  /* calculate string score */
-            /* ptext[strcspn(ptext, "\n")] = 0;     #<{(| remove any trailing '\n' |)}># */
+
             /* TODO organize statements like these that print a LOT of data into
              * a "VVERBOSE" flag for extra output */
 #ifdef LOGSTATUS
             printf("%0.2X\t%s\t%10.4e\n", i, ptext, cfreq_score);
 #endif
+
             /* Track minimum chi-squared score and actual key */
             if (cfreq_score < out->score) {
                 out->score = cfreq_score;
@@ -320,7 +321,6 @@ XOR_NODE *singleByteXORDecode(const char *hex)
                 strncpy(out->plaintext, ptext, strlen(ptext));
             }
         }
-
         /* clean-up */
         free(xor);
         free(ptext);
@@ -354,8 +354,7 @@ XOR_NODE *findSingleByteXOR(const char *filename)
     int file_line = 1;
 
     /* For each line, run singleByteXORDecode, return {key, string, score} */
-    while ( fgets(buffer, sizeof(buffer), fp) )
-    {
+    while ( fgets(buffer, sizeof(buffer), fp) ) {
         buffer[strcspn(buffer, "\n")] = 0;  /* remove trailing '\n' */
 
 #ifdef LOGSTATUS
@@ -513,23 +512,23 @@ XOR_NODE *breakRepeatingXOR(const char *b64_str)
 
         /* Run single byte xor on each chunk */
         XOR_NODE *temp = singleByteXORDecode(str);
-        if (*temp->plaintext) {
-            /* Getting 0x4E4345, not 0x494345... but first byte "49" shows up as
-             * best option for first chunk (k = 0) */
-            strncpy(out->key+2*k, temp->key, 2);  /* keep kth byte of key */
-        }
+        strncpy(out->key+2*k, temp->key, 2);  /* keep kth byte of key */
 
         free(temp);
         free(str);
     }
 
-    /* XOR original string with found key! */
-    char *ptext = repeatingKeyXOR(hex, out->key);
-    char *ascii = htoa(ptext);
-    strncpy(out->plaintext, ascii, nbyte);
+    if (*out->key) {
+        /* XOR original string with found key! */
+        char *ptext = repeatingKeyXOR(hex, out->key);
+        char *ascii = htoa(ptext);
+        strncpy(out->plaintext, ascii, nbyte);
+        free(ascii);
+        free(ptext);
+    } else {
+        WARNING("Key not found!");
+    }
 
-    free(ascii);
-    free(ptext);
     free(hex);
     return out;
 }

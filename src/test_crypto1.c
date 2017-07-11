@@ -314,9 +314,11 @@ int BreakRepeatingXOR2()
     char *page = fileToString(doc, &file_length);
     SHOULD_BE(file_length == 3900);
     XOR_NODE *out = breakRepeatingXOR(page);
+    char expect[] = "???";
+    SHOULD_BE(!strcmp(out->key, "test"));
     SHOULD_BE(out->score == FLT_MAX); /* unchanged */
     SHOULD_BE(out->file_line == 0);   /* unchanged */
-    char expect[] = "???";
+    SHOULD_BE(!strcmp(out->plaintext, expect));
 #ifdef LOGSTATUS
     printf("key   = 0x%s\n",           out->key);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
@@ -334,19 +336,19 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(HexConvert2,       "hex2b64_str() 1       ");
-    RUN_TEST(HexConvert3,       "hex2b64_str() 2       ");
-    RUN_TEST(HexConvert4,       "hex2b64_str() 3       ");
-    RUN_TEST(B64Convert1,       "b642hex_str() 1       ");
-    RUN_TEST(B64Convert2,       "b642hex_str() 2       ");
-    RUN_TEST(FixedXOR1,         "fixedXOR()            ");
-    RUN_TEST(CharFreqScore1,    "charFreqScore()       ");
-    RUN_TEST(SingleByte1,       "singleByteXORDecode() ");
-    RUN_TEST(FileSingleByte1,   "findSingleByteXOR()   "); /* SLOW */
-    RUN_TEST(RepeatingKeyXOR1,  "repeatingKeyXOR()     ");
-    RUN_TEST(HammingDist1,      "hamming_dist()        ");
-    RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 ");
-    /* RUN_TEST(BreakRepeatingXOR2,"breakRepeatingXOR() 2 "); */
+    /* RUN_TEST(HexConvert2,       "hex2b64_str() 1       "); */
+    /* RUN_TEST(HexConvert3,       "hex2b64_str() 2       "); */
+    /* RUN_TEST(HexConvert4,       "hex2b64_str() 3       "); */
+    /* RUN_TEST(B64Convert1,       "b642hex_str() 1       "); */
+    /* RUN_TEST(B64Convert2,       "b642hex_str() 2       "); */
+    /* RUN_TEST(FixedXOR1,         "fixedXOR()            "); */
+    /* RUN_TEST(CharFreqScore1,    "charFreqScore()       "); */
+    /* RUN_TEST(SingleByte1,       "singleByteXORDecode() "); */
+    /* RUN_TEST(FileSingleByte1,   "findSingleByteXOR()   "); #<{(| SLOW |)}># */
+    /* RUN_TEST(RepeatingKeyXOR1,  "repeatingKeyXOR()     "); */
+    /* RUN_TEST(HammingDist1,      "hamming_dist()        "); */
+    /* RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 "); */
+    RUN_TEST(BreakRepeatingXOR2,"breakRepeatingXOR() 2 ");
 
     /* Count errors */
     if (!fails) {
