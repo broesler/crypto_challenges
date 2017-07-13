@@ -14,6 +14,7 @@ INCLDIR = ../include/
 # Set the compiler options
 CC = gcc
 CFLAGS = -Wall -pedantic -std=c99
+CFLAGS += -funsigned-char 
 # CFLAGS += -fPIC
 
 # Look for header files here -- store all headers in ../include/
