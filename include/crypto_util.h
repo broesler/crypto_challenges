@@ -9,6 +9,7 @@
 #define _CRYPTO_UTIL_H_
 
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +18,7 @@
 //      Constants
 //------------------------------------------------------------------------------
 #define MAX_STR_LEN 4096
+#define NUM_LETTERS 27      // include space!!
 
 //------------------------------------------------------------------------------
 //      Function Definitions
@@ -28,28 +30,50 @@ char *strtoupper(char *s);
 char *strtolower(char *s);
 
 // Get single hex byte from a string
-int getHexByte(char *hex);
+int getHexByte(const char *hex);
 
 // Encode ASCII string as hexadecimal
 char *atoh(char *str);
 
 // Decode hexadecimal string to ASCII 
-char *htoa(char *str);
+char *htoa(const char *str);
 
 // Decode hexadecimal string to integer array
-int *htoi(char *hex);
+// int *htoi(char *hex);
+// int htoi(const char *s, unsigned long *out);
 
 // Determine if string has non-printable characters
 int isprintable(const char *s);
 
 // Initialize string (char array)
-char *init_str(size_t len);
+char *init_str(const size_t len);
+
+// Allocate memory for array of strings of given length
+char **init_str_arr(size_t nstr, size_t len);
+
+// Free string array 
+void free_str_arr(char **str_arr, size_t nstr);
 
 // Initialize integer array
-int *init_int(size_t len);
+int *init_int(const size_t len);
 
 // Repeat string N times
-char *strnrepeat_hex(char *src, size_t src_len, size_t len);
+char *strnrepeat_hex(const char *src, size_t src_len, size_t len);
+
+// Get index of character in string 
+size_t indexof(const char *str, char c);
+
+// Character frequency list
+int *countChars(const char *s);
+
+// Hamming weight of hex string 
+size_t hamming_weight(const char *a);
+
+// Compute Hamming distance between strings 
+size_t hamming_dist(const char *a, const char *b);
+
+// Read file as single string 
+char *fileToString(char *filename, long *file_length);
 
 #endif
 //==============================================================================

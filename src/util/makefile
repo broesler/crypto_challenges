@@ -8,31 +8,27 @@
 
 # Directories where source files are kept
 SRCDIR = ./
-UTILDIR = ./util/
-INCLDIR = ../include/
+INCLDIR = ../../include/
 
 # Set the compiler options
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99
-CFLAGS += -funsigned-char 
+CFLAGS = -Wall -pedantic -std=c99 -fbounds-check -funsigned-char
 # CFLAGS += -fPIC
 
 # Look for header files here -- store all headers in ../include/
-# OPT = -I$(SRCDIR) -I$(UTILDIR) -I$(INCLDIR)
 OPT = -I$(INCLDIR)
 
 # Define source files, utility files (function files)
-SRC = test_crypto1.c crypto1.c
-UTIL = $(UTILDIR)/crypto_util.c
+SRC = test_util.c crypto_util.c
 
 # Define object files
-OBJ = $(SRC:%.c=%.o) $(UTIL:%.c=%.o) 
+OBJ = $(SRC:%.c=%.o)
 
 # Define header files
 INCL = $(wildcard $(INCLDIR)*.h)
 
 # Make options
-all: test1
+all: test_util
 debug: DEBUG = -DLOGSTATUS -g -ggdb
 debug: all
 
@@ -40,7 +36,7 @@ debug: all
 # 	Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test1: $(OBJ)
+test_util: $(OBJ)
 	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $(OBJ)
 
 # object rules
@@ -54,10 +50,7 @@ clean:
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
-	rm -f $(UTILDIR)*.o
-	rm -f $(UTILDIR)*.gch
-	rm -rf $(UTILDIR)*.dSYM/
-	rm -f test1
+	rm -f test_util
 
 #==============================================================================
 #==============================================================================

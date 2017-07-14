@@ -6,36 +6,32 @@
  *  Description: Utility functions for cryptography challenges
  *
  *============================================================================*/
-#include <ctype.h>
-
 #include "crypto_util.h"
 #include "header.h"
 
+static const char *HEX_LUT = "0123456789ABCDEF";
+
 /*------------------------------------------------------------------------------ 
- *          Convert string to uppercase
+ *          Convert string to uppercase (in-place)
  *----------------------------------------------------------------------------*/
 char *strtoupper(char *s)
 {
-    int i = 0;
+    size_t i = 0;
     while (*(s+i)) {
         if (*(s+i) >= 'a' && *(s+i) <= 'z') {
             *(s+i) -= 32;
         }
         i++;
-        /* option using functions */
-        /* if (islower(*(s+i))) { */
-            /* *(s+i) = toupper(*(s+i)); */
-        /* } */
     }
     return s;
 }
 
 /*------------------------------------------------------------------------------ 
- *          Convert string to lowercase
+ *          Convert string to lowercase (in-place)
  *----------------------------------------------------------------------------*/
 char *strtolower(char *s)
 {
-    int i = 0;
+    size_t i = 0;
     while (*(s+i)) {
         if (*(s+i) >= 'A' && *(s+i) <= 'Z') {
             *(s+i) += 32;
@@ -45,21 +41,34 @@ char *strtolower(char *s)
     return s;
 }
 
-/*------------------------------------------------------------------------------ 
- *          Get an integer from 2 hex characters in a string
- *----------------------------------------------------------------------------*/
-int getHexByte(char *hex) 
+/*------------------------------------------------------------------------------
+*         Get an integer from 2 hex characters in a string
+*-----------------------------------------------------------------------------*/
+int getHexByte(const char *hex)
 {
-    int u = 0; 
-    char substr[3];
-    BZERO(substr, 3);
-    strncpy(substr, hex, 2);                /* take 2 chars */
-    strtoupper(substr);                     /* convert to uppercase only */
-    if (sscanf(substr, "%2X", &u)) {        /* convert to integer */
-        return u;
-    } else {
-        ERROR("Invalid hex character!");
+    int u = 0,
+        c = 0;
+    char p;
+
+    /* Take 1 or 2 chars, error if input is length 0 */
+    int nmax = (strlen(hex) > 1) ? 2 : 1;
+
+    for (int i = 0; i < nmax; i++)
+    {
+        p = *hex;
+        if      (p >= 'a' && p <= 'f') { c = p - 'a' + 10; } 
+        else if (p >= 'A' && p <= 'F') { c = p - 'A' + 10; } 
+        else if (p >= '0' && p <= '9') { c = p - '0'; }
+        else { 
+            errno = ERANGE; 
+            ERROR("Invalid hex character!"); 
+        } 
+
+        u <<= 4;
+        u += c;
+        hex++;
     }
+    return u;
 }
 
 /*------------------------------------------------------------------------------ 
@@ -68,19 +77,15 @@ int getHexByte(char *hex)
 /* Take each 8-bit character and convert it to 2, 4-bit characters */
 char *atoh(char *str)
 {
-    static const char *lut = "0123456789ABCDEF";
     size_t len = strlen(str);
 
-    /* allocate memory */
-    char *hex = (char *)calloc(2*len, sizeof(char));
-    MALLOC_CHECK(hex);
-    BZERO(hex, sizeof(*hex));
+    char *hex = init_str(2*len); /* allocate memory */
+    char *p = hex;               /* moveable pointer */
 
-    for (size_t i = 0; i < len; i++)
+    for (char *c = str; *c; c++)
     {
-        char c = str[i];
-        strncat(hex, &lut[c >> 0x04], 1); /* take first 4 bits */
-        strncat(hex, &lut[c  & 0x0F], 1); /* take next 4 bits */
+        *p++ = HEX_LUT[*c >> 0x04]; /* take first nibble (4 bits) */
+        *p++ = HEX_LUT[*c  & 0x0F]; /* take next  nibble */
     }
     return hex;
 }
@@ -88,78 +93,41 @@ char *atoh(char *str)
 /*------------------------------------------------------------------------------ 
  *          Decode hex-encoded string into ASCII string
  *----------------------------------------------------------------------------*/
-char *htoa(char *hex)
+char *htoa(const char *hex)
 {
-    size_t len = strlen(hex);
+    size_t nchar = strlen(hex);
 
     /* Check for odd-length inputs */
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
+    if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
 
-    /* Proceed with conversion */
-    unsigned int u; 
-    char ascii[2];  /* store 1 ascii character */
+    size_t nbyte = nchar/2;
 
-    /* Create uppercase copy of input string */
-    char hex_upper[len];
-    BZERO(hex_upper, len);
-    strncpy(hex_upper, hex, len);   /* copy string in as-is */
-    strtoupper(hex_upper);          /* make string uppercase */
-
-    /* Allocate memory */
-    char *str = malloc(len/2 * sizeof(char));
-    MALLOC_CHECK(str);
-    BZERO(str, sizeof(*str));
+    char *str_t = init_str(nbyte); /* allocate memory */
+    char *p = str_t;
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
-    for (size_t i = 0; i < len; i+=2)
+    for (size_t i = 0; i < nbyte; i++) /*use hex+2*i in assignment */
     {
-        u = getHexByte(hex_upper+i);        /* get integer value of byte */
-        snprintf(ascii, 2, "%c", u);        /* convert to ascii character */
-        strncat(str, ascii, 1);             /* append to output string */
+        *p++ = (char)getHexByte(hex+2*i);
     }
 
-    return str;
+    return str_t;
 }
 
-/*------------------------------------------------------------------------------ 
- *          Decode hex-encoded string into int array
+/*------------------------------------------------------------------------------
+ *         Convert hex to binary string??
  *----------------------------------------------------------------------------*/
-int *htoi(char *hex)
-{
-    size_t len = strlen(hex);
-
-    /* Check for odd-length inputs */
-    if (len & 1) { ERROR("Input string is not a valid hex string!"); }
-
-    /* Proceed with conversion */
-    size_t nbyte = len/2;
-
-    /* Create uppercase copy of input string */
-    char hex_upper[len];
-    strncpy(hex_upper, hex, len);   /* copy string in as-is */
-    strtoupper(hex_upper);          /* make function case insensitive */
-
-    /* Allocate memory */
-    int *out = malloc(nbyte * sizeof(int));
-    MALLOC_CHECK(out);
-    BZERO(out, nbyte);
-
-    /* Take every 2 hex characters and combine bytes to make 1 integer */
-    for (size_t i = 0; i < nbyte; i++)
-    {
-        out[i] = getHexByte(hex_upper+2*i); /* get integer value of byte */
-    }
-
-    return out;
-}
+/* char *htob(const char *hex) */
+/* { return NULL; } */
 
 /*------------------------------------------------------------------------------
  *          Determine if string is printable
  *----------------------------------------------------------------------------*/
 int isprintable(const char *s)
 {
-    while (*s && (isprint((unsigned char)*s) || isspace((unsigned char)*s))) s++;
-    /* if (*s != '\0') printf("Found non-printable: %d\n", *s); */
+    /* Accept "printable" characters, single space, or newline, but NOT carriage
+     * return, tab, or vertical tab (odd in normal text) */
+    while (*s && (isprint(*s) || (*s == '\t') || (*s == '\n'))) { s++; }
     return (*s == '\0'); /* non-zero if true, zero if false */
 }
 
@@ -168,11 +136,35 @@ int isprintable(const char *s)
  *----------------------------------------------------------------------------*/
 char *init_str(size_t len)
 {
-    size_t nbyte = len+1;
-    char *buffer = malloc(nbyte*sizeof(char));
+    char *buffer = calloc(len+1, sizeof(char));
     MALLOC_CHECK(buffer);
-    BZERO(buffer, nbyte*sizeof(char));
     return buffer;
+}
+
+/*------------------------------------------------------------------------------
+ *         Allocate memory for array of strings of given length
+ *----------------------------------------------------------------------------*/
+char **init_str_arr(size_t nstr, size_t len)
+{
+    char **str_arr = malloc(nstr*sizeof(char *));
+    MALLOC_CHECK(str_arr);
+    BZERO(str_arr, nstr*sizeof(char *));
+
+    for (size_t i = 0; i < nstr; i++) {
+        *(str_arr+i) = init_str(len);
+    }
+    return str_arr;
+}
+
+/*------------------------------------------------------------------------------
+ *         Free string array 
+ *----------------------------------------------------------------------------*/
+void free_str_arr(char **str_arr, size_t nstr)
+{
+    for (size_t i = 0; i < nstr; i++) { 
+        if (*(str_arr+i)) { free(*(str_arr+i)); }
+    }
+    free(str_arr);
 }
 
 /*------------------------------------------------------------------------------
@@ -180,25 +172,118 @@ char *init_str(size_t len)
  *----------------------------------------------------------------------------*/
 int *init_int(size_t len)
 {
-    int *buffer = malloc(len*sizeof(int));
+    int *buffer = calloc(len, sizeof(int));
     MALLOC_CHECK(buffer);
-    BZERO(buffer, len*sizeof(int));
     return buffer;
 }
+
 
 /*------------------------------------------------------------------------------
  *         Repeat hex string 
  *----------------------------------------------------------------------------*/
-char *strnrepeat_hex(char *src, size_t src_len, size_t len)
+char *strnrepeat_hex(const char *src, size_t src_len, size_t nchar)
 {
-    char *dest = init_str(len);
-
+    char *dest = init_str(nchar);
     /* Assumes strings are hex-encoded, so 2 chars == 1 byte */
-    for (int i = 0; i < len/2; i++) {
-        strncat(dest, &src[2*(i % (src_len/2))], 2);
+    for (size_t i = 0; i < nchar/2; i++) {
+        strncat(dest, src+2*(i % (src_len/2)), 2);
     }
-
     return dest;
 }
+
+/*------------------------------------------------------------------------------
+ *         Get index of character in string 
+ *----------------------------------------------------------------------------*/
+size_t indexof(const char *str, char c)
+{
+    char *s = strchr(str, c);
+    return (s ? (s - str) : -1);
+}
+
+/*------------------------------------------------------------------------------
+ *         Find character frequency in string
+ *----------------------------------------------------------------------------*/
+int *countChars(const char *s)
+{
+    /* initialize array */
+    int *cf = init_int(NUM_LETTERS);
+
+    /* Count occurrences letters in the string */
+    while (*s) {
+        if      (*s >= 'A' && *s <= 'Z') { cf[*s-'A']++; }
+        else if (*s >= 'a' && *s <= 'z') { cf[*s-'a']++; }
+        else if (*s == 32) { cf[NUM_LETTERS-1]++; } /* count spaces */
+        s++;
+    }
+    return cf;
+}
+
+/*------------------------------------------------------------------------------
+ *         Hamming weight of hex string 
+ *----------------------------------------------------------------------------*/
+size_t hamming_weight(const char *hex)
+{
+    size_t nchar = strlen(hex);
+    if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
+
+    size_t nbyte = nchar/2;
+    size_t weight = 0;
+    int x = 0,
+        count = 0;
+
+    /* Wegner (1960), x & x-1 zeros LSB, so repeat until x = 0
+     * <https://en.wikipedia.org/wiki/Hamming_weight> */
+    /* For each byte in string, sum the weights */
+    for (size_t i = 0; i < nbyte; i++) { 
+        x = getHexByte(hex+2*i);
+        for (count = 0; x; count++) {
+            x &= x - 1;
+        }
+        weight += count;
+    }
+
+    return weight;
+}
+
+/*------------------------------------------------------------------------------
+ *         Read file as single string 
+ *----------------------------------------------------------------------------*/
+char *fileToString(char *filename, long *file_length)
+{
+    FILE *fp = NULL;
+    char *buffer = NULL;
+    int result = 0;
+    char message[2*MAX_STR_LEN];
+    *file_length = -1; /* initialize */
+
+    /*------ Determine length of temp file -------------*/
+    fp = fopen(filename, "r");
+    if (!fp) {
+        snprintf(message, 2*MAX_STR_LEN, "File %s could not be read!", filename);
+        LOG(message);
+        exit(-1);
+    }
+
+    fseek(fp, 0, SEEK_END);   /* move pointer to end of file */
+    *file_length = ftell(fp);
+    rewind(fp);               /* reset to top of file */
+
+    /*------ malloc buffer to file_length+1 ------------*/
+    buffer = init_str(*file_length);
+
+    /*------ read temp into buffer ------*/
+    result = fread(buffer, sizeof(char), *file_length, fp);
+
+    if (result != *file_length) {
+        WARNING("File read error!");
+        free(buffer);
+        return NULL;
+    }
+
+    /* free file pointer */
+    fclose(fp);
+    return buffer;
+}
+
 /*==============================================================================
  *============================================================================*/
