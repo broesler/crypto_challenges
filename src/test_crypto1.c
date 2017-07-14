@@ -282,12 +282,11 @@ int BreakRepeatingXOR1()
     char input_hex[] = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d" \
                        "63343c2a26226324272765272a282b2f20430a652e2c652a31" \
                        "24333a653e2b2027630c692b20283165286326302e27282f";
-    char *input_b64 = hex2b64_str(input_hex);
     char key[] = "ICE";
     char *key_hex = atoh(key);
     char expect[] = "Burning 'em, if you ain't quick and nimble\n" \
                     "I go crazy when I hear a cymbal";
-    XOR_NODE *out = breakRepeatingXOR(input_b64);
+    XOR_NODE *out = breakRepeatingXOR(input_hex);
     /* NOTE First byte of key is wrong... getting 0x4E4335 == "NCE" hmmm... */
     SHOULD_BE(!strcmp(out->key, key_hex));
     SHOULD_BE(!strcmp(out->plaintext, expect));
@@ -299,7 +298,6 @@ int BreakRepeatingXOR1()
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
     free(out_key_ascii);
 #endif
-    free(input_b64);
     free(key_hex);
     free(out);
     END_TEST_CASE;
@@ -309,11 +307,18 @@ int BreakRepeatingXOR1()
 int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
-    char doc[] = "../data/6.txt";
+    /* char b64_file[] = "../data/6.b64_str"; */
+    char b64_file[] = "../data/6.txt";
     long file_length = 0;
-    char *page = fileToString(doc, &file_length);
+    char *page = fileToString(b64_file, &file_length);
     SHOULD_BE(file_length == 3900);
-    XOR_NODE *out = breakRepeatingXOR(page);
+    char *hex = b642hex_str(page);
+    /* char hex_file[] = "../data/6.hexxd"; */
+    /* char *page_hex = fileToString(hex_file, &file_length); */
+    /* printf("hex translated from 6.txt:\n%s\n", hex); */
+    /* printf("hex translated from 6.char:\n%s\n", page_hex); */
+    /* SHOULD_BE(!strcasecmp(hex, page_hex)); */
+    XOR_NODE *out = breakRepeatingXOR(hex);
     char expect[] = "???";
     SHOULD_BE(!strcmp(out->key, "test"));
     SHOULD_BE(out->score == FLT_MAX); /* unchanged */
@@ -324,6 +329,8 @@ int BreakRepeatingXOR2()
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
     free(page);
+    free(hex);
+    /* free(page_hex); */
     free(out);
     END_TEST_CASE;
 }
@@ -347,7 +354,7 @@ int main(void)
     /* RUN_TEST(FileSingleByte1,   "findSingleByteXOR()   "); #<{(| SLOW |)}># */
     /* RUN_TEST(RepeatingKeyXOR1,  "repeatingKeyXOR()     "); */
     /* RUN_TEST(HammingDist1,      "hamming_dist()        "); */
-    RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 ");
+    /* RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 "); */
     RUN_TEST(BreakRepeatingXOR2,"breakRepeatingXOR() 2 ");
 
     /* Count errors */

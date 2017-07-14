@@ -486,9 +486,8 @@ size_t getKeyLength(const char *hex)
 /*------------------------------------------------------------------------------
  *         Break repeating key XOR cipher
  *----------------------------------------------------------------------------*/
-XOR_NODE *breakRepeatingXOR(const char *b64_str)
+XOR_NODE *breakRepeatingXOR(const char *hex)
 {
-    char *hex = b642hex_str(b64_str);
     size_t nchar = strlen(hex);
     size_t nbyte = nchar/2;
 
@@ -538,7 +537,6 @@ XOR_NODE *breakRepeatingXOR(const char *b64_str)
         WARNING("Key not found!");
     }
 
-    free(hex);
     return out;
 }
 

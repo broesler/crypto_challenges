@@ -136,8 +136,7 @@ int isprintable(const char *s)
  *----------------------------------------------------------------------------*/
 char *init_str(size_t len)
 {
-    size_t nbyte = len+1;
-    char *buffer = calloc(nbyte, sizeof(char));
+    char *buffer = calloc(len+1, sizeof(char));
     MALLOC_CHECK(buffer);
     return buffer;
 }
@@ -164,7 +163,6 @@ void free_str_arr(char **str_arr, size_t nstr)
 {
     for (size_t i = 0; i < nstr; i++) { 
         if (*(str_arr+i)) { free(*(str_arr+i)); }
-        /* if (str_arr[i]) free(str_arr[i]); */
     }
     free(str_arr);
 }
@@ -256,6 +254,7 @@ char *fileToString(char *filename, long *file_length)
     char *buffer = NULL;
     int result = 0;
     char message[2*MAX_STR_LEN];
+    *file_length = -1; /* initialize */
 
     /*------ Determine length of temp file -------------*/
     fp = fopen(filename, "r");
@@ -270,9 +269,7 @@ char *fileToString(char *filename, long *file_length)
     rewind(fp);               /* reset to top of file */
 
     /*------ malloc buffer to file_length+1 ------------*/
-    buffer = malloc(*file_length*sizeof(char) + 1);
-    MALLOC_CHECK(buffer);
-    BZERO(buffer, *file_length*sizeof(char));
+    buffer = init_str(*file_length);
 
     /*------ read temp into buffer ------*/
     result = fread(buffer, sizeof(char), *file_length, fp);
