@@ -303,6 +303,7 @@ XOR_NODE *singleByteXORDecode(const char *hex)
         float cfreq_score = FLT_MAX;           /* initialize large value */
 
         /* Make sure string does not contain NULL chars, and is printable */
+        /* if (isprintable(ptext)) { */
         if ((strlen(ptext) == nchar/2) && (isprintable(ptext))) {
             cfreq_score = charFreqScore(ptext);  /* calculate string score */
 
@@ -311,7 +312,6 @@ XOR_NODE *singleByteXORDecode(const char *hex)
 #ifdef LOGSTATUS
             printf("%0.2X\t%s\t%10.4e\n", i, ptext, cfreq_score);
 #endif
-
             /* Track minimum chi-squared score and actual key */
             if (cfreq_score < out->score) {
                 out->score = cfreq_score;
@@ -320,6 +320,15 @@ XOR_NODE *singleByteXORDecode(const char *hex)
                 BZERO(out->plaintext, sizeof(out->plaintext));
                 strncpy(out->plaintext, ptext, strlen(ptext));
             }
+/* #ifdef LOGSTATUS */
+/*         } else { */
+/*             printf("\nkey = %s\nNon-valid string: ", key); */
+/*             char *p = ptext; */
+/*             while (*p) { */
+/*                 printf("\\%+0.3d", *p++); */
+/*             } */
+/*             printf("\n"); */
+/* #endif */
         }
         /* clean-up */
         free(xor);
@@ -433,7 +442,7 @@ size_t getKeyLength(const char *hex)
 
     /*---------- Determine probable key length ----------*/
     /* key length in bytes */
-    size_t max_key_len = (unsigned int)min(40.0, nbyte/(2.0*n_samples));
+    size_t max_key_len = (size_t)min(40.0, nbyte/(2.0*n_samples));
 
     /* Allocate 2 strings of max key length bytes */
     char *a = init_str(2*max_key_len);

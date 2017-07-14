@@ -347,7 +347,7 @@ int main(void)
     /* RUN_TEST(FileSingleByte1,   "findSingleByteXOR()   "); #<{(| SLOW |)}># */
     /* RUN_TEST(RepeatingKeyXOR1,  "repeatingKeyXOR()     "); */
     /* RUN_TEST(HammingDist1,      "hamming_dist()        "); */
-    /* RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 "); */
+    RUN_TEST(BreakRepeatingXOR1,"breakRepeatingXOR() 1 ");
     RUN_TEST(BreakRepeatingXOR2,"breakRepeatingXOR() 2 ");
 
     /* Count errors */

@@ -127,10 +127,7 @@ int isprintable(const char *s)
 {
     /* Accept "printable" characters, single space, or newline, but NOT carriage
      * return, tab, or vertical tab (odd in normal text) */
-    while (*s && (isprint((unsigned char)*s) 
-                || (*s == ' ') || (*s == '\n'))) {
-        s++; 
-    }
+    while (*s && (isprint(*s) || (*s == '\t') || (*s == '\n'))) { s++; }
     return (*s == '\0'); /* non-zero if true, zero if false */
 }
 
