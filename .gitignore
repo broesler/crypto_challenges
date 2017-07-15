@@ -23,7 +23,11 @@ test_crypto
 strtoupper_test
 strassign_test
 test_strtoul
+test_util
 test1
+
+# Data directory
+data/
 
 # Debug files
 *.dSYM

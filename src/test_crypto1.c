@@ -303,35 +303,43 @@ int BreakRepeatingXOR1()
     END_TEST_CASE;
 }
 
+/* TODO Write b642ascii_str() to go directly to raw bytes (i.e. unsigned chars)
+ * instead of another encoded string. Convert every function to just take raw
+ * char strings, not hex. Need to eliminate ALL strlen() uses so we can allow
+ * NULL characters!! */
 /* Test break repeating key XOR */
 int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
-    /* char b64_file[] = "../data/6.b64_str"; */
-    char b64_file[] = "../data/6.txt";
+    char b64_file[] = "../data/6.b64_nonl";
+    /* char b64_file[] = "../data/6.txt"; */
     long file_length = 0;
-    char *page = fileToString(b64_file, &file_length);
-    SHOULD_BE(file_length == 3900);
-    char *hex = b642hex_str(page);
-    /* char hex_file[] = "../data/6.hexxd"; */
-    /* char *page_hex = fileToString(hex_file, &file_length); */
-    /* printf("hex translated from 6.txt:\n%s\n", hex); */
-    /* printf("hex translated from 6.char:\n%s\n", page_hex); */
-    /* SHOULD_BE(!strcasecmp(hex, page_hex)); */
-    XOR_NODE *out = breakRepeatingXOR(hex);
-    char expect[] = "???";
-    SHOULD_BE(!strcmp(out->key, "test"));
-    SHOULD_BE(out->score == FLT_MAX); /* unchanged */
-    SHOULD_BE(out->file_line == 0);   /* unchanged */
-    SHOULD_BE(!strcmp(out->plaintext, expect));
-#ifdef LOGSTATUS
-    printf("key   = 0x%s\n",           out->key);
-    printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
-#endif
-    free(page);
+    char *page_b64 = fileToString(b64_file, &file_length);
+    SHOULD_BE(file_length == 3836);
+    char *hex = b642hex_str(page_b64);
+    char hex_file[] = "../data/6.hexxd";
+    char *page_hex = fileToString(hex_file, &file_length);
+    printf("hex translated from 6.txt:\n%s\n", hex);
+    printf("hex read from 6.hexxd\n%s\n", page_hex);
+    /* Convert back to b64... */
+    char *b2b = hex2b64_str(page_hex);
+    printf("b64 converted back using hex2b64_str():\n%s\n", b2b);
+    SHOULD_BE(!strcasecmp(page_b64, b2b));
+    /* XOR_NODE *out = breakRepeatingXOR(hex); */
+    /* char expect[] = "???"; */
+    /* SHOULD_BE(!strcmp(out->key, "test")); */
+    /* SHOULD_BE(out->score == FLT_MAX); #<{(| unchanged |)}># */
+    /* SHOULD_BE(out->file_line == 0);   #<{(| unchanged |)}># */
+    /* SHOULD_BE(!strcmp(out->plaintext, expect)); */
+/* #ifdef LOGSTATUS */
+/*     printf("key   = 0x%s\n",           out->key); */
+/*     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect); */
+/* #endif */
+    free(page_b64);
     free(hex);
-    /* free(page_hex); */
-    free(out);
+    free(page_hex);
+    free(b2b);
+    /* free(out); */
     END_TEST_CASE;
 }
 

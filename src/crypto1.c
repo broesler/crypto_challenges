@@ -127,6 +127,7 @@ char *b642hex_str(const char *b64_str)
     }
 
     if (nchr_in % 4) {
+        printf("nchr_in = %zu\n", nchr_in);
         ERROR("Input string is not a valid b64 string!");
     } else {
         /* 4 b64 chars --> 3 bytes */
@@ -432,7 +433,7 @@ size_t hamming_dist(const char *a, const char *b)
  *----------------------------------------------------------------------------*/
 size_t getKeyLength(const char *hex)
 {
-    int n_samples = 7;   /* number of Hamming distances to take */
+    int n_samples = 4;   /* number of Hamming distances to take */
     size_t key_byte = 0;
     float min_mean_dist = FLT_MAX;
 
@@ -448,7 +449,7 @@ size_t getKeyLength(const char *hex)
     char *a = init_str(2*max_key_len);
     char *b = init_str(2*max_key_len);
 
-    for (size_t k = 2; k <= max_key_len; k++) {
+    for (size_t k = 3; k <= max_key_len; k++) {
         /* Get total Hamming distance of all samples */
         unsigned long tot_dist = 0;
 
@@ -491,9 +492,10 @@ XOR_NODE *breakRepeatingXOR(const char *hex)
     size_t nchar = strlen(hex);
     size_t nbyte = nchar/2;
 
-    /* Get most probably key length -- could get 2-3 most probable, but try just
-     * taking the best one first */
-    size_t key_byte = getKeyLength(hex);
+    /* Get most probable key length */
+    /* TODO return sorted list of possible key sizes */
+    /* size_t key_byte = getKeyLength(hex); */
+    size_t key_byte = 29;
 
     /* Number of bytes in each substring */
     size_t str_byte = (nbyte + (key_byte - (nbyte % key_byte))) / key_byte;
