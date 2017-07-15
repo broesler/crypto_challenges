@@ -60,7 +60,7 @@ int getHexByte(const char *hex)
         else if (p >= 'A' && p <= 'F') { c = p - 'A' + 10; } 
         else if (p >= '0' && p <= '9') { c = p - '0'; }
         else { 
-            errno = ERANGE; 
+            printf("Got char: \\x%d.\n", p);
             ERROR("Invalid hex character!"); 
         } 
 
