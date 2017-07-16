@@ -1,5 +1,5 @@
 #==============================================================================
-#    File: makefile
+#    File: src/util/makefile
 # Created: 09/27/2016, 20:58
 #  Author: Bernie Roesler
 #
@@ -12,8 +12,8 @@ INCLDIR = ../../include/
 
 # Set the compiler options
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99 -fbounds-check -funsigned-char
-# CFLAGS += -fPIC
+CFLAGS = -Wall -pedantic -std=c99
+CFLAGS += -funsigned-char
 
 # Look for header files here -- store all headers in ../include/
 OPT = -I$(INCLDIR)

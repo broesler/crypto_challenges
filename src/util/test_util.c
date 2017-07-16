@@ -14,8 +14,6 @@
 #include "crypto_util.h"
 #include "unit_test.h"
 
-/* TODO split into "test_util" and "test_crypto1" for better maintenance */
-
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
@@ -40,8 +38,8 @@ int StrArray1()
     size_t nstr = 3;
     size_t len = 30;
     char **str_arr = init_str_arr(nstr, len);
-    strncpy(*(str_arr)  , "Hello, ",  len);
-    strncpy(*(str_arr+1), "World!",   len);
+    strncpy(*(str_arr)  , "Hello, ",   len);
+    strncpy(*(str_arr+1), "World!",    len);
     strncpy(*(str_arr+2), " Goodbye.", len);
 #ifdef LOGSTATUS
     for (size_t i = 0; i < nstr; i++) {
@@ -119,20 +117,13 @@ int HexConvert1()
     char byte1[] = "Man";
     char *hex = byte2hex(byte1, strlen(byte1));
     SHOULD_BE(!strcasecmp(hex,"4d616e"));
-    size_t nbyte = 0;
-    char *byte2 = hex2byte(hex, &nbyte);
-    SHOULD_BE(!strcmp(byte2,byte1));
+    char *byte2 = NULL;
+    size_t nbyte = hex2byte(&byte2, hex);
+    SHOULD_BE(nbyte == 3);
+    SHOULD_BE(!memcmp(byte2,byte1,nbyte));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", byte2, byte1);
-    /* printf("byte: Sizeof: %lu\tStrlen: %lu\n", sizeof(byte1)/sizeof(char), strlen(byte1)); */
-    printf("byte2:  Sizeof: %lu\tStrlen: %lu\n", sizeof(byte2)/sizeof(char), strlen(byte2));
-    printf("        sizeof(*byte2): %lu\tsizeof(&byte2): %lu\n", sizeof(*byte2), sizeof(&byte2));
-    printf("nbyte = %lu\n", nbyte);
 #endif
-    /* Test ERROR() macro by giving odd-length hex string: */
-    /* char hex1[] = "4D616E7"; */
-    /* char *byte1 = hex2byte(hex1); */
-    /* printf("byte1: %s\n", byte1); */
     free(hex);
     free(byte2);
     END_TEST_CASE;
@@ -143,13 +134,14 @@ int Strnrepeat1()
 {
     START_TEST_CASE;
     char key[] = "ICE";
-    char *key_str = bytenrepeat(key, strlen(key), 8);
+    char *key_arr = bytenrepeat(key, strlen(key), 8);
     char expect[] = "ICEICEIC";
-    SHOULD_BE(!strncasecmp(key_str, expect, 8));
+    SHOULD_BE(!memcmp(key_arr, expect, 8));
 #ifdef LOGSTATUS
-    printf("Got:    %s\nExpect: %s\n", strncat(key_str,"\0",1), expect);
+    /* NOTE DANGEROUS strncat without extra memory after key_arr... */
+    printf("Got:    %s\nExpect: %s\n", strcat(key_arr,"\0"), expect);
 #endif
-    free(key_str);
+    free(key_arr);
     END_TEST_CASE;
 }
 

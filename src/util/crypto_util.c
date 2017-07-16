@@ -74,46 +74,53 @@ int getHexByte(const char *hex)
 /*------------------------------------------------------------------------------ 
  *          Encode ASCII string into hex string
  *----------------------------------------------------------------------------*/
-/* Take each 8-bit character and convert it to 2, 4-bit characters */
-char *byte2hex(char *byte, size_t nbyte)
+/* Input:
+ *      byte  = pointer to byte array-to-be-converted
+ *      nbyte = number of bytes in byte array (NOT null-terminated)
+ * Output:
+ *      pointer to hex string
+ */
+char *byte2hex(const char *byte, size_t nbyte)
 {
-    /* TODO switch input/output to be: 
-     *      size_t byte2hex(hex, byte); 
-     * return length of hex string as output, -1 if error */
     char *hex = init_str(2*nbyte); /* include NULL termination for STRING */
     char *p = hex;
-    char *c = byte;
+    const char *c = byte;
 
+    /* One byte --> 2 hex chars */
     for (size_t i = 0; i < nbyte; i++)
     {
         *p++ = HEX_LUT[*c   >> 0x04]; /* take first nibble (4 bits) */
         *p++ = HEX_LUT[*c++  & 0x0F]; /* take next  nibble */
     }
+
     return hex;
 }
 
 /*------------------------------------------------------------------------------ 
  *          Decode hex-encoded string into byte string
  *----------------------------------------------------------------------------*/
-char *hex2byte(const char *hex, size_t *nbyte)
+/* Input:
+ *      byte = pointer to char* that will hold output array
+ *      hex  = pointer to hex string-to-be-converted
+ * Output:
+ *      number of bytes in byte array (NOT null-terminated)
+ */
+size_t hex2byte(char **byte, const char *hex)
 {
-    /* TODO switch input/output to be: 
-     *      size_t hex2byte(out, in); 
-     * return nbyte as output, -1 if error */
     size_t nchar = strlen(hex);
     if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
-    *nbyte = nchar/2;
+    size_t nbyte = nchar/2;
 
-    char *byte = init_byte(*nbyte);     /* allocate memory */
-    char *p = byte;
+    *byte = init_byte(nbyte);     /* allocate memory */
+    char *p = *byte;
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
-    for (size_t i = 0; i < *nbyte; i++)
+    for (size_t i = 0; i < nbyte; i++)
     {
         *p++ = (char)getHexByte(hex+2*i);
     }
 
-    return byte;
+    return nbyte;
 }
 
 /*------------------------------------------------------------------------------
@@ -191,14 +198,14 @@ int *init_int(size_t len)
 
 
 /*------------------------------------------------------------------------------
- *         Repeat hex string 
+ *         Repeat byte array to fill nbyte array
  *----------------------------------------------------------------------------*/
-char *bytenrepeat(const char *src, size_t src_len, size_t nbyte)
+char *bytenrepeat(const char *src, size_t src_byte, size_t nbyte)
 {
     char *dest = init_byte(nbyte);
     char *p = dest;
     for (size_t i = 0; i < nbyte; i++) {
-        *p++ = *(src + (i % src_len));
+        *p++ = *(src + (i % src_byte));
     }
     return dest;
 }
