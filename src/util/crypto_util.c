@@ -56,9 +56,9 @@ int getHexByte(const char *hex)
     for (int i = 0; i < nmax; i++)
     {
         p = *hex;
-        if      (p >= 'a' && p <= 'f') { c = p - 'a' + 10; } 
+        if      (p >= '0' && p <= '9') { c = p - '0'; }
+        else if (p >= 'a' && p <= 'f') { c = p - 'a' + 10; } 
         else if (p >= 'A' && p <= 'F') { c = p - 'A' + 10; } 
-        else if (p >= '0' && p <= '9') { c = p - '0'; }
         else { 
             printf("Got char: \\x%d.\n", p);
             ERROR("Invalid hex character!"); 
@@ -74,6 +74,8 @@ int getHexByte(const char *hex)
 /*------------------------------------------------------------------------------ 
  *          Encode ASCII string into hex string
  *----------------------------------------------------------------------------*/
+/* TODO repeat this function, but with byte arrays (NOT C-strings). 
+ * Need to pass in length of array, so we don't need to worry about NULL */
 /* Take each 8-bit character and convert it to 2, 4-bit characters */
 char *atoh(char *str)
 {
@@ -91,9 +93,9 @@ char *atoh(char *str)
 }
 
 /*------------------------------------------------------------------------------ 
- *          Decode hex-encoded string into ASCII string
+ *          Decode hex-encoded string into byte string
  *----------------------------------------------------------------------------*/
-char *htoa(const char *hex)
+char *hex2byte(const char *hex)
 {
     size_t nchar = strlen(hex);
 
@@ -102,8 +104,8 @@ char *htoa(const char *hex)
 
     size_t nbyte = nchar/2;
 
-    char *str_t = init_str(nbyte); /* allocate memory */
-    char *p = str_t;
+    char *byte = init_byte(nbyte);     /* allocate memory */
+    char *p = byte;
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
     for (size_t i = 0; i < nbyte; i++) /*use hex+2*i in assignment */
@@ -111,7 +113,7 @@ char *htoa(const char *hex)
         *p++ = (char)getHexByte(hex+2*i);
     }
 
-    return str_t;
+    return byte;
 }
 
 /*------------------------------------------------------------------------------
@@ -165,6 +167,16 @@ void free_str_arr(char **str_arr, size_t nstr)
         if (*(str_arr+i)) { free(*(str_arr+i)); }
     }
     free(str_arr);
+}
+
+/*------------------------------------------------------------------------------
+ *         Allocate memory for string
+ *----------------------------------------------------------------------------*/
+char *init_byte(size_t len)
+{
+    char *buffer = calloc(len, sizeof(char));
+    MALLOC_CHECK(buffer);
+    return buffer;
 }
 
 /*------------------------------------------------------------------------------

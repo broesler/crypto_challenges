@@ -35,8 +35,8 @@ int getHexByte(const char *hex);
 // Encode ASCII string as hexadecimal
 char *atoh(char *str);
 
-// Decode hexadecimal string to ASCII 
-char *htoa(const char *str);
+// Decode hexadecimal string to raw bytes 
+char *hex2byte(const char *str);
 
 // Decode hexadecimal string to integer array
 // int *htoi(char *hex);
@@ -53,6 +53,9 @@ char **init_str_arr(size_t nstr, size_t len);
 
 // Free string array 
 void free_str_arr(char **str_arr, size_t nstr);
+
+// Initialize byte array (same as init_str, but don't include extra NULL byte)
+char *init_byte(size_t len);
 
 // Initialize integer array
 int *init_int(const size_t len);

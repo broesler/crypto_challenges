@@ -13,6 +13,9 @@
 
 #include <errno.h>
 #include <memory.h>     // needed for memset()
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,8 +31,8 @@
 
 // Print  s together with the source file name and the current line number.
 #define ERROR(s) do { \
-    fprintf(stderr,"\033[0;31mERROR: [%s:%d]\033[0m %s\n%s\n", \
-            __FILE__, __LINE__, s, strerror(errno)); \
+    fprintf(stderr,"\033[0;31mERROR: [%s:%d]\033[0m %s\n", \
+            __FILE__, __LINE__, s); \
     exit(EXIT_FAILURE); \
 } while(0)
 

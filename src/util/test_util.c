@@ -67,6 +67,7 @@ int IsPrintable1()
     SHOULD_BE(test == expect); 
 #ifdef LOGSTATUS
     printf("Got:    %d\nExpect: %d\n", test, expect);
+    printf("Sizeof: %lu\nStrlen: %lu\n", sizeof(str1)/sizeof(char), strlen(str1));
 #endif
     /* include non-printing char */
     char str2[] = "Anything \u1801less than the best is a felony.";
@@ -106,24 +107,28 @@ int GetHexByte1()
     char hex2[] = "4D";
     hex_int = getHexByte(hex2);
     SHOULD_BE(hex_int == 77);
-    char hex3[] = "4d616E";
+    char hex3[] = "4d616e";
     hex_int = getHexByte(hex3);
     SHOULD_BE(hex_int == 77);
     END_TEST_CASE;
 }
 
-/* This tests conversion of an ASCII string to a hex string, and vice versa */
+/* This tests conversion of a byte string to a hex string, and vice versa */
 int HexConvert1()
 {
     START_TEST_CASE;
     char str1[] = "Man";
-    char *hex = atoh(str1);               /* any atoh call must be free'd! */
-    SHOULD_BE(!strcasecmp(hex,"4d616e")); /* convert to hex */
-    char *str2 = htoa(hex);               /* convert back to ascii */
+    char *hex = atoh(str1);
+    SHOULD_BE(!strcasecmp(hex,"4d616e"));
+    char *str2 = hex2byte(hex);
     SHOULD_BE(!strcmp(str2,str1));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", str2, str1);
 #endif
+    /* Test ERROR() macro by giving odd-length hex string: */
+    /* char hex1[] = "4D616E7"; */
+    /* char *byte1 = hex2byte(hex1); */
+    /* printf("byte1: %s\n", byte1); */
     free(hex);
     free(str2);
     END_TEST_CASE;
@@ -169,9 +174,9 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(StrToUpper1,    "strtoupper()     ");
-    RUN_TEST(StrArray1,      "init_str_arr()   ");
-    RUN_TEST(IsPrintable1,   "isprintable()    ");
+    /* RUN_TEST(StrToUpper1,    "strtoupper()     "); */
+    /* RUN_TEST(StrArray1,      "init_str_arr()   "); */
+    /* RUN_TEST(IsPrintable1,   "isprintable()    "); */
     RUN_TEST(FindFreq1,      "countChars()     ");
     RUN_TEST(GetHexByte1,    "getHexByte()     ");
     RUN_TEST(HexConvert1,    "atoh(),htoa()    ");
