@@ -72,7 +72,7 @@ int getHexByte(const char *hex)
 }
 
 /*------------------------------------------------------------------------------ 
- *          Encode ASCII string into hex string
+ *          Encode byte array into hex string
  *----------------------------------------------------------------------------*/
 /* Input:
  *      byte  = pointer to byte array-to-be-converted
@@ -97,7 +97,7 @@ char *byte2hex(const char *byte, size_t nbyte)
 }
 
 /*------------------------------------------------------------------------------ 
- *          Decode hex-encoded string into byte string
+ *          Decode hex string into byte array
  *----------------------------------------------------------------------------*/
 /* Input:
  *      byte = pointer to char* that will hold output array
@@ -128,6 +128,28 @@ size_t hex2byte(char **byte, const char *hex)
  *----------------------------------------------------------------------------*/
 /* char *htob(const char *hex) */
 /* { return NULL; } */
+
+/*------------------------------------------------------------------------------
+ *          Convert hex string to ASCII string
+ *----------------------------------------------------------------------------*/
+char *htoa(const char *hex)
+{
+    char *byte = NULL;
+    size_t nbyte = hex2byte(&byte, hex);
+    char *ascii = byte2str(byte, nbyte);
+    free(byte);
+    return ascii;
+}
+
+/*------------------------------------------------------------------------------
+ *         Convert byte array to ASCII string 
+ *----------------------------------------------------------------------------*/
+char *byte2str(const char *byte, size_t nbyte)
+{
+    char *str = init_str(nbyte); /* same as nbyte, but add null-terminator */
+    memcpy(str, byte, nbyte); /* probably optimized over a loop */
+    return str;
+}
 
 /*------------------------------------------------------------------------------
  *          Determine if string is printable

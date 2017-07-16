@@ -33,15 +33,16 @@ char *strtolower(char *s);
 int getHexByte(const char *hex);
 
 // Print byte array as hexadecimal string
-char *byte2hex(char *byte, size_t nbyte);
+char *byte2hex(const char *byte, size_t nbyte);
 
 // Decode hexadecimal string to raw bytes 
-// char *hex2byte(const char *str);
-char *hex2byte(const char *hex, size_t *nbyte);
+size_t hex2byte(char **byte, const char *hex);
 
-// Decode hexadecimal string to integer array
-// int *htoi(char *hex);
-// int htoi(const char *s, unsigned long *out);
+// Convert hex string to ASCII string
+char *htoa(const char *hex);
+
+// Copy byte array to proper C-string
+char *byte2str(const char *byte, size_t nbyte);
 
 // Determine if string has non-printable characters
 int isprintable(const char *s);

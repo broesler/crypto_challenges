@@ -38,13 +38,19 @@ typedef struct _XOR_NODE XOR_NODE;
 //      Function Definitions
 //------------------------------------------------------------------------------
 // Convert hex string to base-64 string
-char *hex2b64_str(const char *hex_str);
+char *hex2b64(const char *hex);
 
-// Convert base-64 string to hex string??
-char *b642hex_str(const char *b64_str);
+// Convert base-64 string to hex string
+char *b642hex(const char *b64);
 
-// XOR two strings
-char *fixedXOR(const char *str1, const char *str2);
+// Encode byte array as b64 string
+char *byte2b64(const char *byte, size_t nbyte);
+
+// Decode base64 string to byte array
+size_t b642byte(char **byte, const char *b64);
+
+// XOR two fixed-length byte arrays
+char *fixedXOR(const char *a, const char *b, size_t nbyte);
 
 // Character frequency score
 float charFreqScore(const char *str);

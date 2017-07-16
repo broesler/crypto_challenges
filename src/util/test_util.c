@@ -138,8 +138,9 @@ int Strnrepeat1()
     char expect[] = "ICEICEIC";
     SHOULD_BE(!memcmp(key_arr, expect, 8));
 #ifdef LOGSTATUS
-    /* NOTE DANGEROUS strncat without extra memory after key_arr... */
-    printf("Got:    %s\nExpect: %s\n", strcat(key_arr,"\0"), expect);
+    char *ascii = byte2str(key_arr, 8);
+    printf("Got:    %s\nExpect: %s\n", ascii, expect);
+    free(ascii);
 #endif
     free(key_arr);
     END_TEST_CASE;
