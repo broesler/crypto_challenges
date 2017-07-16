@@ -32,11 +32,12 @@ char *strtolower(char *s);
 // Get single hex byte from a string
 int getHexByte(const char *hex);
 
-// Encode ASCII string as hexadecimal
-char *atoh(char *str);
+// Print byte array as hexadecimal string
+char *byte2hex(char *byte, size_t nbyte);
 
 // Decode hexadecimal string to raw bytes 
-char *hex2byte(const char *str);
+// char *hex2byte(const char *str);
+char *hex2byte(const char *hex, size_t *nbyte);
 
 // Decode hexadecimal string to integer array
 // int *htoi(char *hex);
@@ -60,17 +61,17 @@ char *init_byte(size_t len);
 // Initialize integer array
 int *init_int(const size_t len);
 
-// Repeat string N times
-char *strnrepeat_hex(const char *src, size_t src_len, size_t len);
+// Repeat byte N times
+char *bytenrepeat(const char *src, size_t src_len, size_t nbyte);
 
 // Get index of character in string 
 size_t indexof(const char *str, char c);
 
 // Character frequency list
-int *countChars(const char *s);
+int *countChars(const char *s, size_t nbyte);
 
 // Hamming weight of hex string 
-size_t hamming_weight(const char *a);
+size_t hamming_weight(const char *byte, size_t nbyte);
 
 // Compute Hamming distance between strings 
 size_t hamming_dist(const char *a, const char *b);

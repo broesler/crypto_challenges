@@ -67,7 +67,6 @@ int IsPrintable1()
     SHOULD_BE(test == expect); 
 #ifdef LOGSTATUS
     printf("Got:    %d\nExpect: %d\n", test, expect);
-    printf("Sizeof: %lu\nStrlen: %lu\n", sizeof(str1)/sizeof(char), strlen(str1));
 #endif
     /* include non-printing char */
     char str2[] = "Anything \u1801less than the best is a felony.";
@@ -85,7 +84,7 @@ int FindFreq1()
 {
     START_TEST_CASE;
     char str1[] = "HelLo, World!";
-    int *cf = countChars(str1);
+    int *cf = countChars(str1, strlen(str1));
     SHOULD_BE(cf['H'-'A'] == 1);
     SHOULD_BE(cf['e'-'a'] == 1);
     SHOULD_BE(cf['L'-'A'] == 3);
@@ -117,20 +116,25 @@ int GetHexByte1()
 int HexConvert1()
 {
     START_TEST_CASE;
-    char str1[] = "Man";
-    char *hex = atoh(str1);
+    char byte1[] = "Man";
+    char *hex = byte2hex(byte1, strlen(byte1));
     SHOULD_BE(!strcasecmp(hex,"4d616e"));
-    char *str2 = hex2byte(hex);
-    SHOULD_BE(!strcmp(str2,str1));
+    size_t nbyte = 0;
+    char *byte2 = hex2byte(hex, &nbyte);
+    SHOULD_BE(!strcmp(byte2,byte1));
 #ifdef LOGSTATUS
-    printf("Got:    %s\nExpect: %s\n", str2, str1);
+    printf("Got:    %s\nExpect: %s\n", byte2, byte1);
+    /* printf("byte: Sizeof: %lu\tStrlen: %lu\n", sizeof(byte1)/sizeof(char), strlen(byte1)); */
+    printf("byte2:  Sizeof: %lu\tStrlen: %lu\n", sizeof(byte2)/sizeof(char), strlen(byte2));
+    printf("        sizeof(*byte2): %lu\tsizeof(&byte2): %lu\n", sizeof(*byte2), sizeof(&byte2));
+    printf("nbyte = %lu\n", nbyte);
 #endif
     /* Test ERROR() macro by giving odd-length hex string: */
     /* char hex1[] = "4D616E7"; */
     /* char *byte1 = hex2byte(hex1); */
     /* printf("byte1: %s\n", byte1); */
     free(hex);
-    free(str2);
+    free(byte2);
     END_TEST_CASE;
 }
 
@@ -138,15 +142,13 @@ int HexConvert1()
 int Strnrepeat1()
 {
     START_TEST_CASE;
-    char *key_hex = atoh("ICE");
-    char *key_str = strnrepeat_hex(key_hex, strlen(key_hex), 16);
-    char *expect = atoh("ICEICEIC");
-    SHOULD_BE(!strcasecmp(key_str, expect));
+    char key[] = "ICE";
+    char *key_str = bytenrepeat(key, strlen(key), 8);
+    char expect[] = "ICEICEIC";
+    SHOULD_BE(!strncasecmp(key_str, expect, 8));
 #ifdef LOGSTATUS
-    printf("Got:    %s\nExpect: %s\n", key_str, expect);
+    printf("Got:    %s\nExpect: %s\n", strncat(key_str,"\0",1), expect);
 #endif
-    free(expect);
-    free(key_hex);
     free(key_str);
     END_TEST_CASE;
 }
@@ -155,13 +157,12 @@ int Strnrepeat1()
 int HammingWeight1()
 {
     START_TEST_CASE;
-    char *a = atoh("this is a test");
-    size_t dist = hamming_weight(a);
+    char str[] = "this is a test";
+    size_t dist = hamming_weight(str, strlen(str));
     SHOULD_BE(dist == 48);
 #ifdef LOGSTATUS
     printf("Got:    %zu\nExpect: %d\n", dist, 48);
 #endif
-    free(a);
     END_TEST_CASE;
 }
 
@@ -174,9 +175,9 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(StrToUpper1,    "strtoupper()     "); */
-    /* RUN_TEST(StrArray1,      "init_str_arr()   "); */
-    /* RUN_TEST(IsPrintable1,   "isprintable()    "); */
+    RUN_TEST(StrToUpper1,    "strtoupper()     ");
+    RUN_TEST(StrArray1,      "init_str_arr()   ");
+    RUN_TEST(IsPrintable1,   "isprintable()    ");
     RUN_TEST(FindFreq1,      "countChars()     ");
     RUN_TEST(GetHexByte1,    "getHexByte()     ");
     RUN_TEST(HexConvert1,    "atoh(),htoa()    ");

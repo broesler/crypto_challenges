@@ -74,20 +74,20 @@ int getHexByte(const char *hex)
 /*------------------------------------------------------------------------------ 
  *          Encode ASCII string into hex string
  *----------------------------------------------------------------------------*/
-/* TODO repeat this function, but with byte arrays (NOT C-strings). 
- * Need to pass in length of array, so we don't need to worry about NULL */
 /* Take each 8-bit character and convert it to 2, 4-bit characters */
-char *atoh(char *str)
+char *byte2hex(char *byte, size_t nbyte)
 {
-    size_t len = strlen(str);
+    /* TODO switch input/output to be: 
+     *      size_t byte2hex(hex, byte); 
+     * return length of hex string as output, -1 if error */
+    char *hex = init_str(2*nbyte); /* include NULL termination for STRING */
+    char *p = hex;
+    char *c = byte;
 
-    char *hex = init_str(2*len); /* allocate memory */
-    char *p = hex;               /* moveable pointer */
-
-    for (char *c = str; *c; c++)
+    for (size_t i = 0; i < nbyte; i++)
     {
-        *p++ = HEX_LUT[*c >> 0x04]; /* take first nibble (4 bits) */
-        *p++ = HEX_LUT[*c  & 0x0F]; /* take next  nibble */
+        *p++ = HEX_LUT[*c   >> 0x04]; /* take first nibble (4 bits) */
+        *p++ = HEX_LUT[*c++  & 0x0F]; /* take next  nibble */
     }
     return hex;
 }
@@ -95,20 +95,20 @@ char *atoh(char *str)
 /*------------------------------------------------------------------------------ 
  *          Decode hex-encoded string into byte string
  *----------------------------------------------------------------------------*/
-char *hex2byte(const char *hex)
+char *hex2byte(const char *hex, size_t *nbyte)
 {
+    /* TODO switch input/output to be: 
+     *      size_t hex2byte(out, in); 
+     * return nbyte as output, -1 if error */
     size_t nchar = strlen(hex);
-
-    /* Check for odd-length inputs */
     if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
+    *nbyte = nchar/2;
 
-    size_t nbyte = nchar/2;
-
-    char *byte = init_byte(nbyte);     /* allocate memory */
+    char *byte = init_byte(*nbyte);     /* allocate memory */
     char *p = byte;
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
-    for (size_t i = 0; i < nbyte; i++) /*use hex+2*i in assignment */
+    for (size_t i = 0; i < *nbyte; i++)
     {
         *p++ = (char)getHexByte(hex+2*i);
     }
@@ -193,12 +193,12 @@ int *init_int(size_t len)
 /*------------------------------------------------------------------------------
  *         Repeat hex string 
  *----------------------------------------------------------------------------*/
-char *strnrepeat_hex(const char *src, size_t src_len, size_t nchar)
+char *bytenrepeat(const char *src, size_t src_len, size_t nbyte)
 {
-    char *dest = init_str(nchar);
-    /* Assumes strings are hex-encoded, so 2 chars == 1 byte */
-    for (size_t i = 0; i < nchar/2; i++) {
-        strncat(dest, src+2*(i % (src_len/2)), 2);
+    char *dest = init_byte(nbyte);
+    char *p = dest;
+    for (size_t i = 0; i < nbyte; i++) {
+        *p++ = *(src + (i % src_len));
     }
     return dest;
 }
@@ -213,15 +213,16 @@ size_t indexof(const char *str, char c)
 }
 
 /*------------------------------------------------------------------------------
- *         Find character frequency in string
+ *         Find character frequency in byte array
  *----------------------------------------------------------------------------*/
-int *countChars(const char *s)
+int *countChars(const char *s, size_t nbyte)
 {
     /* initialize array */
     int *cf = init_int(NUM_LETTERS);
 
-    /* Count occurrences letters in the string */
-    while (*s) {
+    /* Count occurrences letters in the string, index by letter */
+    for (size_t i = 0; i < nbyte; i++)
+    {
         if      (*s >= 'A' && *s <= 'Z') { cf[*s-'A']++; }
         else if (*s >= 'a' && *s <= 'z') { cf[*s-'a']++; }
         else if (*s == 32) { cf[NUM_LETTERS-1]++; } /* count spaces */
@@ -233,12 +234,8 @@ int *countChars(const char *s)
 /*------------------------------------------------------------------------------
  *         Hamming weight of hex string 
  *----------------------------------------------------------------------------*/
-size_t hamming_weight(const char *hex)
+size_t hamming_weight(const char *byte, size_t nbyte)
 {
-    size_t nchar = strlen(hex);
-    if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
-
-    size_t nbyte = nchar/2;
     size_t weight = 0;
     int x = 0,
         count = 0;
@@ -247,7 +244,7 @@ size_t hamming_weight(const char *hex)
      * <https://en.wikipedia.org/wiki/Hamming_weight> */
     /* For each byte in string, sum the weights */
     for (size_t i = 0; i < nbyte; i++) { 
-        x = getHexByte(hex+2*i);
+        x = *(byte+i);
         for (count = 0; x; count++) {
             x &= x - 1;
         }
