@@ -246,7 +246,6 @@ size_t indexof(const char *str, char c)
  *----------------------------------------------------------------------------*/
 int *countChars(const char *s, size_t nbyte)
 {
-    /* initialize array */
     int *cf = init_int(NUM_LETTERS);
 
     /* Count occurrences letters in the string, index by letter */
@@ -265,9 +264,9 @@ int *countChars(const char *s, size_t nbyte)
  *----------------------------------------------------------------------------*/
 size_t hamming_weight(const char *byte, size_t nbyte)
 {
-    size_t weight = 0;
-    int x = 0,
-        count = 0;
+    size_t weight = 0,
+           count = 0;
+    int x = 0;
 
     /* Wegner (1960), x & x-1 zeros LSB, so repeat until x = 0
      * <https://en.wikipedia.org/wiki/Hamming_weight> */

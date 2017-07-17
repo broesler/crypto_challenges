@@ -9,7 +9,6 @@
 #define _CRYPTO_UTIL_H_
 
 #include <ctype.h>
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,9 +72,6 @@ int *countChars(const char *s, size_t nbyte);
 
 // Hamming weight of hex string 
 size_t hamming_weight(const char *byte, size_t nbyte);
-
-// Compute Hamming distance between strings 
-size_t hamming_dist(const char *a, const char *b);
 
 // Read file as single string 
 char *fileToString(char *filename, long *file_length);

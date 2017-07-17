@@ -35,6 +35,8 @@ INCL = $(wildcard $(INCLDIR)*.h)
 all: test1
 debug: DEBUG = -DLOGSTATUS -g -ggdb
 debug: all
+verbose: DEBUG = -DVERBOSE -DLOGSTATUS -g -ggdb
+verbose: all
 
 #------------------------------------------------------------------------------
 # 	Compile and link steps 

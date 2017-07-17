@@ -53,25 +53,29 @@ size_t b642byte(char **byte, const char *b64);
 char *fixedXOR(const char *a, const char *b, size_t nbyte);
 
 // Character frequency score
-float charFreqScore(const char *str);
+float charFreqScore(const char *str, size_t nbyte);
 
 // Allocate memory and initialize an XOR_NODE
 XOR_NODE *init_xor_node(void);
 
 // Single byte XOR decode
-XOR_NODE *singleByteXORDecode(const char *hex);
+XOR_NODE *singleByteXORDecode(const char *byte, size_t nbyte);
 
 // Search file for single byte XOR'd string
 XOR_NODE *findSingleByteXOR(const char *filename);
 
 // Encode hex string using repeating-key XOR
-char *repeatingKeyXOR(const char *input_hex, const char *key_hex);
+// char *repeatingKeyXOR(const char *input_hex, const char *key_hex);
+char *repeatingKeyXOR(const char *byte, const char *key_byte, size_t nbyte, size_t key_len);
+
+// Compute Hamming distance between strings 
+size_t hamming_dist(const char *a, const char *b, size_t nbyte);
 
 // Get most probable key length of repeating XOR 
-size_t getKeyLength(const char *hex);
+size_t getKeyLength(const char *byte, size_t nbyte);
 
 //  Break repeating key XOR cipher 
-XOR_NODE *breakRepeatingXOR(const char *b64_str);
+XOR_NODE *breakRepeatingXOR(const char *byte, size_t nbyte);
 
 
 #endif
