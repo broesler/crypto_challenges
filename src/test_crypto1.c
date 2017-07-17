@@ -321,25 +321,38 @@ int BreakRepeatingXOR1()
 int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
-    char b64_file[] = "../data/6.txt";
-    long file_length = 0;
-    char *b64 = fileToString(b64_file, &file_length);
-    SHOULD_BE(file_length == 3900);
+    /*---------- Directly read in bytes from: 
+     *      $ openssl enc -d -base64 -in 6.txt -out 6.raw 
+     *----------*/
+    char byte_file[] = "../data/6.raw";
     char *byte = NULL;
-    size_t nbyte = b642byte(&byte, b64);
+    unsigned long file_length = fileToString(&byte, byte_file);
+    SHOULD_BE(file_length == 2876);
+    size_t nbyte = file_length;
+    /*---------- Read in b64 from file and convert to byte array ----------*/
+    /* char b64_file[] = "../data/6.txt"; */
+    /* char b64_file[] = "../data/6.txt_oneline"; */
+    /* char *b64 = NULL; */
+    /* unsigned long file_length = fileToString(&b64, b64_file); */
+    /* SHOULD_BE(file_length == 3836); */
+    /* printf("file as read by fileToString:\n<%s>\n", b64); */
+    /* char *byte = NULL; */
+    /* size_t nbyte = b642byte(&byte, b64); */
+    /*---------- Break the code! ----------*/
     XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
-    char expect[] = "???";
-    SHOULD_BE(!strcmp(out->key, "test"));
-    SHOULD_BE(out->score == FLT_MAX); // unchanged
-    SHOULD_BE(out->file_line == 0);   // unchanged
-    SHOULD_BE(!strcmp(out->plaintext, expect));
+    SHOULD_BE(!strcmp(out->key, "Terminator X: Bring the noise"));
+    /* Long output... maybe store in file for future testing? */
+    /* SHOULD_BE(!strcmp(out->plaintext, expect)); */
+    SHOULD_BE(out->score == FLT_MAX);
+    SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
     char *key_hex = byte2hex(out->key, strlen(out->key));
-    printf("key   = 0x%s = %s\n", key_hex, out->key);
-    printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
+    printf("key   = 0x%s\n      = %s\n", key_hex, out->key);
+    printf("Got:\n%s\n", out->plaintext);
     free(key_hex);
 #endif
-    free(b64);
+    /* free(b64); */
+    free(byte);
     free(out);
     END_TEST_CASE;
 }
@@ -364,7 +377,7 @@ int main(void)
     RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     ");
     RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        ");
     RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 ");
-    /* RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 "); */
+    RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
 
     /* Count errors */
     if (!fails) {

@@ -284,7 +284,7 @@ XOR_NODE *singleByteXORDecode(const char *byte, size_t nbyte)
     for (int keyi = 0x01; keyi < 0x100; keyi++) {
         char key = (char)keyi;  /* cast to char (char always < 0x100) */
 
-        /* Decode input to byte array */
+        /* Decode input with single-byte key */
         char *ptext = repeatingKeyXOR(byte, &key, nbyte, 1);
 
         /* Make sure string does not contain NULL chars, and is printable */
@@ -304,15 +304,6 @@ XOR_NODE *singleByteXORDecode(const char *byte, size_t nbyte)
                 BZERO(out->plaintext, nbyte+1);
                 memcpy(out->plaintext, ptext, nbyte);
             }
-/* #ifdef LOGSTATUS */
-/*         } else { */
-/*             printf("\nkey = %s\nNon-valid string: ", key); */
-/*             char *p = ptext; */
-/*             while (*p) { */
-/*                 printf("\\%+0.3d", *p++); */
-/*             } */
-/*             printf("\n"); */
-/* #endif */
         }
 
         free(ptext);
@@ -421,13 +412,14 @@ size_t getKeyLength(const char *byte, size_t nbyte)
     size_t max_key_len = (size_t)min(40.0, (float)nbyte/n_samples);
 
 #ifdef LOGSTATUS
-    printf("%3s\t%5s\t%8s\t%8s\n", "Key", "Tot", "Mean", "Norm");
+    printf("%3s\t%8s\t%8s\n", "Key", "Mean", "Norm");
 #endif
     for (size_t k = 3; k <= max_key_len; k++) {
         /* Get total Hamming distance of all samples */
         unsigned long tot_dist = 0;
 
         for (int i = 0; i < n_samples; i++) {
+            /* Take consecutive chunks of length k */
             const char *a = byte+k*i;
             const char *b = byte+k*(i+1);
             tot_dist += hamming_dist(a,b,k);
@@ -437,7 +429,7 @@ size_t getKeyLength(const char *byte, size_t nbyte)
         float mean_dist =  (float)tot_dist / n_samples;
         float norm_mean = mean_dist / k;
 #ifdef LOGSTATUS
-        printf("%3zu\t%5lu\t%8.4f\t%8.4f\n", k, tot_dist, mean_dist, norm_mean);
+        printf("%3zu\t%8.4f\t%8.4f\n", k, mean_dist, norm_mean);
 #endif
 
         /* Take key with minimum mean Hamming distance. */
@@ -464,7 +456,6 @@ XOR_NODE *breakRepeatingXOR(const char *byte, size_t nbyte)
     /* Get most probable key length */
     /* TODO return sorted list of possible key sizes */
     size_t key_byte = getKeyLength(byte, nbyte);
-    /* size_t key_byte = 29; */
 
     /* Maximum number of bytes in each substring 
      * (may run out of chars on repeated key applicaiton) */

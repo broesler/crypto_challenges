@@ -74,7 +74,7 @@ int *countChars(const char *s, size_t nbyte);
 size_t hamming_weight(const char *byte, size_t nbyte);
 
 // Read file as single string 
-char *fileToString(char *filename, long *file_length);
+unsigned long fileToString(char **buffer, const char *filename);
 
 #endif
 //==============================================================================

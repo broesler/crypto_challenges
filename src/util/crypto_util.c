@@ -285,15 +285,14 @@ size_t hamming_weight(const char *byte, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Read file as single string 
  *----------------------------------------------------------------------------*/
-char *fileToString(char *filename, long *file_length)
+unsigned long fileToString(char **buffer, const char *filename)
 {
     FILE *fp = NULL;
-    char *buffer = NULL;
     int result = 0;
     char message[2*MAX_STR_LEN];
-    *file_length = -1; /* initialize */
+    unsigned long file_length = -1;
 
-    /*------ Determine length of temp file -------------*/
+    /* Determine length of temp file */
     fp = fopen(filename, "r");
     if (!fp) {
         snprintf(message, 2*MAX_STR_LEN, "File %s could not be read!", filename);
@@ -302,24 +301,23 @@ char *fileToString(char *filename, long *file_length)
     }
 
     fseek(fp, 0, SEEK_END);   /* move pointer to end of file */
-    *file_length = ftell(fp);
+    file_length = ftell(fp);
     rewind(fp);               /* reset to top of file */
 
-    /*------ malloc buffer to file_length+1 ------------*/
-    buffer = init_str(*file_length);
+    /* malloc buffer to file_length+1 */
+    *buffer = init_str(file_length);
 
-    /*------ read temp into buffer ------*/
-    result = fread(buffer, sizeof(char), *file_length, fp);
+    /* read temp into buffer */
+    result = fread(*buffer, sizeof(char), file_length, fp);
 
-    if (result != *file_length) {
+    if (result != file_length) {
         WARNING("File read error!");
-        free(buffer);
-        return NULL;
+        free(*buffer);
+        return -1;
     }
 
-    /* free file pointer */
     fclose(fp);
-    return buffer;
+    return file_length;
 }
 
 /*==============================================================================
