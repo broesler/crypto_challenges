@@ -321,39 +321,26 @@ int BreakRepeatingXOR1()
 int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
-    /*---------- Directly read in bytes from: 
-     * $ openssl enc -d -base64 -in 6.txt -out 6.raw  */
-    char byte_file[] = "../data/6.raw";
-    char *byte = NULL;
-    unsigned long file_length = fileToString(&byte, byte_file);
-    SHOULD_BE(file_length == 2876);
-    size_t nbyte = file_length;
-    char *b64c = byte2b64(byte, nbyte);   /* this function converts byte -> b64 properly */
     /*---------- Read in b64 from file and convert to byte array ----------*/
+    /* TODO check for newline characters in the input string and remove them
+     * could do the same for hex, etc. char *s = cleanstr(const char *src); */
     char b64_file[] = "../data/6.txt_oneline";
     char *b64 = NULL;
-    file_length = fileToString(&b64, b64_file);
+    unsigned long file_length = fileToString(&b64, b64_file);
     SHOULD_BE(file_length == 3836); /* 3836 * 3/4 = 2877-1 (one equals sign) */
-    char *bytec = NULL;
-    size_t nbytec = b642byte(&bytec, b64);      /* This line fails at b64[96:99] */
-    SHOULD_BE(!strcmp(b64, b64c));              /* this works == our byte2b64 works as expected */
-    SHOULD_BE(nbyte == nbytec);
-    SHOULD_BE(!memcmp(byte, bytec, nbyte));     /* this doesn't == our b642byte fails */
-    /* Convert BACK to b64 to see if we're self-consistent */
-    char *back2b64 = byte2b64(bytec, nbytec);
-    SHOULD_BE(!strcmp(b64c, back2b64));
-    /* Write converted byte array to file */
-    /* FILE *fp = fopen("../data/6.back2b64","w"); */
-    /* if (fp) { */
-    /*     fprintf(fp, "%s", back2b64); */
-        /* for (size_t i = 0; i < nbyte; i++) { */
-        /*     char c = *(byte+i); */
-        /*     fprintf(fp, "%c", c); */
-        /* } */
-    /* } */
-    /* fclose(fp); */
+    char *s = strstr(b64,"\n");
+    if (!s) { printf("No newlines!\n"); }
+
+    char file[] = "../data/6.txt";
+    char *page = NULL;
+    (void)fileToString(&page, file);
+    s = strstr(page,"\n");
+    if (s) { printf("s-page = %zu\n", s-page); }
+
+    char *byte = NULL;
+    size_t nbyte = b642byte(&byte, b64);      /* This line fails at b64[96:99] */
     /*---------- Break the code! ----------*/
-    XOR_NODE *out = breakRepeatingXOR(bytec, nbytec);
+    XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
     SHOULD_BE(!strcmp(out->key, "Terminator X: Bring the noise"));
     /* Long output... maybe store in file for future testing? */
     /* SHOULD_BE(!strcmp(out->plaintext, expect)); */
@@ -362,10 +349,10 @@ int BreakRepeatingXOR2()
 #ifdef LOGSTATUS
     char *key_hex = byte2hex(out->key, strlen(out->key));
     printf("key   = 0x%s\n      = %s\n", key_hex, out->key);
-    printf("Got:\n%s\n", out->plaintext);
+    /* printf("Got:\n%s\n", out->plaintext); */
     free(key_hex);
 #endif
-    /* free(b64); */
+    free(b64);
     free(byte);
     free(out);
     END_TEST_CASE;
