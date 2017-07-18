@@ -322,24 +322,38 @@ int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
     /*---------- Directly read in bytes from: 
-     *      $ openssl enc -d -base64 -in 6.txt -out 6.raw 
-     *----------*/
+     * $ openssl enc -d -base64 -in 6.txt -out 6.raw  */
     char byte_file[] = "../data/6.raw";
     char *byte = NULL;
     unsigned long file_length = fileToString(&byte, byte_file);
     SHOULD_BE(file_length == 2876);
     size_t nbyte = file_length;
+    char *b64c = byte2b64(byte, nbyte);   /* this function converts byte -> b64 properly */
     /*---------- Read in b64 from file and convert to byte array ----------*/
-    /* char b64_file[] = "../data/6.txt"; */
-    /* char b64_file[] = "../data/6.txt_oneline"; */
-    /* char *b64 = NULL; */
-    /* unsigned long file_length = fileToString(&b64, b64_file); */
-    /* SHOULD_BE(file_length == 3836); */
-    /* printf("file as read by fileToString:\n<%s>\n", b64); */
-    /* char *byte = NULL; */
-    /* size_t nbyte = b642byte(&byte, b64); */
+    char b64_file[] = "../data/6.txt_oneline";
+    char *b64 = NULL;
+    file_length = fileToString(&b64, b64_file);
+    SHOULD_BE(file_length == 3836); /* 3836 * 3/4 = 2877-1 (one equals sign) */
+    char *bytec = NULL;
+    size_t nbytec = b642byte(&bytec, b64);      /* This line fails at b64[96:99] */
+    SHOULD_BE(!strcmp(b64, b64c));              /* this works == our byte2b64 works as expected */
+    SHOULD_BE(nbyte == nbytec);
+    SHOULD_BE(!memcmp(byte, bytec, nbyte));     /* this doesn't == our b642byte fails */
+    /* Convert BACK to b64 to see if we're self-consistent */
+    char *back2b64 = byte2b64(bytec, nbytec);
+    SHOULD_BE(!strcmp(b64c, back2b64));
+    /* Write converted byte array to file */
+    /* FILE *fp = fopen("../data/6.back2b64","w"); */
+    /* if (fp) { */
+    /*     fprintf(fp, "%s", back2b64); */
+        /* for (size_t i = 0; i < nbyte; i++) { */
+        /*     char c = *(byte+i); */
+        /*     fprintf(fp, "%c", c); */
+        /* } */
+    /* } */
+    /* fclose(fp); */
     /*---------- Break the code! ----------*/
-    XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
+    XOR_NODE *out = breakRepeatingXOR(bytec, nbytec);
     SHOULD_BE(!strcmp(out->key, "Terminator X: Bring the noise"));
     /* Long output... maybe store in file for future testing? */
     /* SHOULD_BE(!strcmp(out->plaintext, expect)); */
@@ -365,18 +379,18 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1       ");
-    RUN_TEST(HexConvert3,       "             hex2b64() 2       ");
-    RUN_TEST(HexConvert4,       "             hex2b64() 3       ");
-    RUN_TEST(B64Convert1,       "             b642hex() 1       ");
-    RUN_TEST(B64Convert2,       "             b642hex() 2       ");
-    RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            ");
-    RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       ");
-    RUN_TEST(SingleByte1,       "             singleByteXORDecode() ");
-    RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); /* SLOW */
-    RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     ");
-    RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        ");
-    RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 ");
+    /* RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1       "); */
+    /* RUN_TEST(HexConvert3,       "             hex2b64() 2       "); */
+    /* RUN_TEST(HexConvert4,       "             hex2b64() 3       "); */
+    /* RUN_TEST(B64Convert1,       "             b642hex() 1       "); */
+    /* RUN_TEST(B64Convert2,       "             b642hex() 2       "); */
+    /* RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            "); */
+    /* RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       "); */
+    /* RUN_TEST(SingleByte1,       "             singleByteXORDecode() "); */
+    /* RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); #<{(| SLOW |)}># */
+    /* RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     "); */
+    /* RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        "); */
+    /* RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 "); */
     RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
 
     /* Count errors */

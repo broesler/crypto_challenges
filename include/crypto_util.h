@@ -46,6 +46,9 @@ char *byte2str(const char *byte, size_t nbyte);
 // Determine if string has non-printable characters
 int isprintable(const char *s);
 
+// Print all bytes from array 
+void printall(const char *s, size_t nbyte);
+
 // Initialize string (char array)
 char *init_str(const size_t len);
 

@@ -139,9 +139,9 @@ size_t b642byte(char **byte, const char *b64)
         printf("nchar = %zu\n", nchar);
         ERROR("Input string is not a valid b64 string!");
     } else {
-        /* 4 b64 chars --> 3 bytes */
+        /* 4 b64 chars * 6 bits/char == 24 bits / 8 bits/byte == 3 bytes */
         /* check for "=" padding in b64 string -- if we find one, s will point
-         * to the end of the string, or 2nd to last character.   */
+         * to the end of the string, or 2nd to last character. */
         char *s = strchr(b64, '=');
         nbyte = nchar*3/4 - (s ? (nchar - (s - b64)) : 0);
     }
@@ -153,21 +153,22 @@ size_t b642byte(char **byte, const char *b64)
     /* Get integer array from B64_LUT */
     int *b64_int = init_int(nchar);         /* byte array */
     for (i = 0; i < nchar; i++) {
-        b64_int[i] = indexof(B64_LUT, b64[i]);
+        b64_int[i] = (int)indexof(B64_LUT, b64[i]);
     }
 
     /* Operate in chunks of 4 bytes in ==> 3 bytes out */
     for (i = 0; i < nchar; i+=4) {
-        /* First char of output */
-        /* NOTE mask off MSBs for left-shifts so we don't keep large #s */
+        /* First byte of output */
+        /* NOTE mask off MSBs for left-shifts so we don't keep large #s 
+         * (same as casting to char, but probably faster) */
         *p++ = ((b64_int[i] << 2) & 0xFF) | (b64_int[i+1] >> 4);
 
-        /* Second char */
-        if ((b64_int[i+2] < 64) && (b64_int[i+2] > 0)) {
+        /* Second byte */
+        if ((b64_int[i+2] < 64) && (b64_int[i+2] >= 0)) {
             *p++ = ((b64_int[i+1] << 4) & 0xFF) | (b64_int[i+2] >> 2);
 
-            /* Third char */
-            if ((b64_int[i+3] < 64) && (b64_int[i+3] > 0)) {
+            /* Third byte */
+            if ((b64_int[i+3] < 64) && (b64_int[i+3] >= 0)) {
                 *p++ = ((b64_int[i+2] << 6) & 0xFF) | b64_int[i+3];
             }
         }
@@ -411,7 +412,7 @@ size_t getKeyLength(const char *byte, size_t nbyte)
     /* key length in bytes */
     size_t max_key_len = (size_t)min(40.0, (float)nbyte/n_samples);
 
-#ifdef LOGSTATUS
+#ifdef VERBOSE
     printf("%3s\t%8s\t%8s\n", "Key", "Mean", "Norm");
 #endif
     for (size_t k = 3; k <= max_key_len; k++) {
@@ -428,7 +429,7 @@ size_t getKeyLength(const char *byte, size_t nbyte)
         /* Average Hamming distances normalized by total bits in key */
         float mean_dist =  (float)tot_dist / n_samples;
         float norm_mean = mean_dist / k;
-#ifdef LOGSTATUS
+#ifdef VERBOSE
         printf("%3zu\t%8.4f\t%8.4f\n", k, mean_dist, norm_mean);
 #endif
 
@@ -439,7 +440,7 @@ size_t getKeyLength(const char *byte, size_t nbyte)
         }
     }
 
-#ifdef LOGSTATUS
+#ifdef VERBOSE
     printf("n_samples = %d\n",    n_samples);
     printf("key_byte  = %zu\n",   key_byte);
     printf("min_dist  = %6.4f\n", min_mean_dist);
