@@ -141,8 +141,7 @@ size_t b642byte(char **byte, const char *b64)
         ERROR("Input string is not a valid b64 string!");
     } else {
         /* 4 b64 chars * 6 bits/char == 24 bits / 8 bits/byte == 3 bytes */
-        /* check for "=" padding in b64 string -- if we find one, s will point
-         * to the end of the string, or 2nd to last character. */
+        /* check for "=" padding in b64 string -- will have 0, 1, or 2 */
         char *s = strchr(b64, '=');
         nbyte = nchar*3/4 - (s ? (nchar - (s - b64)) : 0);
     }
@@ -151,35 +150,30 @@ size_t b642byte(char **byte, const char *b64)
     *byte = init_byte(nbyte);
     char *p = *byte;
 
-    /* Get integer array from B64_LUT */
-    int *b64_int = init_int(nchar);         /* byte array */
-    for (i = 0; i < nchar; i++) {
-        /* TODO Check index HERE to make sure it is < 64 && >= 0. Then we can
-         * break here and not have to check each byte down below... */
-        b64_int[i] = (int)indexof(B64_LUT, b64[i]);
-    }
-
     /* Operate in chunks of 4 bytes in ==> 3 bytes out */
     for (i = 0; i < nchar; i+=4) {
-        /* Could generate 4 chars of b64_int here instead, only pass through
-         * input one time */
-        /* First byte of output */
-        /* NOTE mask off MSBs for left-shifts so we don't keep large #s 
-         * (same as casting to char, but probably faster) */
-        *p++ = ((b64_int[i] << 2) & 0xFF) | (b64_int[i+1] >> 4);
+        /* Get 4 bytes of input */
+        int b64_int[4];
 
-        /* Second byte */
-        if ((b64_int[i+2] < 64) && (b64_int[i+2] >= 0)) {
-            *p++ = ((b64_int[i+1] << 4) & 0xFF) | (b64_int[i+2] >> 2);
+        for (int j = 0; j < 4; j++) {
+            /* Lookup table of b64 indices */
+            int b = (int)indexof(B64_LUT, b64[i+j]);
 
-            /* Third byte */
-            if ((b64_int[i+3] < 64) && (b64_int[i+3] >= 0)) {
-                *p++ = ((b64_int[i+2] << 6) & 0xFF) | b64_int[i+3];
+            if (b < 65 && b >= 0) {
+                b64_int[j] = b;
+            } else {
+                printf("got index %d\n", b);
+                ERROR("Input string is not a valid b64 string!");
             }
         }
+
+        /* NOTE mask off MSBs for left-shifts so we don't keep large #s 
+         * (same as casting to char, but probably faster) */
+        *p++ = ((b64_int[0] << 2) & 0xFF) | (b64_int[1] >> 4); /* 1st byte */
+        *p++ = ((b64_int[1] << 4) & 0xFF) | (b64_int[2] >> 2); /* 2nd byte */
+        *p++ = ((b64_int[2] << 6) & 0xFF) |  b64_int[3];       /* 3rd byte */
     }
 
-    free(b64_int);
     return nbyte;
 }
 
