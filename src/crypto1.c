@@ -135,6 +135,7 @@ size_t b642byte(char **byte, const char *b64)
         return 0;
     }
 
+    /* Require padding by '=' signs */
     if (nchar % 4) {
         printf("nchar = %zu\n", nchar);
         ERROR("Input string is not a valid b64 string!");
@@ -153,11 +154,15 @@ size_t b642byte(char **byte, const char *b64)
     /* Get integer array from B64_LUT */
     int *b64_int = init_int(nchar);         /* byte array */
     for (i = 0; i < nchar; i++) {
+        /* TODO Check index HERE to make sure it is < 64 && >= 0. Then we can
+         * break here and not have to check each byte down below... */
         b64_int[i] = (int)indexof(B64_LUT, b64[i]);
     }
 
     /* Operate in chunks of 4 bytes in ==> 3 bytes out */
     for (i = 0; i < nchar; i+=4) {
+        /* Could generate 4 chars of b64_int here instead, only pass through
+         * input one time */
         /* First byte of output */
         /* NOTE mask off MSBs for left-shifts so we don't keep large #s 
          * (same as casting to char, but probably faster) */

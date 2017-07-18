@@ -79,6 +79,9 @@ size_t hamming_weight(const char *byte, size_t nbyte);
 // Read file as single string 
 unsigned long fileToString(char **buffer, const char *filename);
 
+// Remove chars in set from string
+char *strrmchr(const char *src, const char *charset);
+
 #endif
 //==============================================================================
 //==============================================================================

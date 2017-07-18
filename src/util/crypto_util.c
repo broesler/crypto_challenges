@@ -335,5 +335,36 @@ unsigned long fileToString(char **buffer, const char *filename)
     return file_length;
 }
 
+/*------------------------------------------------------------------------------
+ *        Remove chars in set from string
+ *----------------------------------------------------------------------------*/
+char *strrmchr(const char *src, const char *charset)
+{
+    static const int totchars = 256;
+    int rmchar[totchars];   /* boolean of which chars in charset are in src */
+    for (size_t i = 0; i < totchars; i++) { rmchar[i] = 0; }
+
+    const char *s = src;
+    const char *c = charset;
+
+    /* Step through charset and mark which chars are there */
+    while (*c) {
+        rmchar[(size_t)*c++] = 1; 
+    }
+
+    /* malloc more than necessary, fine unless we have a very "sparse" string */
+    char *dest = init_str(strlen(src));
+    char *d = dest;
+
+    /* Step through string and copy characters not in charset to dest */
+    while (*s) {
+        if (!rmchar[(size_t)*s]) {
+            *d++ = *s;
+        }
+        s++;
+    }
+
+    return dest; 
+}
 /*==============================================================================
  *============================================================================*/

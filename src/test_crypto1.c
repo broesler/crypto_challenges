@@ -328,14 +328,13 @@ int BreakRepeatingXOR2()
     char *b64 = NULL;
     unsigned long file_length = fileToString(&b64, b64_file);
     SHOULD_BE(file_length == 3836); /* 3836 * 3/4 = 2877-1 (one equals sign) */
-    char *s = strstr(b64,"\n");
-    if (!s) { printf("No newlines!\n"); }
 
+    /* File with newlines */
     char file[] = "../data/6.txt";
     char *page = NULL;
     (void)fileToString(&page, file);
-    s = strstr(page,"\n");
-    if (s) { printf("s-page = %zu\n", s-page); }
+    char *page_nonl = strrmchr(page, "\n");
+    SHOULD_BE(!strcmp(page_nonl, b64));
 
     char *byte = NULL;
     size_t nbyte = b642byte(&byte, b64);      /* This line fails at b64[96:99] */
