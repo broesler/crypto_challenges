@@ -159,6 +159,19 @@ int HammingWeight1()
     END_TEST_CASE;
 }
 
+/* Test strrmchr function */
+int Strrmchr1()
+{
+    START_TEST_CASE;
+    char str[] = "Hello, World!";
+    char *dest = strrmchr(str, "l!");
+    SHOULD_BE(!strcmp(dest, "Heo, Word"));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", dest, "Heo, Word");
+#endif
+    free(dest);
+    END_TEST_CASE;
+}
 
 /*------------------------------------------------------------------------------
  *        Run tests
@@ -176,6 +189,7 @@ int main(void)
     RUN_TEST(HexConvert1,    "atoh(),htoa()    ");
     RUN_TEST(Strnrepeat1,    "strnrepeat_hex() ");
     RUN_TEST(HammingWeight1, "hamming_dist()   ");
+    RUN_TEST(Strrmchr1,      "strrmchr()       ");
 
     /* Count errors */
     if (!fails) {

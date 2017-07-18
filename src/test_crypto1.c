@@ -322,22 +322,14 @@ int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
     /*---------- Read in b64 from file and convert to byte array ----------*/
-    /* TODO check for newline characters in the input string and remove them
-     * could do the same for hex, etc. char *s = cleanstr(const char *src); */
-    char b64_file[] = "../data/6.txt_oneline";
+    char b64_file[] = "../data/6.txt";
     char *b64 = NULL;
     unsigned long file_length = fileToString(&b64, b64_file);
-    SHOULD_BE(file_length == 3836); /* 3836 * 3/4 = 2877-1 (one equals sign) */
-
-    /* File with newlines */
-    char file[] = "../data/6.txt";
-    char *page = NULL;
-    (void)fileToString(&page, file);
-    char *page_nonl = strrmchr(page, "\n");
-    SHOULD_BE(!strcmp(page_nonl, b64));
-
+    SHOULD_BE(file_length == 3900);
+    char *b64_clean = strrmchr(b64, "\n"); /* strip newlines */
+    SHOULD_BE(strlen(b64_clean) == 3836);
     char *byte = NULL;
-    size_t nbyte = b642byte(&byte, b64);      /* This line fails at b64[96:99] */
+    size_t nbyte = b642byte(&byte, b64_clean);
     /*---------- Break the code! ----------*/
     XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
     SHOULD_BE(!strcmp(out->key, "Terminator X: Bring the noise"));
@@ -348,10 +340,11 @@ int BreakRepeatingXOR2()
 #ifdef LOGSTATUS
     char *key_hex = byte2hex(out->key, strlen(out->key));
     printf("key   = 0x%s\n      = %s\n", key_hex, out->key);
-    /* printf("Got:\n%s\n", out->plaintext); */
+    printf("Got:\n%s\n", out->plaintext);
     free(key_hex);
 #endif
     free(b64);
+    free(b64_clean);
     free(byte);
     free(out);
     END_TEST_CASE;
@@ -365,18 +358,18 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1       "); */
-    /* RUN_TEST(HexConvert3,       "             hex2b64() 2       "); */
-    /* RUN_TEST(HexConvert4,       "             hex2b64() 3       "); */
-    /* RUN_TEST(B64Convert1,       "             b642hex() 1       "); */
-    /* RUN_TEST(B64Convert2,       "             b642hex() 2       "); */
-    /* RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            "); */
-    /* RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       "); */
-    /* RUN_TEST(SingleByte1,       "             singleByteXORDecode() "); */
-    /* RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); #<{(| SLOW |)}># */
-    /* RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     "); */
-    /* RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        "); */
-    /* RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 "); */
+    RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1       ");
+    RUN_TEST(HexConvert3,       "             hex2b64() 2       ");
+    RUN_TEST(HexConvert4,       "             hex2b64() 3       ");
+    RUN_TEST(B64Convert1,       "             b642hex() 1       ");
+    RUN_TEST(B64Convert2,       "             b642hex() 2       ");
+    RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            ");
+    RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       ");
+    RUN_TEST(SingleByte1,       "             singleByteXORDecode() ");
+    RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); /* SLOW */
+    RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     ");
+    RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        ");
+    RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 ");
     RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
 
     /* Count errors */

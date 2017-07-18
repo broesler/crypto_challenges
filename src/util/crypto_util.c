@@ -340,12 +340,15 @@ unsigned long fileToString(char **buffer, const char *filename)
  *----------------------------------------------------------------------------*/
 char *strrmchr(const char *src, const char *charset)
 {
-    static const int totchars = 256;
-    int rmchar[totchars];   /* boolean of which chars in charset are in src */
-    for (size_t i = 0; i < totchars; i++) { rmchar[i] = 0; }
-
     const char *s = src;
     const char *c = charset;
+
+    /* This "lookup table" makes our algorithm O(N+n). We don't have to scan
+     * through the charset for ever char in src ==> worst-case O(N*(n+1)) */
+    /* boolean of which chars in charset are in src */
+    static const int totchars = 256;
+    int rmchar[totchars];
+    for (size_t i = 0; i < totchars; i++) { rmchar[i] = 0; }
 
     /* Step through charset and mark which chars are there */
     while (*c) {
