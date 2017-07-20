@@ -1,0 +1,17 @@
+#==============================================================================
+#     File: ruby_test.c
+#  Created: 07/18/2017, 23:07
+#   Author: Bernie Roesler
+#
+#  Description: Test ruby environment in C for AES-128-ECB decryption
+#
+#============================================================================
+RUBY=2.4
+
+CFLAGS=-std=gnu11 -Wall $(shell pkg-config --cflags ruby-$(RUBY))
+LDLIBS=$(shell pkg-config --libs ruby-$(RUBY))
+
+all: ruby_test
+
+clean:
+	rm -f ruby_test *.o
