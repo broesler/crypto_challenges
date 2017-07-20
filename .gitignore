@@ -25,9 +25,13 @@ strassign_test
 test_strtoul
 test_util
 test1
+ruby_test
 
 # Data directory
 data/
 
 # Debug files
 *.dSYM
+
+# Binaries
+*.pdf
