@@ -16,14 +16,12 @@ SSLINCL   = /usr/local/opt/openssl/include
 CC = gcc
 CFLAGS = -Wall -pedantic -std=c99
 CFLAGS += -funsigned-char 
-# CFLAGS += -fPIC
 
 # Look for header files here -- store all headers in ../include/
-# OPT = -I$(SRCDIR) -I$(UTILDIR) -I$(INCLDIR)
 OPT = -I$(INCLDIR) -I$(SSLINCL)
 
 # Define source files, utility files (function files)
-SRC = test_crypto1.c crypto1.c
+SRC = test_crypto1.c crypto1.c aes_openssl.c
 UTIL = $(UTILDIR)/crypto_util.c
 
 # Define object files
