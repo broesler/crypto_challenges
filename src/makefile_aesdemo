@@ -1,0 +1,25 @@
+#==============================================================================
+#     File: makefile_aesdemo
+#  Created: 07/19/2017, 23:11
+#   Author: Bernie Roesler
+#
+#  Description: Test OpenSSL library usage
+#
+#============================================================================
+SRC = aes_demo.c
+
+CC = gcc
+CFLAGS = -std=c99 -Wall -pedantic
+
+# Include headers and libraries
+INCL   = /usr/local/opt/openssl/include
+LDLIBS = -lcrypto -lssl
+
+all: aes_demo
+
+aes_demo: aes_demo.c
+	$(CC) $(CFLAGS) -I$(INCL) -o $@ $(SRC) $(LDLIBS)
+
+clean:
+	rm -f aes_demo *.o
+
