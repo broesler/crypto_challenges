@@ -350,6 +350,43 @@ int BreakRepeatingXOR2()
     END_TEST_CASE;
 }
 
+/* Test AES in ECB mode decryption */
+int AESDecrypt1()
+{
+    START_TEST_CASE;
+    /*---------- Read in b64 from file and convert to byte array ----------*/
+    /* char b64_file[] = "../data/7.txt"; */
+    /* char *b64 = NULL; */
+    /* (void)fileToString(&b64, b64_file); */
+    /* char *b64_clean = strrmchr(b64, "\n"); #<{(| strip newlines |)}># */
+    unsigned char *ptext = (unsigned char *)"The quick brown fox jumped over the lazy dog.";
+    unsigned char *b64_clean = byte2b64(ptext, strlen((char *)ptext));
+    unsigned char *byte = NULL;
+    size_t nbyte = b642byte(&byte, b64_clean);
+    /*---------- Break the code! ----------*/
+    /* Initialize the OpenSSL library */
+    ERR_load_crypto_strings();
+    OpenSSL_add_all_algorithms();
+    OPENSSL_config(NULL);
+    char *key = "YELLOW SUBMARINE";
+    char decryptedtext[nbyte];
+    /* Decrypt the ciphertext */
+    int decryptedtext_len = aes_128_ecb_decrypt(byte, nbyte, key, decryptedtext);
+    /* Add a NULL terminator. We are expecting printable text */
+    decryptedtext[decryptedtext_len] = '\0';
+    SHOULD_BE(decryptedtext_len == nbyte);
+#ifdef LOGSTATUS
+    printf("Got:\n%s\n", decryptedtext);
+#endif
+    /* Clean up */
+    EVP_cleanup();
+    ERR_free_strings();
+    /* free(b64); */
+    /* free(b64_clean); */
+    free(byte);
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -358,11 +395,11 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1       ");
-    RUN_TEST(HexConvert3,       "             hex2b64() 2       ");
-    RUN_TEST(HexConvert4,       "             hex2b64() 3       ");
-    RUN_TEST(B64Convert1,       "             b642hex() 1       ");
-    RUN_TEST(B64Convert2,       "             b642hex() 2       ");
+    RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1           ");
+    RUN_TEST(HexConvert3,       "             hex2b64() 2           ");
+    RUN_TEST(HexConvert4,       "             hex2b64() 3           ");
+    RUN_TEST(B64Convert1,       "             b642hex() 1           ");
+    RUN_TEST(B64Convert2,       "             b642hex() 2           ");
     RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            ");
     RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       ");
     RUN_TEST(SingleByte1,       "             singleByteXORDecode() ");
@@ -371,6 +408,7 @@ int main(void)
     RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        ");
     RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 ");
     RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
+    RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_decrypt() ");
 
     /* Count errors */
     if (!fails) {
