@@ -8,6 +8,9 @@
  *============================================================================*/
 #include <float.h>
 /* #include <math.h> */
+#include <openssl/conf.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
 
 #include "crypto1.h"
 #include "crypto_util.h"

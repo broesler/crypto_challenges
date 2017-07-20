@@ -10,6 +10,7 @@
 SRCDIR = ./
 UTILDIR = ./util/
 INCLDIR = ../include/
+SSLINCL   = /usr/local/opt/openssl/include
 
 # Set the compiler options
 CC = gcc
@@ -19,7 +20,7 @@ CFLAGS += -funsigned-char
 
 # Look for header files here -- store all headers in ../include/
 # OPT = -I$(SRCDIR) -I$(UTILDIR) -I$(INCLDIR)
-OPT = -I$(INCLDIR)
+OPT = -I$(INCLDIR) -I$(SSLINCL)
 
 # Define source files, utility files (function files)
 SRC = test_crypto1.c crypto1.c
@@ -30,6 +31,9 @@ OBJ = $(SRC:%.c=%.o) $(UTIL:%.c=%.o)
 
 # Define header files
 INCL = $(wildcard $(INCLDIR)*.h)
+
+# Libraries
+LDLIBS = -lcrypto -lssl
 
 # Make options
 all: test1
@@ -43,7 +47,7 @@ verbose: all
 #------------------------------------------------------------------------------
 # Main executable:
 test1: $(OBJ)
-	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $(OBJ)
+	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $(OBJ) $(LDLIBS)
 
 # object rules
 %.o: %.c $(INCL)
