@@ -357,32 +357,35 @@ int AESDecrypt1()
     /*---------- Read in b64 from file and convert to byte array ----------*/
     /* char b64_file[] = "../data/7.txt"; */
     /* char *b64 = NULL; */
-    /* (void)fileToString(&b64, b64_file); */
+    /* unsigned long file_length = fileToString(&b64, b64_file); */
+    /* SHOULD_BE(file_length = 3904); */
     /* char *b64_clean = strrmchr(b64, "\n"); #<{(| strip newlines |)}># */
-    char *ptext = "The quick brown fox jumped over the lazy dog.";
-    char *b64_clean = byte2b64(ptext, strlen(ptext));
-    char *byte = NULL;
-    size_t nbyte = b642byte(&byte, b64_clean);
-    /*---------- Break the code! ----------*/
+    /*---------- Test input ----------*/
+    unsigned char ptext[] = "The quick brown fox jumped over the lazy dog.";
     /* Initialize the OpenSSL library */
-    ERR_load_crypto_strings();
-    OpenSSL_add_all_algorithms();
-    OPENSSL_config(NULL);
-    char *key = "YELLOW SUBMARINE";
-    unsigned char decryptedtext[nbyte];
-    /* Decrypt the ciphertext */
-    int decryptedtext_len = aes_128_ecb_decrypt((unsigned char*)byte, nbyte, (unsigned char *)key, (unsigned char *)decryptedtext);
-    /* Add a NULL terminator. We are expecting printable text */
+    OpenSSL_init();
+    /* Define the key -- 16 byte == 128 bit key */
+    unsigned char *key = (unsigned char *)"YELLOW SUBMARINE";
+    unsigned char ciphertext[128]; /* multiple of 16 bytes? */
+    unsigned char decryptedtext[128];
+    /* Encrypt the text */
+    int ciphertext_len = aes_128_ecb_cipher(ptext, strlen((char *)ptext),
+            key, ciphertext, 1);
+    /* printf("Ciphertext is:\n"); */
+    /* BIO_dump_fp(stdout, (const char *)ciphertext, ciphertext_len); */
+    /*---------- Break the code! ----------*/
+    /* unsigned char decryptedtext[nbyte + EVP_MAX_BLOCK_LENGTH]; */
+    int decryptedtext_len = aes_128_ecb_cipher(ciphertext, ciphertext_len, 
+            key, decryptedtext, 0);
     decryptedtext[decryptedtext_len] = '\0';
 #ifdef LOGSTATUS
     printf("Got:\n%s\n", decryptedtext);
 #endif
     /* Clean up */
-    EVP_cleanup();
-    ERR_free_strings();
+    OpenSSL_cleanup();
     /* free(b64); */
     /* free(b64_clean); */
-    free(byte);
+    /* free(byte); */
     END_TEST_CASE;
 }
 
@@ -394,20 +397,20 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1           ");
-    RUN_TEST(HexConvert3,       "             hex2b64() 2           ");
-    RUN_TEST(HexConvert4,       "             hex2b64() 3           ");
-    RUN_TEST(B64Convert1,       "             b642hex() 1           ");
-    RUN_TEST(B64Convert2,       "             b642hex() 2           ");
-    RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            ");
-    RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       ");
-    RUN_TEST(SingleByte1,       "             singleByteXORDecode() ");
-    RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); /* SLOW */
-    RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     ");
-    RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        ");
-    RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 ");
-    RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
-    RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_decrypt() ");
+    /* RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1           "); */
+    /* RUN_TEST(HexConvert3,       "             hex2b64() 2           "); */
+    /* RUN_TEST(HexConvert4,       "             hex2b64() 3           "); */
+    /* RUN_TEST(B64Convert1,       "             b642hex() 1           "); */
+    /* RUN_TEST(B64Convert2,       "             b642hex() 2           "); */
+    /* RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            "); */
+    /* RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       "); */
+    /* RUN_TEST(SingleByte1,       "             singleByteXORDecode() "); */
+    /* RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); #<{(| SLOW |)}># */
+    /* RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     "); */
+    /* RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        "); */
+    /* RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 "); */
+    /* RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 "); */
+    RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_cipher() ");
 
     /* Count errors */
     if (!fails) {

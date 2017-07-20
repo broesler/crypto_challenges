@@ -8,9 +8,6 @@
  *============================================================================*/
 #include <float.h>
 /* #include <math.h> */
-#include <openssl/conf.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
 
 #include "crypto1.h"
 #include "crypto_util.h"
@@ -505,8 +502,21 @@ XOR_NODE *breakRepeatingXOR(const char *byte, size_t nbyte)
 }
 
 /*------------------------------------------------------------------------------
- *         Error handling for OpenSSL libs
+ *         Helpers for OpenSSL Libs
  *----------------------------------------------------------------------------*/
+void OpenSSL_init(void)
+{
+    ERR_load_crypto_strings();
+    OpenSSL_add_all_algorithms();
+    OPENSSL_config(NULL);
+}
+
+void OpenSSL_cleanup(void)
+{
+    EVP_cleanup();
+    ERR_free_strings();
+}
+
 void handleErrors(void)
 {
     /* Just dump to stderr */
@@ -567,11 +577,8 @@ int aes_128_ecb_decrypt(unsigned char *ciphertext, int ciphertext_len,
     if (!(ctx = EVP_CIPHER_CTX_new())) { handleErrors(); }
 
     /* Initialise the decryption operation. IMPORTANT - ensure you use a key
-     * and IV size appropriate for your cipher
-     * In this example we are using 256 bit AES (i.e. a 256 bit key). The
-     * IV size for *most* modes is the same as the block size. For AES this
-     * is 128 bits */
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, NULL)) { 
+     * and IV size appropriate for your cipher */
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, key, NULL)) { 
         handleErrors(); 
     }
 
@@ -590,6 +597,49 @@ int aes_128_ecb_decrypt(unsigned char *ciphertext, int ciphertext_len,
     EVP_CIPHER_CTX_free(ctx);
 
     return plaintext_len;
+}
+
+
+/*------------------------------------------------------------------------------
+ *          General encryption/decryption function
+ *----------------------------------------------------------------------------*/
+/* Set enc to 1 for encryption, 0 for decryption */
+int aes_128_ecb_cipher(unsigned char *in, size_t in_len, unsigned char *key,
+        unsigned char *out, int enc)
+{
+    EVP_CIPHER_CTX *ctx = NULL;
+    int len = -1;
+    int out_len = -1;
+
+    /* IMPORTANT - ensure you use a key and IV size appropriate for your cipher */
+    if (16 != strlen((char *)key)) {
+        ERROR("Key must be 16 bytes long for AES-128-ECB!");
+    }
+
+    /* Initialize the context */
+    if (!(ctx = EVP_CIPHER_CTX_new())) { handleErrors(); }
+
+    /* Initialise the en/decryption operation. No IV needed for ECB */
+    if (1 != EVP_CipherInit_ex(ctx, EVP_aes_128_ecb(), NULL, key, NULL, enc)) { 
+        handleErrors(); 
+    }
+
+    /* Provide the message, and obtain the output.
+     * EVP_CipherUpdate can be called multiple times if necessary */
+    if (1 != EVP_CipherUpdate(ctx, out, &len, in, in_len)) {
+        handleErrors(); 
+    }
+    out_len = len;
+
+    /* Finalise the operation. Further out bytes may be written. Provide pointer
+     * to end of output array (out+len) */
+    if (1 != EVP_CipherFinal_ex(ctx, out + len, &len)) { handleErrors(); }
+    out_len += len;
+
+    /* Clean up */
+    EVP_CIPHER_CTX_free(ctx);
+
+    return out_len;
 }
 
 /*==============================================================================

@@ -80,7 +80,9 @@ size_t getKeyLength(const char *byte, size_t nbyte);
 //  Break repeating key XOR cipher 
 XOR_NODE *breakRepeatingXOR(const char *byte, size_t nbyte);
 
-// AES error handling
+// OpenSSL helper functions
+void OpenSSL_init(void);
+void OpenSSL_cleanup(void);
 void handleErrors(void);
 
 // AES 128-bit ECB-mode encrypt/decrypt
@@ -88,6 +90,9 @@ int aes_128_ecb_encrypt(unsigned char *plaintext, int plaintext_len,
         unsigned char *key, unsigned char *ciphertext);
 int aes_128_ecb_decrypt(unsigned char *ciphertext, int ciphertext_len, 
         unsigned char *key, unsigned char *plaintext);
+
+int aes_128_ecb_cipher(unsigned char *in, size_t in_len, unsigned char *key,
+        unsigned char *out, int enc);
 
 #endif
 //==============================================================================

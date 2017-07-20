@@ -37,10 +37,12 @@ int main (void)
 
     /* A 256 bit key */
     /* unsigned char *key = (unsigned char *)"01234567890123456789012345678901"; */
+
+    /* A 128 bit key */
     unsigned char *key = (unsigned char *)"YELLOW SUBMARINE";
 
     /* A 128 bit IV */
-    unsigned char *iv = (unsigned char *)"0123456789012345";
+    /* unsigned char *iv = (unsigned char *)"0123456789012345"; */
 
     /* Message to be encrypted */
     unsigned char *plaintext =
@@ -64,15 +66,18 @@ int main (void)
     printf("Original plaintext:\n%s\n", plaintext);
 
     /* Encrypt the plaintext */
-    ciphertext_len = encrypt(plaintext, strlen((char *)plaintext), key, iv,
+    ciphertext_len = encrypt(plaintext, strlen((char *)plaintext), key, NULL,
             ciphertext);
+
+    printf("plaintext_len  = %lu\n", strlen((char *)plaintext));
+    printf("ciphertext_len = %d\n", ciphertext_len);
 
     /* Do something useful with the ciphertext here */
     printf("Ciphertext is:\n");
     BIO_dump_fp (stdout, (const char *)ciphertext, ciphertext_len);
 
     /* Decrypt the ciphertext */
-    decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, iv,
+    decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, NULL,
             decryptedtext);
 
     /* Add a NULL terminator. We are expecting printable text */
@@ -120,7 +125,9 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
      * In this example we are using 256 bit AES (i.e. a 256 bit key). The
      * IV size for *most* modes is the same as the block size. For AES this
      * is 128 bits */
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
+    /* if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) */
+    /*     handleErrors(); */
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, key, NULL))
         handleErrors();
 
     /* Provide the message to be encrypted, and obtain the encrypted output.
@@ -158,7 +165,9 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
      * In this example we are using 256 bit AES (i.e. a 256 bit key). The
      * IV size for *most* modes is the same as the block size. For AES this
      * is 128 bits */
-    if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv))
+    /* if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) */
+    /*     handleErrors(); */
+    if(1 != EVP_DecryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, key, NULL))
         handleErrors();
 
     /* Provide the message to be decrypted, and obtain the plaintext output.
