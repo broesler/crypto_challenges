@@ -332,14 +332,17 @@ int BreakRepeatingXOR2()
     char *byte = NULL;
     size_t nbyte = b642byte(&byte, b64_clean);
     /* Read in expected file (hand-checked before) */
+    char *expect = NULL;
+    (void)fileToString(&expect, "../data/play_that_funky_music.txt");
     /*---------- Break the code! ----------*/
     XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
     SHOULD_BE(!strcmp(out->key, "Terminator X: Bring the noise"));
-    /* SHOULD_BE(!strcmp(out->plaintext, expect)); */
+    SHOULD_BE(!strcmp(out->plaintext, expect));
     SHOULD_BE(out->score == FLT_MAX);
     SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
     char *key_hex = byte2hex(out->key, strlen(out->key));
+    printf("----------------------------------------\n");
     printf("key   = 0x%s\n      = %s\n", key_hex, out->key);
     printf("Got:\n%s\n", out->plaintext);
     free(key_hex);
@@ -348,6 +351,7 @@ int BreakRepeatingXOR2()
     free(b64_clean);
     free(byte);
     free(out);
+    free(expect);
     END_TEST_CASE;
 }
 
@@ -371,7 +375,12 @@ int AESDecrypt1()
     /*---------- Break the code! ----------*/
     int plaintext_len = aes_128_ecb_cipher(&plaintext, (unsigned char *)byte, nbyte, key, 0);
     plaintext[plaintext_len] = '\0';
+    /* Compare with expected result */
+    char *expect = NULL;
+    (void)fileToString(&expect, "../data/play_that_funky_music.txt");
+    SHOULD_BE(!strcmp((char *)plaintext, expect));
 #ifdef LOGSTATUS
+    printf("----------------------------------------\n");
     printf("Got:\n%s\n", plaintext);
 #endif
     /* Clean up */
@@ -380,6 +389,7 @@ int AESDecrypt1()
     free(b64_clean);
     free(byte);
     free(plaintext);
+    free(expect);
     END_TEST_CASE;
 }
 

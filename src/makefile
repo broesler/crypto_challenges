@@ -7,49 +7,42 @@
 #==============================================================================
 
 # Directories where source files are kept
-SRCDIR = ./
+SRCDIR  = ./
 UTILDIR = ./util/
 INCLDIR = ../include/
-SSLINCL   = /usr/local/opt/openssl/include
+SSLINCL = /usr/local/opt/openssl/include
 
 # Set the compiler options
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99
-CFLAGS += -funsigned-char 
-
-# Look for header files here -- store all headers in ../include/
-OPT = -I$(INCLDIR) -I$(SSLINCL)
+CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
 
 # Define source files, utility files (function files)
-SRC = test_crypto1.c crypto1.c aes_openssl.c
-UTIL = $(UTILDIR)/crypto_util.c
+UTIL = crypto1.c aes_openssl.c $(UTILDIR)/crypto_util.c
 
-# Define object files
-OBJ = $(SRC:%.c=%.o) $(UTIL:%.c=%.o) 
-
-# Define header files
-INCL = $(wildcard $(INCLDIR)*.h)
+# Look for header files here
+OPT = -I$(INCLDIR) -I$(SSLINCL)
 
 # Libraries
 LDLIBS = -lcrypto -lssl
 
 # Make options
-all: test1
+all: test1 breakRepeatingXOR
+break: breakRepeatingXOR
 debug: DEBUG = -DLOGSTATUS -g -ggdb
 debug: all
 verbose: DEBUG = -DVERBOSE -DLOGSTATUS -g -ggdb
 verbose: all
 
 #------------------------------------------------------------------------------
-# 	Compile and link steps 
+# 		Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test1: $(OBJ)
-	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $(OBJ) $(LDLIBS)
+test1: test_crypto1.c $(UTIL)
+	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ test_crypto1.c $(UTIL) $(LDLIBS)
 
-# object rules
-%.o: %.c $(INCL)
-	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -c $< -o $@
+# Secondary executables:
+breakRepeatingXOR: breakRepeatingXOR.c $(UTIL)
+	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ breakRepeatingXOR.c $(UTIL) $(LDLIBS)
 
 # clean up (do not do anything with file named clean)
 .PHONY: depend clean
@@ -62,6 +55,7 @@ clean:
 	rm -f $(UTILDIR)*.gch
 	rm -rf $(UTILDIR)*.dSYM/
 	rm -f test1
+	rm -f breakRepeatingXOR
 
 #==============================================================================
 #==============================================================================

@@ -158,8 +158,14 @@ int isprintable(const char *s)
 {
     /* Accept "printable" characters, single space, or newline, but NOT carriage
      * return, tab, or vertical tab (odd in normal text) */
-    while (*s && (isprint(*s) || (*s == '\t') || (*s == '\n'))) { s++; }
+    while (*s && (ispchar(*s))) { s++; }
     return (*s == '\0'); /* non-zero if true, zero if false */
+}
+
+int ispchar(const char c)
+{
+    /* Check for any ascii character, space, tab, and newline */
+    return (isprint(c) || (c == '\t') || (c == '\n'));
 }
 
 /*------------------------------------------------------------------------------
@@ -169,7 +175,7 @@ void printall(const char *s, size_t nbyte)
 {
     for (size_t i = 0; i < nbyte; i++) {
         char c = *(s+i);
-        if (isprint(c)) {
+        if (ispchar(c)) {
             printf("%c", c);
         } else {
             printf("\\x%0.2X", c);

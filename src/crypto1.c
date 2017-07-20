@@ -231,7 +231,10 @@ float charFreqScore(const char *byte, size_t nbyte)
 
     /* Fraction of string that is just letters */
     letter_frac = Nl/N;
-    if (letter_frac < tol) { return score; } /* no letters present */
+    if (letter_frac < tol) {  /* no letters present, just clean up and exit */
+        free(cf);
+        return score; 
+    }
 
     /* Sum the chi^2 values for each alphabetic character */
     for (int i = 0; i < strlen(etaoin); i++) {
