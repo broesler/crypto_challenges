@@ -26,6 +26,7 @@ test_strtoul
 test_util
 test1
 ruby_test
+breakRepeatingXOR
 
 # Data directory
 data/
