@@ -17,6 +17,7 @@ CC = gcc
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
 
 # Define source files, utility files (function files)
+SRC = test_crypto1.c breakRepeatingXOR.c
 UTIL = crypto1.c aes_openssl.c $(UTILDIR)/crypto_util.c
 
 # Look for header files here
@@ -26,7 +27,7 @@ OPT = -I$(INCLDIR) -I$(SSLINCL)
 LDLIBS = -lcrypto -lssl
 
 # Make options
-all: test1 breakRepeatingXOR
+all: test1 breakRepeatingXOR types
 break: breakRepeatingXOR
 debug: DEBUG = -DLOGSTATUS -g -ggdb
 debug: all
@@ -44,6 +45,13 @@ test1: test_crypto1.c $(UTIL)
 breakRepeatingXOR: breakRepeatingXOR.c $(UTIL)
 	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ breakRepeatingXOR.c $(UTIL) $(LDLIBS)
 
+# Highlight custom types, unions, and structs!
+types: types.vim
+types.vim: $(SRC) $(UTIL) $(INCLDIR)/*.h
+	ctags --c-kinds=gstu -o- ../**/*.[ch] |\
+		awk 'BEGIN{printf("syntax keyword Type\t")}\
+			{printf("%s ", $$1)}END{print ""}' > $@
+
 # clean up (do not do anything with file named clean)
 .PHONY: depend clean
 clean:
@@ -56,6 +64,7 @@ clean:
 	rm -rf $(UTILDIR)*.dSYM/
 	rm -f test1
 	rm -f breakRepeatingXOR
+	rm -f types.vim
 
 #==============================================================================
 #==============================================================================

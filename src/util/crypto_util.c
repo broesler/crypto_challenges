@@ -44,10 +44,10 @@ char *strtolower(char *s)
 /*------------------------------------------------------------------------------
 *         Get an integer from 2 hex characters in a string
 *-----------------------------------------------------------------------------*/
-int getHexByte(const char *hex)
+BYTE getHexByte(const char *hex)
 {
-    int u = 0,
-        c = 0;
+    BYTE u = 0;
+    int c = 0;
     char p;
 
     /* Take 1 or 2 chars, error if input is length 0 */
@@ -80,11 +80,11 @@ int getHexByte(const char *hex)
  * Output:
  *      pointer to hex string
  */
-char *byte2hex(const char *byte, size_t nbyte)
+char *byte2hex(const BYTE *byte, size_t nbyte)
 {
     char *hex = init_str(2*nbyte); /* include NULL termination for STRING */
     char *p = hex;
-    const char *c = byte;
+    const BYTE *c = byte;
 
     /* One byte --> 2 hex chars */
     for (size_t i = 0; i < nbyte; i++)
@@ -105,19 +105,19 @@ char *byte2hex(const char *byte, size_t nbyte)
  * Output:
  *      number of bytes in byte array (NOT null-terminated)
  */
-size_t hex2byte(char **byte, const char *hex)
+size_t hex2byte(BYTE **byte, const char *hex)
 {
     size_t nchar = strlen(hex);
     if (nchar & 1) { ERROR("Input string is not a valid hex string!"); }
     size_t nbyte = nchar/2;
 
     *byte = init_byte(nbyte);     /* allocate memory */
-    char *p = *byte;
+    BYTE *p = *byte;
 
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
     for (size_t i = 0; i < nbyte; i++)
     {
-        *p++ = (char)getHexByte(hex+2*i);
+        *p++ = getHexByte(hex+2*i);
     }
 
     return nbyte;
@@ -134,7 +134,7 @@ size_t hex2byte(char **byte, const char *hex)
  *----------------------------------------------------------------------------*/
 char *htoa(const char *hex)
 {
-    char *byte = NULL;
+    BYTE *byte = NULL;
     size_t nbyte = hex2byte(&byte, hex);
     char *ascii = byte2str(byte, nbyte);
     free(byte);
@@ -144,7 +144,7 @@ char *htoa(const char *hex)
 /*------------------------------------------------------------------------------
  *         Convert byte array to ASCII string 
  *----------------------------------------------------------------------------*/
-char *byte2str(const char *byte, size_t nbyte)
+char *byte2str(const BYTE *byte, size_t nbyte)
 {
     char *str = init_str(nbyte); /* same as nbyte, but add null-terminator */
     memcpy(str, byte, nbyte); /* probably optimized over a loop */
@@ -154,12 +154,20 @@ char *byte2str(const char *byte, size_t nbyte)
 /*------------------------------------------------------------------------------
  *          Determine if string is printable
  *----------------------------------------------------------------------------*/
-int isprintable(const char *s)
+int isprintable(const BYTE *s, size_t nbyte)
 {
     /* Accept "printable" characters, single space, or newline, but NOT carriage
      * return, tab, or vertical tab (odd in normal text) */
-    while (*s && (ispchar(*s))) { s++; }
-    return (*s == '\0'); /* non-zero if true, zero if false */
+    /* while (*s && (ispchar(*s))) { s++; } */
+    size_t i;
+    for (i = 0; i < nbyte; i++) {
+        if ((*s) && (ispchar(*s))) {
+            s++;
+        } else { 
+            break; 
+        }
+    }
+    return (i == nbyte); /* non-zero if true, zero if false */
 }
 
 int ispchar(const char c)
@@ -171,7 +179,7 @@ int ispchar(const char c)
 /*------------------------------------------------------------------------------
  *         Print all bytes from array 
  *----------------------------------------------------------------------------*/
-void printall(const char *s, size_t nbyte)
+void printall(const BYTE *s, size_t nbyte)
 {
     for (size_t i = 0; i < nbyte; i++) {
         char c = *(s+i);
@@ -222,9 +230,9 @@ void free_str_arr(char **str_arr, size_t nstr)
 /*------------------------------------------------------------------------------
  *         Allocate memory for string
  *----------------------------------------------------------------------------*/
-char *init_byte(size_t len)
+BYTE *init_byte(size_t len)
 {
-    char *buffer = calloc(len, sizeof(char));
+    BYTE *buffer = calloc(len, sizeof(BYTE));
     MALLOC_CHECK(buffer);
     return buffer;
 }
@@ -243,10 +251,10 @@ int *init_int(size_t len)
 /*------------------------------------------------------------------------------
  *         Repeat byte array to fill nbyte array
  *----------------------------------------------------------------------------*/
-char *bytenrepeat(const char *src, size_t src_byte, size_t nbyte)
+BYTE *bytenrepeat(const BYTE *src, size_t src_byte, size_t nbyte)
 {
-    char *dest = init_byte(nbyte);
-    char *p = dest;
+    BYTE *dest = init_byte(nbyte);
+    BYTE *p = dest;
     for (size_t i = 0; i < nbyte; i++) {
         *p++ = *(src + (i % src_byte));
     }
@@ -265,7 +273,7 @@ size_t indexof(const char *str, char c)
 /*------------------------------------------------------------------------------
  *         Find character frequency in byte array
  *----------------------------------------------------------------------------*/
-int *countChars(const char *s, size_t nbyte)
+int *countChars(const BYTE *s, size_t nbyte)
 {
     int *cf = init_int(NUM_LETTERS);
 
@@ -283,7 +291,7 @@ int *countChars(const char *s, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Hamming weight of hex string 
  *----------------------------------------------------------------------------*/
-size_t hamming_weight(const char *byte, size_t nbyte)
+size_t hamming_weight(const BYTE *byte, size_t nbyte)
 {
     size_t weight = 0,
            count = 0;

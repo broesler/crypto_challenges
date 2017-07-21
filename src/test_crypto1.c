@@ -24,22 +24,22 @@
 int HexConvert2()
 {
     START_TEST_CASE;
-    char str1[] = "Man";
-    char *hex1 = byte2hex(str1, strlen(str1));
+    BYTE str1[] = "Man";
+    char *hex1 = byte2hex(str1, 3);
     char *b641 = hex2b64(hex1);
     SHOULD_BE(!strcmp(b641, "TWFu"));
 #ifdef LOGSTATUS
     printf("%-4s => %-7s => %-5s\n", str1, hex1, b641);
 #endif
-    char str2[] = "Ma";
-    char *hex2 = byte2hex(str2, strlen(str2));
+    BYTE str2[] = "Ma";
+    char *hex2 = byte2hex(str2, 2);
     char *b642 = hex2b64(hex2);
     SHOULD_BE(!strcmp(b642, "TWE="));
 #ifdef LOGSTATUS
     printf("%-4s => %-7s => %-5s\n", str2, hex2, b642);
 #endif
-    char str3[] = "M";
-    char *hex3 = byte2hex(str3, strlen(str3));
+    BYTE str3[] = "M";
+    char *hex3 = byte2hex(str3, 1);
     char *b643 = hex2b64(hex3);
     SHOULD_BE(!strcmp(b643, "TQ=="));
 #ifdef LOGSTATUS
@@ -101,7 +101,7 @@ int B64Convert1()
     START_TEST_CASE;
     char b641[] = "TWFu";
     char *hex1 = b642hex(b641);
-    char *str1 = NULL;
+    BYTE *str1 = NULL;
     size_t nbyte = hex2byte(&str1, hex1);
     SHOULD_BE(!memcmp(str1, "Man", nbyte));
 #ifdef LOGSTATUS
@@ -109,7 +109,7 @@ int B64Convert1()
 #endif
     char b642[] = "TWE=";
     char *hex2 = b642hex(b642);
-    char *str2 = NULL;
+    BYTE *str2 = NULL;
     nbyte = hex2byte(&str2, hex2);
     SHOULD_BE(!memcmp(str2, "Ma", nbyte));
 #ifdef LOGSTATUS
@@ -117,7 +117,7 @@ int B64Convert1()
 #endif
     char b643[] = "TQ==";
     char *hex3 = b642hex(b643);
-    char *str3 = NULL;
+    BYTE *str3 = NULL;
     nbyte = hex2byte(&str3, hex3);
     SHOULD_BE(!memcmp(str3, "M", nbyte));
 #ifdef LOGSTATUS
@@ -161,13 +161,13 @@ int FixedXOR1()
     char hex1[]   = "1c0111001f010100061a024b53535009181c";
     char hex2[]   = "686974207468652062756c6c277320657965";
     char hexpect[] = "746865206b696420646f6e277420706c6179";
-    char *a, *b, *expect;
+    BYTE *a, *b, *expect;
     size_t nbyte1 = hex2byte(&a, hex1);
     size_t nbyte2 = hex2byte(&b, hex2);
     SHOULD_BE(nbyte1 == nbyte2);
     size_t nbyte3 = hex2byte(&expect, hexpect);
     SHOULD_BE(nbyte1 == nbyte3);
-    char *xor = fixedXOR(a, b, nbyte1);
+    BYTE *xor = fixedXOR(a, b, nbyte1);
     char *asciia = byte2str(a, nbyte1);
     char *asciib = byte2str(b, nbyte2);
     char *asciix = byte2str(xor, nbyte3);
@@ -195,8 +195,8 @@ int FixedXOR1()
 int CharFreqScore1()
 {
     START_TEST_CASE;
-    char str1[] = "Anything less than the best is a felony.";
-    float test = charFreqScore(str1, strlen(str1));
+    BYTE str1[] = "Anything less than the best is a felony.";
+    float test = charFreqScore(str1, strlen((char *)str1));
     float tol = 1e-10;
     float expect = 16.430251917634155; /* new score according to <char_test.m> */
     /* float expect = 15.6190082292009702; // length == all chars */
@@ -217,11 +217,11 @@ int SingleByte1()
     char expect[] = "Cooking MC's like a pound of bacon";
     float tol = 1e-4;
     float score_expect = 34.2697034515381986;
-    char *byte = NULL;
+    BYTE *byte = NULL;
     size_t nbyte = hex2byte(&byte, hex1);
     XOR_NODE *out = singleByteXORDecode(byte, nbyte);
     SHOULD_BE(*out->key == 0x58);
-    SHOULD_BE(!strcmp(out->plaintext, expect));
+    SHOULD_BE(!memcmp(out->plaintext, expect, nbyte));
     SHOULD_BE(fabsf(out->score - score_expect) < tol);
     SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
@@ -241,7 +241,7 @@ int FileSingleByte1()
     char filename[] = "../data/4.txt";
     char expect[] = "Now that the party is jumping\n";
     XOR_NODE *out = findSingleByteXOR(filename);
-    SHOULD_BE(!strcmp(out->plaintext, expect));
+    SHOULD_BE(!memcmp(out->plaintext, expect, strlen(expect)));
 #ifdef LOGSTATUS
     printf("line  = %3d\n",            out->file_line);
     printf("key   =  0x%0.2X\n",       *out->key);
@@ -256,15 +256,15 @@ int FileSingleByte1()
 int RepeatingKeyXOR1()
 {
     START_TEST_CASE;
-    char input[]  = "Burning 'em, if you ain't quick and nimble\n" \
+    BYTE input[]  = "Burning 'em, if you ain't quick and nimble\n" \
                     "I go crazy when I hear a cymbal";
-    char key[] = "ICE";
+    BYTE key[] = "ICE";
     char hexpect[] = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d" \
                      "63343c2a26226324272765272a282b2f20430a652e2c652a31" \
                      "24333a653e2b2027630c692b20283165286326302e27282f";
-    char *expect = NULL;
+    BYTE *expect = NULL;
     size_t nbyte = hex2byte(&expect, hexpect);
-    char *xor = repeatingKeyXOR(input, key, strlen(input), strlen(key));
+    BYTE *xor = repeatingKeyXOR(input, key, strlen((char *)input), strlen((char *)key));
     SHOULD_BE(!memcmp(xor, expect, nbyte));
 #ifdef LOGSTATUS
     char *hexor = byte2hex(xor, nbyte);
@@ -280,9 +280,9 @@ int RepeatingKeyXOR1()
 int HammingDist1()
 {
     START_TEST_CASE;
-    char a[] = "this is a test";
-    char b[] = "wokka wokka!!!";
-    unsigned long dist = hamming_dist(a,b, strlen(a));
+    BYTE a[] = "this is a test";
+    BYTE b[] = "wokka wokka!!!";
+    unsigned long dist = hamming_dist(a,b, strlen((char *)a));
     SHOULD_BE(dist == 37);
 #ifdef LOGSTATUS
     printf("Got:    %zu\nExpect: %d\n", dist, 37);
@@ -297,14 +297,14 @@ int BreakRepeatingXOR1()
     char input_hex[] = "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d" \
                        "63343c2a26226324272765272a282b2f20430a652e2c652a31" \
                        "24333a653e2b2027630c692b20283165286326302e27282f";
-    char *input_byte = NULL;
+    BYTE *input_byte = NULL;
     size_t nbyte = hex2byte(&input_byte, input_hex);
-    char key[] = "ICE";
+    BYTE key[] = "ICE";
     char expect[] = "Burning 'em, if you ain't quick and nimble\n" \
                     "I go crazy when I hear a cymbal";
     XOR_NODE *out = breakRepeatingXOR(input_byte, nbyte);
-    SHOULD_BE(!strcmp(out->key, key));
-    SHOULD_BE(!strcmp(out->plaintext, expect));
+    SHOULD_BE(!memcmp(out->key, key, out->key_byte));
+    SHOULD_BE(!memcmp(out->plaintext, expect, nbyte));
     SHOULD_BE(out->score == FLT_MAX); /* unchanged */
     SHOULD_BE(out->file_line == 0);   /* unchanged */
 #ifdef LOGSTATUS
@@ -329,15 +329,16 @@ int BreakRepeatingXOR2()
     SHOULD_BE(file_length == 3900);
     char *b64_clean = strrmchr(b64, "\n"); /* strip newlines */
     SHOULD_BE(strlen(b64_clean) == 3836);
-    char *byte = NULL;
+    BYTE *byte = NULL;
     size_t nbyte = b642byte(&byte, b64_clean);
     /* Read in expected file (hand-checked before) */
     char *expect = NULL;
     (void)fileToString(&expect, "../data/play_that_funky_music.txt");
+    char key_expect[] = "Terminator X: Bring the noise";
     /*---------- Break the code! ----------*/
     XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
-    SHOULD_BE(!strcmp(out->key, "Terminator X: Bring the noise"));
-    SHOULD_BE(!strcmp(out->plaintext, expect));
+    SHOULD_BE(!memcmp(out->key, key_expect, out->key_byte));
+    SHOULD_BE(!memcmp(out->plaintext, expect, nbyte));
     SHOULD_BE(out->score == FLT_MAX);
     SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
@@ -365,15 +366,15 @@ int AESDecrypt1()
     SHOULD_BE(file_length = 3904);
     char *b64_clean = strrmchr(b64, "\n"); /* strip newlines */
     SHOULD_BE(strlen(b64_clean) == 3840);
-    char *byte = NULL;
+    BYTE *byte = NULL;
     size_t nbyte = b642byte(&byte, b64_clean);
     /* Initialize the OpenSSL library */
     OpenSSL_init();
     /* Define the key -- 16 byte == 128 bit key */
-    unsigned char *key = (unsigned char *)"YELLOW SUBMARINE";
-    unsigned char *plaintext = NULL;
+    BYTE key[] = "YELLOW SUBMARINE";
+    BYTE *plaintext = NULL;
     /*---------- Break the code! ----------*/
-    int plaintext_len = aes_128_ecb_cipher(&plaintext, (unsigned char *)byte, nbyte, key, 0);
+    int plaintext_len = aes_128_ecb_cipher(&plaintext, byte, nbyte, key, 0);
     plaintext[plaintext_len] = '\0';
     /* Compare with expected result */
     char *expect = NULL;

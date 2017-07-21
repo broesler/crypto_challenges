@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     char *b64_clean = strrmchr(b64, "\n");  /* strip newlines */
 
     /* Convert to byte array for decryption */
-    char *byte = NULL;
+    BYTE *byte = NULL;
     size_t nbyte = b642byte(&byte, b64_clean);
 
     /*---------- Break the code! ----------*/

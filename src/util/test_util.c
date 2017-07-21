@@ -60,7 +60,7 @@ int IsPrintable1()
     START_TEST_CASE;
     /* everything prints */
     char str1[] = "Anything less than the best is a felony.";
-    int test = isprintable(str1);
+    int test = isprintable((BYTE *)str1, strlen(str1));
     int expect = 1;
     SHOULD_BE(test == expect); 
 #ifdef LOGSTATUS
@@ -68,7 +68,7 @@ int IsPrintable1()
 #endif
     /* include non-printing char */
     char str2[] = "Anything \u1801less than the best is a felony.";
-    test = isprintable(str2);
+    test = isprintable((BYTE *)str2, strlen(str2));
     expect = 0;
     SHOULD_BE(test == expect); 
 #ifdef LOGSTATUS
@@ -81,8 +81,8 @@ int IsPrintable1()
 int FindFreq1()
 {
     START_TEST_CASE;
-    char str1[] = "HelLo, World!";
-    int *cf = countChars(str1, strlen(str1));
+    BYTE str1[] = "HelLo, World!";
+    int *cf = countChars(str1, strlen((char *)str1));
     SHOULD_BE(cf['H'-'A'] == 1);
     SHOULD_BE(cf['e'-'a'] == 1);
     SHOULD_BE(cf['L'-'A'] == 3);
@@ -99,7 +99,7 @@ int GetHexByte1()
 {
     START_TEST_CASE;
     char hex1[] = "A";
-    int hex_int = getHexByte(hex1);
+    BYTE hex_int = getHexByte(hex1);
     SHOULD_BE(hex_int == 10);
     char hex2[] = "4D";
     hex_int = getHexByte(hex2);
@@ -114,10 +114,10 @@ int GetHexByte1()
 int HexConvert1()
 {
     START_TEST_CASE;
-    char byte1[] = "Man";
-    char *hex = byte2hex(byte1, strlen(byte1));
+    BYTE byte1[] = "Man";
+    char *hex = byte2hex(byte1, 3);
     SHOULD_BE(!strcasecmp(hex,"4d616e"));
-    char *byte2 = NULL;
+    BYTE *byte2 = NULL;
     size_t nbyte = hex2byte(&byte2, hex);
     SHOULD_BE(nbyte == 3);
     SHOULD_BE(!memcmp(byte2,byte1,nbyte));
@@ -133,9 +133,9 @@ int HexConvert1()
 int Strnrepeat1()
 {
     START_TEST_CASE;
-    char key[] = "ICE";
-    char *key_arr = bytenrepeat(key, strlen(key), 8);
-    char expect[] = "ICEICEIC";
+    BYTE key[] = "ICE";
+    BYTE *key_arr = bytenrepeat(key, 3, 8);
+    BYTE expect[] = "ICEICEIC";
     SHOULD_BE(!memcmp(key_arr, expect, 8));
 #ifdef LOGSTATUS
     char *ascii = byte2str(key_arr, 8);
@@ -150,8 +150,8 @@ int Strnrepeat1()
 int HammingWeight1()
 {
     START_TEST_CASE;
-    char str[] = "this is a test";
-    size_t dist = hamming_weight(str, strlen(str));
+    BYTE str[] = "this is a test";
+    size_t dist = hamming_weight(str, strlen((char *)str));
     SHOULD_BE(dist == 48);
 #ifdef LOGSTATUS
     printf("Got:    %zu\nExpect: %d\n", dist, 48);
