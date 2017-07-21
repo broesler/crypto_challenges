@@ -19,8 +19,8 @@ int aes_128_ecb_cipher(unsigned char **out, unsigned char *in, size_t in_len,
     int len = -1;
     int out_len = -1;
 
-    /* Initialize output buffer */
-    *out = (unsigned char *)init_byte(in_len + EVP_MAX_BLOCK_LENGTH);
+    /* Initialize output buffer -- save room for null-termination */
+    *out = (unsigned char *)init_byte(in_len + EVP_MAX_BLOCK_LENGTH + 1);
 
     /* IMPORTANT - ensure you use a key and IV size appropriate for your cipher */
     if (16 != strlen((char *)key)) {

@@ -1,10 +1,10 @@
 //==============================================================================
-//     File: ../include/aes_openssl.h
+//     File: include/aes_openssl.h
 //  Created: 07/20/2017, 16:53
 //   Author: Bernie Roesler
 //
 //  Description: Utility functions for cryptography challenges
-//=============================================================================
+//==============================================================================
 #ifndef _AES_OPENSSL_H_
 #define _AES_OPENSSL_H_
 

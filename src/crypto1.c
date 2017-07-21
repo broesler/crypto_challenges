@@ -7,6 +7,7 @@
  *
  *============================================================================*/
 #include <float.h>
+#include <math.h>
 
 #include "crypto1.h"
 #include "crypto_util.h"
@@ -410,20 +411,20 @@ size_t hamming_dist(const BYTE *a, const BYTE *b, size_t nbyte)
 float normMeanHamming(const BYTE *byte, size_t k, size_t n_samples)
 {
     /* Take n_samples k bytes long each */
-        unsigned long tot_dist = 0;
+    unsigned long tot_dist = 0;
 
-        for (int i = 0; i < n_samples; i++) {
-            /* Take consecutive chunks of length k */
-            const BYTE *a = byte+k*i;
-            const BYTE *b = byte+k*(i+1);
-            tot_dist += hamming_dist(a,b,k);
-        }
+    for (int i = 0; i < n_samples; i++) {
+        /* Take consecutive chunks of length k */
+        const BYTE *a = byte+k*i;
+        const BYTE *b = byte+k*(i+1);
+        tot_dist += hamming_dist(a,b,k);
+    }
 
     /* Average Hamming distances normalized by bytes in key */
-        float mean_dist =  (float)tot_dist / n_samples;
-        float norm_mean = mean_dist / k;
+    float mean_dist =  (float)tot_dist / n_samples;
+    float norm_mean = mean_dist / k;
 #ifdef VERBOSE
-        printf("%3zu\t%8.4f\t%8.4f\n", k, mean_dist, norm_mean);
+    printf("%3zu\t%8.4f\t%8.4f\n", k, mean_dist, norm_mean);
 #endif
     return norm_mean;
 }
@@ -518,5 +519,67 @@ XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
     return out;
 }
 
+/*------------------------------------------------------------------------------
+ *         Detect AES in ECB mode 
+ *----------------------------------------------------------------------------*/
+int find_AES_ECB(BYTE **out, const char *hex_filename)
+{
+    int file_line = -1;
+    FILE *fp = NULL;
+    char buffer[MAX_WORD_LEN];
+    char message[2*MAX_PAGE_NUM];
+    BZERO(buffer, MAX_WORD_LEN);
+    BZERO(message, 2*MAX_PAGE_NUM);
+
+    /* open file stream */
+    fp = fopen(hex_filename, "r");
+    if (fp == NULL) {
+        snprintf(message, sizeof(message), "File %s could not be read!", hex_filename);
+        ERROR(message);
+    }
+
+    int fl = 1; /* count file lines */
+    float min_key_dist = FLT_MAX;
+
+    /* For each line, get probable key size, see if it matches ECB */
+    while ( fgets(buffer, sizeof(buffer), fp) ) {
+        buffer[strcspn(buffer, "\n")] = '\0';  /* remove trailing '\n' */
+
+#ifdef VERBOSE
+        printf("---------- Line: %3d\n", fl);
+#endif
+
+        /* Convert to byte array */
+        BYTE *byte = NULL;
+        size_t nbyte = hex2byte(&byte, buffer);
+
+        /* initialize output only for first line */
+        if (fl == 1) { *out = init_byte(nbyte); }
+
+        /* Get key size */
+        size_t key_byte = getKeyLength(byte, nbyte);
+        
+        float key_dist = fabs((double)key_byte - 16.0);
+#ifdef LOGSTATUS
+        printf("Key_dist = %8.4f\n", key_dist);
+#endif
+        if (key_dist < min_key_dist) {
+            min_key_dist = key_dist;
+            memcpy(*out, byte, nbyte);
+            file_line = fl;
+        }
+#ifdef VERBOSE
+        else { printf("\x1B[A\r"); /* move cursor up and overwrite */ }
+#endif
+        free(byte);
+        fl++;
+    }
+
+#ifdef VERBOSE
+    printf("\x1B[A\r\n\n"); /* erase last title line */
+#endif
+    fclose(fp);
+    return file_line; 
+}
 /*==============================================================================
  *============================================================================*/
