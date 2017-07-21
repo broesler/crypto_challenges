@@ -337,7 +337,6 @@ XOR_NODE *findSingleByteXOR(const char *filename)
     if (fp == NULL) {
         snprintf(message, 2*MAX_PAGE_NUM, "File %s could not be read!", filename);
         ERROR(message);
-        exit(-1);
     }
 
     int file_line = 1;
@@ -406,6 +405,29 @@ size_t hamming_dist(const BYTE *a, const BYTE *b, size_t nbyte)
 
 
 /*------------------------------------------------------------------------------
+ *         Get the normalized mean Hamming distance
+ *----------------------------------------------------------------------------*/
+float normMeanHamming(const BYTE *byte, size_t k, size_t n_samples)
+{
+    /* Take n_samples k bytes long each */
+        unsigned long tot_dist = 0;
+
+        for (int i = 0; i < n_samples; i++) {
+            /* Take consecutive chunks of length k */
+            const BYTE *a = byte+k*i;
+            const BYTE *b = byte+k*(i+1);
+            tot_dist += hamming_dist(a,b,k);
+        }
+
+    /* Average Hamming distances normalized by bytes in key */
+        float mean_dist =  (float)tot_dist / n_samples;
+        float norm_mean = mean_dist / k;
+#ifdef VERBOSE
+        printf("%3zu\t%8.4f\t%8.4f\n", k, mean_dist, norm_mean);
+#endif
+    return norm_mean;
+}
+/*------------------------------------------------------------------------------
  *         Get most probable key length of repeating XOR 
  *----------------------------------------------------------------------------*/
 size_t getKeyLength(const BYTE *byte, size_t nbyte)
@@ -421,22 +443,8 @@ size_t getKeyLength(const BYTE *byte, size_t nbyte)
     printf("%3s\t%8s\t%8s\n", "Key", "Mean", "Norm");
 #endif
     for (size_t k = 3; k <= max_key_len; k++) {
-        /* Get total Hamming distance of all samples */
-        unsigned long tot_dist = 0;
-
-        for (int i = 0; i < n_samples; i++) {
-            /* Take consecutive chunks of length k */
-            const BYTE *a = byte+k*i;
-            const BYTE *b = byte+k*(i+1);
-            tot_dist += hamming_dist(a,b,k);
-        }
-
-        /* Average Hamming distances normalized by total bits in key */
-        float mean_dist =  (float)tot_dist / n_samples;
-        float norm_mean = mean_dist / k;
-#ifdef VERBOSE
-        printf("%3zu\t%8.4f\t%8.4f\n", k, mean_dist, norm_mean);
-#endif
+        /* Get mean Hamming distance of all samples */
+        float norm_mean = normMeanHamming(byte, k, n_samples);
 
         /* Take key with minimum mean Hamming distance. */
         if (norm_mean < min_mean_dist) {
@@ -465,7 +473,7 @@ XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
     size_t key_byte = getKeyLength(byte, nbyte);
 
     /* Maximum number of bytes in each substring 
-     * (may run out of chars on repeated key applicaiton) */
+     * (may run out of chars on repeated key application) */
     size_t nbyte_t = (nbyte + (key_byte - (nbyte % key_byte))) / key_byte;
 
     XOR_NODE *out = init_xor_node();

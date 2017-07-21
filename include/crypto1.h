@@ -73,6 +73,9 @@ BYTE *repeatingKeyXOR(const BYTE *byte, const BYTE *key_byte, size_t nbyte, size
 // Compute Hamming distance between strings 
 size_t hamming_dist(const BYTE *a, const BYTE *b, size_t nbyte);
 
+// Get the normalized mean Hamming distance between chunks of a byte array
+float normMeanHamming(const BYTE *byte, size_t k, size_t n_samples);
+
 // Get most probable key length of repeating XOR 
 size_t getKeyLength(const BYTE *byte, size_t nbyte);
 

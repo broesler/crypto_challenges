@@ -308,7 +308,7 @@ int BreakRepeatingXOR1()
     SHOULD_BE(out->score == FLT_MAX); /* unchanged */
     SHOULD_BE(out->file_line == 0);   /* unchanged */
 #ifdef LOGSTATUS
-    char *key_hex = byte2hex(out->key, strlen(out->key));
+    char *key_hex = byte2hex(out->key, out->key_byte);
     printf("key   = 0x%s = %s\n", key_hex, out->key);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
     free(key_hex);
@@ -342,7 +342,7 @@ int BreakRepeatingXOR2()
     SHOULD_BE(out->score == FLT_MAX);
     SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
-    char *key_hex = byte2hex(out->key, strlen(out->key));
+    char *key_hex = byte2hex(out->key, out->key_byte);
     printf("----------------------------------------\n");
     printf("key   = 0x%s\n      = %s\n", key_hex, out->key);
     printf("Got:\n%s\n", out->plaintext);
@@ -375,11 +375,11 @@ int AESDecrypt1()
     BYTE *plaintext = NULL;
     /*---------- Break the code! ----------*/
     int plaintext_len = aes_128_ecb_cipher(&plaintext, byte, nbyte, key, 0);
-    plaintext[plaintext_len] = '\0';
     /* Compare with expected result */
     char *expect = NULL;
     (void)fileToString(&expect, "../data/play_that_funky_music.txt");
-    SHOULD_BE(!strcmp((char *)plaintext, expect));
+    SHOULD_BE(!memcmp(plaintext, expect, plaintext_len));
+    printf("plaintext_len = %d\nnbyte = %zu\n", plaintext_len, nbyte);
 #ifdef LOGSTATUS
     printf("----------------------------------------\n");
     printf("Got:\n%s\n", plaintext);
