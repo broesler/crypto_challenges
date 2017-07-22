@@ -440,9 +440,9 @@ int main(void)
     /* RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     "); */
     /* RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        "); */
     /* RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 "); */
-    RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
+    /* RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 "); */
     /* RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_cipher()  "); */
-    /* RUN_TEST(ECBDetect1,        "Challenge 8: find_AES_ECB() 1      "); */
+    RUN_TEST(ECBDetect1,        "Challenge 8: find_AES_ECB() 1      ");
     /* RUN_TEST(ECBDetect2,        "             find_AES_ECB() 2      "); */
 
     /* Count errors */

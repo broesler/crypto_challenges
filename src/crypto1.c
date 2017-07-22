@@ -425,18 +425,11 @@ float normMeanHamming(const BYTE *byte, size_t nbyte, size_t k)
     }
 
     /* total combinations == n!/((n-k)!k!), but 2! == 2 */
-    size_t ncomb = N_nchoosek(n_blocks, 2);
+    size_t ncomb = n_blocks*(n_blocks-1)/2;
 
-/* #ifdef LOGSTATUS */
-/*     printf("n_blocks = %zu\nncomb = %zu\n", n_blocks, ncomb); */
-/* #endif */
-
-    /* for (int i = 0; i < n_blocks; i++) { */
-    /*     #<{(| Take consecutive chunks of length k |)}># */
-    /*     const BYTE *a = byte + k*i; */
-    /*     const BYTE *b = byte + k*(i+1); */
-    /*     tot_dist += hamming_dist(a,b,k); */
-    /* } */
+#ifdef LOGSTATUS
+    printf("n_blocks = %zu\tncomb = %zu\n", n_blocks, ncomb);
+#endif
 
     /* Average Hamming distances normalized by bytes in key */
     float mean_dist =  (float)tot_dist / ncomb;
@@ -451,7 +444,7 @@ float normMeanHamming(const BYTE *byte, size_t nbyte, size_t k)
  *----------------------------------------------------------------------------*/
 size_t getKeyLength(const BYTE *byte, size_t nbyte)
 {
-    size_t min_samples = 15; /* ensure high accuracy */
+    size_t min_samples = 10; /* ensure high accuracy */
     size_t key_byte = 0;
     float min_mean_dist = FLT_MAX;
 
