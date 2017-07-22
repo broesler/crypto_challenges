@@ -360,6 +360,36 @@ int BreakRepeatingXOR2()
 int AESDecrypt1()
 {
     START_TEST_CASE;
+    BYTE ptext[] = "The quick brown fox jumps over the lazy dog";
+    size_t ptext_len = strlen((char *)ptext);
+    OpenSSL_init();
+    BYTE key[] = "YELLOW SUBMARINE"; /* 16-bit key */
+    /*---------- Encrypt the plaintext ----------*/
+    BYTE *ctext = NULL;
+    size_t ctext_len = aes_128_ecb_cipher(&ctext, ptext, ptext_len, key, 1);
+    /*---------- Decrypt the ciphertext ----------*/
+    BYTE *dtext = NULL;
+    size_t dtext_len = aes_128_ecb_cipher(&dtext, ctext, ctext_len, key, 0);
+    /* Compare with expected result */
+    SHOULD_BE(dtext_len == ptext_len);
+    SHOULD_BE(!memcmp(ptext, dtext, ptext_len));
+#ifdef LOGSTATUS
+    printf("Ciphertext is:\n");
+    BIO_dump_fp(stdout, (const char *)ctext, ctext_len);
+    printf("ptext_len = %zu\nctext_len = %zu\ndtext_len = %zu\n", 
+            ptext_len, ctext_len, dtext_len);
+#endif
+    /* Clean up */
+    OpenSSL_cleanup();
+    free(ctext);
+    free(dtext);
+    END_TEST_CASE;
+}
+
+/* Test AES in ECB mode decryption */
+int AESDecrypt2()
+{
+    START_TEST_CASE;
     /*---------- Read in b64 from file and convert to byte array ----------*/
     char *b64 = NULL;
     unsigned long file_length = fileToString(&b64, "../data/7.txt");
@@ -427,22 +457,23 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1           ");
-    RUN_TEST(HexConvert3,       "             hex2b64() 2           ");
-    RUN_TEST(HexConvert4,       "             hex2b64() 3           ");
-    RUN_TEST(B64Convert1,       "             b642hex() 1           ");
-    RUN_TEST(B64Convert2,       "             b642hex() 2           ");
-    RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            ");
-    RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       ");
-    RUN_TEST(SingleByte1,       "             singleByteXORDecode() ");
-    RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); /* SLOW */
-    RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     ");
-    RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        ");
-    RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 ");
-    RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
-    RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_cipher()  ");
-    RUN_TEST(ECBDetect1,        "Challenge 8: find_AES_ECB() 1      ");
-    RUN_TEST(ECBDetect2,        "             find_AES_ECB() 2      ");
+    RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1            ");
+    RUN_TEST(HexConvert3,       "             hex2b64() 2            ");
+    RUN_TEST(HexConvert4,       "             hex2b64() 3            ");
+    RUN_TEST(B64Convert1,       "             b642hex() 1            ");
+    RUN_TEST(B64Convert2,       "             b642hex() 2            ");
+    RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()             ");
+    RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()        ");
+    RUN_TEST(SingleByte1,       "             singleByteXORDecode()  ");
+    RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()    "); /* SLOW */
+    RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()      ");
+    RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()         ");
+    RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1  ");
+    RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2  ");
+    RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_cipher() 1 ");
+    RUN_TEST(AESDecrypt2,       "             aes_128_ecb_cipher() 2 ");
+    RUN_TEST(ECBDetect1,        "Challenge 8: find_AES_ECB() 1       ");
+    RUN_TEST(ECBDetect2,        "             find_AES_ECB() 2       ");
 
     /* Count errors */
     if (!fails) {
