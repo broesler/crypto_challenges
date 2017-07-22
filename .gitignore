@@ -25,6 +25,7 @@ strassign_test
 test_strtoul
 test_util
 test1
+test2
 ruby_test
 breakRepeatingXOR
 

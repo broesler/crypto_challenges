@@ -17,8 +17,8 @@ CC = gcc
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
 
 # Define source files, utility files (function files)
-SRC = test_crypto1.c breakRepeatingXOR.c
-UTIL = crypto1.c aes_openssl.c $(UTILDIR)/crypto_util.c
+SRC = test_crypto1.c breakRepeatingXOR.c  test_crypto2.c 
+UTIL = crypto1.c crypto2.c aes_openssl.c $(UTILDIR)/crypto_util.c
 
 # Look for header files here
 OPT = -I$(INCLDIR) -I$(SSLINCL)
@@ -27,7 +27,7 @@ OPT = -I$(INCLDIR) -I$(SSLINCL)
 LDLIBS = -lcrypto -lssl
 
 # Make options
-all: test1 breakRepeatingXOR types
+all: test1 test2 breakRepeatingXOR types
 break: breakRepeatingXOR
 debug: DEBUG = -DLOGSTATUS -g -ggdb
 debug: all
@@ -40,6 +40,9 @@ verbose: all
 # Main executable:
 test1: test_crypto1.c $(UTIL)
 	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ test_crypto1.c $(UTIL) $(LDLIBS)
+
+test2: test_crypto2.c $(UTIL)
+	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ test_crypto2.c $(UTIL) $(LDLIBS)
 
 # Secondary executables:
 breakRepeatingXOR: breakRepeatingXOR.c $(UTIL)
@@ -62,7 +65,7 @@ clean:
 	rm -f $(UTILDIR)*.o
 	rm -f $(UTILDIR)*.gch
 	rm -rf $(UTILDIR)*.dSYM/
-	rm -f test1
+	rm -f test1 test2
 	rm -f breakRepeatingXOR
 	rm -f types.vim
 

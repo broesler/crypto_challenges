@@ -3,7 +3,7 @@
  *  Created: 10/19/2016, 22:17
  *   Author: Bernie Roesler
  *
- *  Description: Tests of cryptography functions in crypto challenges
+ *  Description: Tests of cryptography functions in crypto challenges set 1
  *
  *============================================================================*/
 /* System headers */
