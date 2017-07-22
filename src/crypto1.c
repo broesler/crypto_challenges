@@ -569,6 +569,7 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
 
     int fl = 1; /* count file lines */
     BYTE key_byte = 16;
+    /* float min_mean_dist = FLT_MAX; */
 
     while ( fgets(buffer, sizeof(buffer), fp) ) {
         buffer[strcspn(buffer, "\n")] = '\0';  /* remove trailing '\n' */
@@ -585,6 +586,18 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
             memcpy(*out, byte, nbyte);
             file_line = fl;
         }
+
+/*         #<{(| Get mean Hamming distance between key_byte-size chunks of byte |)}># */
+/*         float mean_dist = normMeanHamming(byte, nbyte, key_byte); */
+/*          */
+/* #ifdef LOGSTATUS */
+/*         printf("%4d\t%8.4f\n", fl, mean_dist); */
+/* #endif */
+/*         if (mean_dist < min_mean_dist) { */
+/*             min_mean_dist = mean_dist; */
+/*             memcpy(*out, byte, nbyte); */
+/*             file_line = fl; */
+/*         } */
 
         free(byte);
         fl++;

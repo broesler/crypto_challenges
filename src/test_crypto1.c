@@ -415,6 +415,7 @@ int ECBDetect2()
 #ifdef LOGSTATUS
     printf("line  = %3d\n", file_line);
 #endif
+    free(ciphertext);
     END_TEST_CASE;
 }
 
