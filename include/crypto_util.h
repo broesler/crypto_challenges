@@ -33,6 +33,12 @@ char *strtoupper(char *s);
 // Lowercase entire string
 char *strtolower(char *s);
 
+// Factorial
+size_t fact(size_t n);
+
+// Number of Combinations
+size_t N_nchoosek(size_t n, size_t k); 
+
 // Get single hex byte from a string
 BYTE getHexByte(const char *hex);
 

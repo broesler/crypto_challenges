@@ -408,20 +408,38 @@ size_t hamming_dist(const BYTE *a, const BYTE *b, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Get the normalized mean Hamming distance
  *----------------------------------------------------------------------------*/
-float normMeanHamming(const BYTE *byte, size_t k, size_t n_samples)
+float normMeanHamming(const BYTE *byte, size_t nbyte, size_t k)
 {
-    /* Take n_samples k bytes long each */
+    /* Maximum number of pairs of size k */
+    size_t n_blocks = (size_t)ceil(nbyte/(2.0*k) + 1);
+
     unsigned long tot_dist = 0;
 
-    for (int i = 0; i < n_samples; i++) {
-        /* Take consecutive chunks of length k */
-        const BYTE *a = byte+k*i;
-        const BYTE *b = byte+k*(i+1);
-        tot_dist += hamming_dist(a,b,k);
+    /* Take all combinations of blocks of length k */
+    for (int i = 0; i < n_blocks; i++) {
+        for (int j = i+1; j < n_blocks; j++) {
+            const BYTE *a = byte + k*i;
+            const BYTE *b = byte + k*j;
+            tot_dist += hamming_dist(a,b,k);
+        }
     }
 
+    /* total combinations == n!/((n-k)!k!), but 2! == 2 */
+    size_t ncomb = N_nchoosek(n_blocks, 2);
+
+/* #ifdef LOGSTATUS */
+/*     printf("n_blocks = %zu\nncomb = %zu\n", n_blocks, ncomb); */
+/* #endif */
+
+    /* for (int i = 0; i < n_blocks; i++) { */
+    /*     #<{(| Take consecutive chunks of length k |)}># */
+    /*     const BYTE *a = byte + k*i; */
+    /*     const BYTE *b = byte + k*(i+1); */
+    /*     tot_dist += hamming_dist(a,b,k); */
+    /* } */
+
     /* Average Hamming distances normalized by bytes in key */
-    float mean_dist =  (float)tot_dist / n_samples;
+    float mean_dist =  (float)tot_dist / ncomb;
     float norm_mean = mean_dist / k;
 #ifdef VERBOSE
     printf("%3zu\t%8.4f\t%8.4f\n", k, mean_dist, norm_mean);
@@ -433,19 +451,19 @@ float normMeanHamming(const BYTE *byte, size_t k, size_t n_samples)
  *----------------------------------------------------------------------------*/
 size_t getKeyLength(const BYTE *byte, size_t nbyte)
 {
-    int n_samples = 15;   /* number of Hamming distances to take */
+    size_t min_samples = 15; /* ensure high accuracy */
     size_t key_byte = 0;
     float min_mean_dist = FLT_MAX;
 
     /* key length in bytes */
-    size_t max_key_len = (size_t)min(40.0, (float)nbyte/n_samples);
+    size_t max_key_len = (size_t)min(40.0, (float)nbyte/min_samples);
 
 #ifdef VERBOSE
     printf("%3s\t%8s\t%8s\n", "Key", "Mean", "Norm");
 #endif
     for (size_t k = 3; k <= max_key_len; k++) {
         /* Get mean Hamming distance of all samples */
-        float norm_mean = normMeanHamming(byte, k, n_samples);
+        float norm_mean = normMeanHamming(byte, nbyte, k);
 
         /* Take key with minimum mean Hamming distance. */
         if (norm_mean < min_mean_dist) {
@@ -455,7 +473,6 @@ size_t getKeyLength(const BYTE *byte, size_t nbyte)
     }
 
 #ifdef VERBOSE
-    printf("n_samples = %d\n",    n_samples);
     printf("key_byte  = %zu\n",   key_byte);
     printf("min_dist  = %6.4f\n", min_mean_dist);
 #endif
@@ -539,15 +556,15 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
     }
 
     int fl = 1; /* count file lines */
-    float min_key_dist = FLT_MAX;
+    BYTE key_byte = 16;
+    float min_mean_dist = FLT_MAX;
 
-    /* For each line, get probable key size, see if it matches ECB */
+#ifdef LOGSTATUS
+    printf("line\tdist\n");
+#endif
+
     while ( fgets(buffer, sizeof(buffer), fp) ) {
         buffer[strcspn(buffer, "\n")] = '\0';  /* remove trailing '\n' */
-
-#ifdef VERBOSE
-        printf("---------- Line: %3d\n", fl);
-#endif
 
         /* Convert to byte array */
         BYTE *byte = NULL;
@@ -556,28 +573,22 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
         /* initialize output only for first line */
         if (fl == 1) { *out = init_byte(nbyte); }
 
-        /* Get key size */
-        size_t key_byte = getKeyLength(byte, nbyte);
+        /* Get mean Hamming distance between key_byte-size chunks of byte */
+        float mean_dist = normMeanHamming(byte, nbyte, key_byte);
         
-        float key_dist = fabs((double)key_byte - 16.0);
 #ifdef LOGSTATUS
-        printf("Key_dist = %8.4f\n", key_dist);
+        printf("%4d\t%8.4f\n", fl, mean_dist);
 #endif
-        if (key_dist < min_key_dist) {
-            min_key_dist = key_dist;
+        if (mean_dist < min_mean_dist) {
+            min_mean_dist = mean_dist;
             memcpy(*out, byte, nbyte);
             file_line = fl;
         }
-#ifdef VERBOSE
-        else { printf("\x1B[A\r"); /* move cursor up and overwrite */ }
-#endif
+
         free(byte);
         fl++;
     }
 
-#ifdef VERBOSE
-    printf("\x1B[A\r\n\n"); /* erase last title line */
-#endif
     fclose(fp);
     return file_line; 
 }

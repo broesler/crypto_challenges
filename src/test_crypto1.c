@@ -407,6 +407,19 @@ int ECBDetect1()
     END_TEST_CASE;
 }
 
+/* Test ECB mode detection */
+int ECBDetect2()
+{
+    START_TEST_CASE;
+    BYTE *ciphertext = NULL;
+    int file_line = find_AES_ECB(&ciphertext, "../data/8.txt");
+    if (file_line < 0) { WARNING("ECB encryption not found!"); }
+#ifdef LOGSTATUS
+    printf("line  = %3d\n", file_line);
+#endif
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -427,9 +440,10 @@ int main(void)
     /* RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     "); */
     /* RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        "); */
     /* RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 "); */
-    /* RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 "); */
+    RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
     /* RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_cipher()  "); */
-    RUN_TEST(ECBDetect1,        "Challenge 8: find_AES_ECB()        ");
+    /* RUN_TEST(ECBDetect1,        "Challenge 8: find_AES_ECB() 1      "); */
+    /* RUN_TEST(ECBDetect2,        "             find_AES_ECB() 2      "); */
 
     /* Count errors */
     if (!fails) {
