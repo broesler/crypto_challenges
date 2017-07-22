@@ -379,9 +379,9 @@ int AESDecrypt1()
     char *expect = NULL;
     (void)fileToString(&expect, "../data/play_that_funky_music.txt");
     SHOULD_BE(!memcmp(plaintext, expect, plaintext_len));
-    printf("plaintext_len = %d\nnbyte = %zu\n", plaintext_len, nbyte);
 #ifdef LOGSTATUS
     printf("----------------------------------------\n");
+    printf("plaintext_len = %d\nnbyte = %zu\n", plaintext_len, nbyte);
     printf("Got:\n%s\n", plaintext);
 #endif
     /* Clean up */
@@ -398,12 +398,8 @@ int AESDecrypt1()
 int ECBDetect1()
 {
     START_TEST_CASE;
-    BYTE *ciphertext = NULL;
-    int file_line = find_AES_ECB(&ciphertext, "../data/8.txt");
-    if (file_line < 0) { WARNING("ECB encryption not found!"); }
-#ifdef LOGSTATUS
-    printf("line  = %3d\n", file_line);
-#endif
+    BYTE byte[] = "YELLOW SUBMARINEthis is a test!!YELLOW SUBMARINE";
+    SHOULD_BE(1 == hasIdenticalBlocks(byte, strlen((char *)byte), 16));
     END_TEST_CASE;
 }
 
@@ -414,6 +410,8 @@ int ECBDetect2()
     BYTE *ciphertext = NULL;
     int file_line = find_AES_ECB(&ciphertext, "../data/8.txt");
     if (file_line < 0) { WARNING("ECB encryption not found!"); }
+    /* 133 on average Hamming, AND identical blocks! */
+    SHOULD_BE(file_line == 133);
 #ifdef LOGSTATUS
     printf("line  = %3d\n", file_line);
 #endif
@@ -428,22 +426,22 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1           "); */
-    /* RUN_TEST(HexConvert3,       "             hex2b64() 2           "); */
-    /* RUN_TEST(HexConvert4,       "             hex2b64() 3           "); */
-    /* RUN_TEST(B64Convert1,       "             b642hex() 1           "); */
-    /* RUN_TEST(B64Convert2,       "             b642hex() 2           "); */
-    /* RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            "); */
-    /* RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       "); */
-    /* RUN_TEST(SingleByte1,       "             singleByteXORDecode() "); */
-    /* RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); #<{(| SLOW |)}># */
-    /* RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     "); */
-    /* RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        "); */
-    /* RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 "); */
-    /* RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 "); */
-    /* RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_cipher()  "); */
+    RUN_TEST(HexConvert2,       "Challenge 1: hex2b64() 1           ");
+    RUN_TEST(HexConvert3,       "             hex2b64() 2           ");
+    RUN_TEST(HexConvert4,       "             hex2b64() 3           ");
+    RUN_TEST(B64Convert1,       "             b642hex() 1           ");
+    RUN_TEST(B64Convert2,       "             b642hex() 2           ");
+    RUN_TEST(FixedXOR1,         "Challenge 2: fixedXOR()            ");
+    RUN_TEST(CharFreqScore1,    "Challenge 3: charFreqScore()       ");
+    RUN_TEST(SingleByte1,       "             singleByteXORDecode() ");
+    RUN_TEST(FileSingleByte1,   "Challenge 4: findSingleByteXOR()   "); /* SLOW */
+    RUN_TEST(RepeatingKeyXOR1,  "Challenge 5: repeatingKeyXOR()     ");
+    RUN_TEST(HammingDist1,      "Challenge 6: hamming_dist()        ");
+    RUN_TEST(BreakRepeatingXOR1,"             breakRepeatingXOR() 1 ");
+    RUN_TEST(BreakRepeatingXOR2,"             breakRepeatingXOR() 2 ");
+    RUN_TEST(AESDecrypt1,       "Challenge 7: aes_128_ecb_cipher()  ");
     RUN_TEST(ECBDetect1,        "Challenge 8: find_AES_ECB() 1      ");
-    /* RUN_TEST(ECBDetect2,        "             find_AES_ECB() 2      "); */
+    RUN_TEST(ECBDetect2,        "             find_AES_ECB() 2      ");
 
     /* Count errors */
     if (!fails) {

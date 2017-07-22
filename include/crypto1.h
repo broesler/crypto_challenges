@@ -85,6 +85,9 @@ size_t getChunk(BYTE **byte_t, size_t nbyte_t, size_t nbyte, size_t k, size_t ke
 //  Break repeating key XOR cipher 
 XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte);
 
+// Same as normMeanHamming except return logical value
+int hasIdenticalBlocks(const BYTE *byte, size_t nbyte, size_t k);
+
 // Detect AES in ECB mode 
 int find_AES_ECB(BYTE **out, const char *hex_filename);
 

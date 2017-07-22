@@ -427,18 +427,17 @@ float normMeanHamming(const BYTE *byte, size_t nbyte, size_t k)
     /* total combinations == n!/((n-k)!k!), but 2! == 2 */
     size_t ncomb = n_blocks*(n_blocks-1)/2;
 
-#ifdef LOGSTATUS
-    printf("n_blocks = %zu\tncomb = %zu\n", n_blocks, ncomb);
-#endif
-
     /* Average Hamming distances normalized by bytes in key */
     float mean_dist =  (float)tot_dist / ncomb;
     float norm_mean = mean_dist / k;
+
 #ifdef VERBOSE
     printf("%3zu\t%8.4f\t%8.4f\n", k, mean_dist, norm_mean);
 #endif
+
     return norm_mean;
 }
+
 /*------------------------------------------------------------------------------
  *         Get most probable key length of repeating XOR 
  *----------------------------------------------------------------------------*/
@@ -530,6 +529,26 @@ XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
 }
 
 /*------------------------------------------------------------------------------
+ *         Look for blocks with 0 Hamming distance
+ *----------------------------------------------------------------------------*/
+int hasIdenticalBlocks(const BYTE *byte, size_t nbyte, size_t k)
+{
+    /* Maximum number of pairs of size k */
+    size_t n_blocks = (size_t)ceil(nbyte/(2.0*k) + 1);
+
+    /* Take all combinations of blocks of length k */
+    for (int i = 0; i < n_blocks; i++) {
+        for (int j = i+1; j < n_blocks; j++) {
+            const BYTE *a = byte + k*i;
+            const BYTE *b = byte + k*j;
+            /* If we found identical blocks, break */
+            if (0 == hamming_dist(a,b,k)) { return 1; }
+        }
+    }
+
+    return 0;
+}
+/*------------------------------------------------------------------------------
  *         Detect AES in ECB mode 
  *----------------------------------------------------------------------------*/
 int find_AES_ECB(BYTE **out, const char *hex_filename)
@@ -550,11 +569,6 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
 
     int fl = 1; /* count file lines */
     BYTE key_byte = 16;
-    float min_mean_dist = FLT_MAX;
-
-#ifdef LOGSTATUS
-    printf("line\tdist\n");
-#endif
 
     while ( fgets(buffer, sizeof(buffer), fp) ) {
         buffer[strcspn(buffer, "\n")] = '\0';  /* remove trailing '\n' */
@@ -566,14 +580,8 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
         /* initialize output only for first line */
         if (fl == 1) { *out = init_byte(nbyte); }
 
-        /* Get mean Hamming distance between key_byte-size chunks of byte */
-        float mean_dist = normMeanHamming(byte, nbyte, key_byte);
-        
-#ifdef LOGSTATUS
-        printf("%4d\t%8.4f\n", fl, mean_dist);
-#endif
-        if (mean_dist < min_mean_dist) {
-            min_mean_dist = mean_dist;
+        /* AES ECB encrypted line will have identical blocks of ciphertext */
+        if (hasIdenticalBlocks(byte, nbyte, key_byte)) {
             memcpy(*out, byte, nbyte);
             file_line = fl;
         }
