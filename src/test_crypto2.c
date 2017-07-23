@@ -129,8 +129,8 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(PKCS71,       "Challenge 1: pkcs7() 1               "); */
-    /* RUN_TEST(PKCS72,       "             pkcs7() 2               "); */
+    RUN_TEST(PKCS71,       "Challenge 1: pkcs7() 1               ");
+    RUN_TEST(PKCS72,       "             pkcs7() 2               ");
     RUN_TEST(CBCencrypt1,  "Challenge 2: aes_128_cbc_encrypt() 1 ");
 
     /* Count errors */
