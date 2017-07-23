@@ -14,6 +14,9 @@
 #include "crypto2.h"
 #include "unit_test.h"
 
+/* Meta test functions */
+int CBCencrypt_test(BYTE *ptext);
+
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
@@ -21,26 +24,72 @@
 int PKCS71()
 {
     START_TEST_CASE;
+    int n_pad = 4;
     BYTE byte[] = "YELLOW SUBMARINE";
     size_t nbyte = strlen((char *)byte);
-    BYTE *block = pkcs7(byte, nbyte, 20);
+    BYTE *block = pkcs7_pad(byte, nbyte, nbyte+n_pad);
     size_t nblock = strlen((char *)block);
-    SHOULD_BE(nblock == 20);
-    for (int i = 0; i < 4; i++) { SHOULD_BE(*(block+nbyte+i) == 4); }
+    SHOULD_BE(nblock == nbyte+n_pad);
+    for (int i = 0; i < n_pad; i++) { SHOULD_BE(*(block+nbyte+i) == n_pad); }
 #ifdef LOGSTATUS
     printf("Padded string: '");
     printall(block, nblock);
+    printf("'\n");
+#endif
+    /* Remove padding */
+    int npout = pkcs7_rmpad(block, nblock, nbyte+n_pad);
+    SHOULD_BE(npout == n_pad);
+#ifdef LOGSTATUS
+    printf("Removed pad:   '");
+    printall(block, nbyte);
     printf("'\n");
 #endif
     free(block);
     END_TEST_CASE;
 }
 
-/* Test CBC mode encryption (size checks mostly) */
+/* Test PKCS#7 padding */
+int PKCS72()
+{
+    START_TEST_CASE;
+    int n_pad = 0;
+    BYTE byte[] = "Bathroom passes.";
+    size_t nbyte = strlen((char *)byte);
+    BYTE *block = pkcs7_pad(byte, nbyte, nbyte+n_pad);
+    size_t nblock = strlen((char *)block);
+    SHOULD_BE(nblock == nbyte+n_pad);
+    for (int i = 0; i < n_pad; i++) { SHOULD_BE(*(block+nbyte+i) == n_pad); }
+#ifdef LOGSTATUS
+    printf("Padded string: '");
+    printall(block, nblock);
+    printf("'\n");
+#endif
+    /* Remove padding */
+    int npout = pkcs7_rmpad(block, nblock, nbyte+n_pad);
+    SHOULD_BE(npout == n_pad);
+#ifdef LOGSTATUS
+    printf("Removed pad:   '");
+    printall(block, nbyte);
+    printf("'\n");
+#endif
+    free(block);
+    END_TEST_CASE;
+}
+
 int CBCencrypt1()
 {
     START_TEST_CASE;
-    BYTE ptext[] = "I was a terror since the public school era.";
+    BYTE ptext1[] = "I was a terror since the public school era.";
+    rs += CBCencrypt_test(ptext1);
+    BYTE ptext2[] = "Bathroom passes, cuttin classes, squeezin asses.";
+    rs += CBCencrypt_test(ptext2);
+    END_TEST_CASE;
+}
+
+/* Test CBC mode encryption */
+int CBCencrypt_test(BYTE *ptext)
+{
+    START_TEST_CASE;
     size_t ptext_len = strlen((char *)ptext);
     BYTE key[] = "YELLOW SUBMARINE";
     BYTE iv[BLOCK_SIZE] = "";   /* BLOCK_SIZE-length array of '\0' chars */
@@ -53,6 +102,7 @@ int CBCencrypt1()
     BIO_dump_fp(stdout, (const char *)ctext, ctext_len);
     printf("ptext_len = %zu\nctext_len = %zu\n", ptext_len, ctext_len);
 #endif
+    free(ctext);
     END_TEST_CASE;
 }
 
@@ -64,7 +114,8 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(PKCS71,       "Challenge 1: pkcs7() 1               "); */
+    RUN_TEST(PKCS71,       "Challenge 1: pkcs7() 1               ");
+    RUN_TEST(PKCS72,       "             pkcs7() 2               ");
     RUN_TEST(CBCencrypt1,  "Challenge 2: aes_128_cbc_encrypt() 1 ");
 
     /* Count errors */

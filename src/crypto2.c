@@ -14,7 +14,7 @@
 /*------------------------------------------------------------------------------
  *         PKCS#7 padding to block size 
  *----------------------------------------------------------------------------*/
-BYTE *pkcs7(const BYTE *byte, size_t nbyte, size_t block_size)
+BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size)
 {
     if (nbyte > block_size) { ERROR("Input > block size!"); }
 
@@ -32,6 +32,21 @@ BYTE *pkcs7(const BYTE *byte, size_t nbyte, size_t block_size)
     return out;
 }
 
+
+/*------------------------------------------------------------------------------
+ *         Remove PKCS#7 padding bytes 
+ *----------------------------------------------------------------------------*/
+int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size)
+{
+    int n_pad = byte[nbyte-1];      /* last byte is number of pads */
+    if (n_pad <= block_size) {
+        byte[nbyte-n_pad] = '\0';   /* leaves a few bytes dangling */
+        return n_pad;
+    } else {
+        return 0;
+    }        
+}
+
 /*------------------------------------------------------------------------------
  *         Encrypt AES 128-bit cipher in CBC mode 
  *----------------------------------------------------------------------------*/
@@ -44,10 +59,9 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
          *yi = NULL,    /* one block output of AES encryption */
          *yim1 = NULL;  /* "previous" ciphertext block */
 
-    /* possibly succinct mathematical way other than ternary statement? */
-    int n_pad = (x_len % BLOCK_SIZE) ? (BLOCK_SIZE - (x_len % BLOCK_SIZE)) : 0;
-    size_t n_blocks = (x_len + n_pad) / BLOCK_SIZE;
-    printf("n_pad =    %d\nn_blocks = %zu\n", n_pad, n_blocks);
+    /* Number of blocks needed */
+    size_t n_blocks = x_len / BLOCK_SIZE;
+    if (x_len % BLOCK_SIZE) { n_blocks++; }
 
     /* initialize output byte array with one extra block */
     *y = init_byte(BLOCK_SIZE*(n_blocks+1));
@@ -57,13 +71,8 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
     /* Encrypt blocks of plaintext using Chain Block Cipher (CBC) mode */
     for (size_t i = 0; i < n_blocks; i++) {
         /* Input blocks */
-        xi = x+i*BLOCK_SIZE;
+        xi = x + i*BLOCK_SIZE;
         yim1 = (i == 0) ? iv : yi;
-
-        /* Pad last block */
-        if (i == (n_blocks - 1)) {
-            xi = pkcs7(xi, (BLOCK_SIZE - n_pad), BLOCK_SIZE);
-        }
 
         /* XOR plaintext block with previous ciphertext block */
         xp = fixedXOR(xi, yim1, BLOCK_SIZE);
@@ -72,14 +81,13 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
         len = aes_128_ecb_cipher(&yi, xp, BLOCK_SIZE, key, 1);
 
         /* Append encrypted text to output array */
-        memcpy(*y+y_len, yi, len);
-        y_len += len; /* len == BLOCK_SIZE? */
+        memcpy(*y + y_len, yi, len);
+        y_len += len;
 
-        /* Clean-up */
         free(xp);
     }
 
-    free(xi);
+    /* Clean-up */
     free(yi);
     OpenSSL_cleanup();
     return y_len;

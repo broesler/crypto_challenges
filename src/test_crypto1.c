@@ -17,6 +17,8 @@
 #include "crypto1.h"
 #include "unit_test.h"
 
+int AESDecrypt_test(BYTE *ptext);
+
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
@@ -356,12 +358,23 @@ int BreakRepeatingXOR2()
     END_TEST_CASE;
 }
 
-/* Test AES in ECB mode decryption */
+/* Test all AES en/decrypt cases */
 int AESDecrypt1()
 {
     START_TEST_CASE;
-    BYTE ptext[] = "I was a terror since the public school era.";
-    /* BYTE ptext[] = "I was a terror s"; */
+    /* non-BLOCK_SIZE multiple: */
+    BYTE ptext1[] = "I was a terror since the public school era.";
+    rs += AESDecrypt_test(ptext1);
+    /* BLOCK_SIZE multiple: */
+    BYTE ptext2[] = "Bathroom passes, cuttin classes, squeezin asses.";
+    rs += AESDecrypt_test(ptext2);
+    END_TEST_CASE;
+}
+
+/* Test AES in ECB mode decryption */
+int AESDecrypt_test(BYTE *ptext)
+{
+    START_TEST_CASE;
     size_t ptext_len = strlen((char *)ptext);
     OpenSSL_init();
     BYTE key[] = "YELLOW SUBMARINE"; /* 16-bit key */
@@ -380,10 +393,9 @@ int AESDecrypt1()
     BIO_dump_fp(stdout, (const char *)ctext, ctext_len);
     printf("ptext_len = %zu\nctext_len = %zu\ndtext_len = %zu\n", 
             ptext_len, ctext_len, dtext_len);
-    /* printf("ptext = '%s'\ndtext = '%s'\n", ptext, dtext); */
-    printf("ptext:\n'");
+    printf("ptext: '");
     printall(ptext, ptext_len);
-    printf("'\ndtext:\n'");
+    printf("'\ndtext: '");
     printall(dtext, dtext_len);
     printf("'\n");
 #endif

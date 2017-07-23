@@ -7,6 +7,7 @@
  *
  *============================================================================*/
 #include "aes_openssl.h"
+#include "crypto2.h"
 
 /*------------------------------------------------------------------------------
  *          General encryption/decryption function
@@ -34,27 +35,19 @@ size_t aes_128_ecb_cipher(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int en
         handleErrors(); 
     }
 
-    /* To pad or not to pad? 
-     *
-     * Pad only for encryption, ciphertext ALWAYS has a multiple of the block
-     * size, so we only want to remove padding on decryption to get a real ASCII
-     * string back (presumably).
-     *
-     * This method breaks, however, when encrypting/decrypting a perfectly-sized
-     * block of plaintext. Encryption works fine, but upon decryption, it is
-     * expecting padding that was not there and gives a 'bad decrypt' error.
-     *
-     * Instead, turn off padding for ALL cases, and apply/strip padding on our
-     * own.
-     */
-    /* if (!(in_len % BLOCK_SIZE) && enc) { */
-        /* Turn off padding */
-        if (1 != EVP_CIPHER_CTX_set_padding(ctx, 0)) { handleErrors(); }
-    /* } */
+    /* Turn off automatic padding always */
+    if (1 != EVP_CIPHER_CTX_set_padding(ctx, 0)) { handleErrors(); }
+
+    /* Manually pad the input (adds 0 bytes if (in_len % BLOCK_SIZE) == 0 */
+    size_t n_blocks = in_len / BLOCK_SIZE;
+    if (in_len % BLOCK_SIZE) { n_blocks++; }
+    size_t tot_len = BLOCK_SIZE * n_blocks;
+
+    BYTE *input = pkcs7_pad(in, in_len, tot_len);
 
     /* Provide the message, and obtain the output.
      * EVP_CipherUpdate can be called multiple times if necessary */
-    if (1 != EVP_CipherUpdate(ctx, *out, &len, in, in_len)) {
+    if (1 != EVP_CipherUpdate(ctx, *out, &len, input, tot_len)) {
         handleErrors(); 
     }
     out_len = len;
@@ -64,9 +57,15 @@ size_t aes_128_ecb_cipher(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int en
     if (1 != EVP_CipherFinal_ex(ctx, *out + len, &len)) { handleErrors(); }
     out_len += len;
 
+    /* Remove any padding from output on DEcryption only */
+    if (!enc) { 
+        int n_pad = pkcs7_rmpad(*out, out_len, BLOCK_SIZE); 
+        out_len -= n_pad;
+    }
+
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
-
+    free(input);
     return out_len;
 }
 
