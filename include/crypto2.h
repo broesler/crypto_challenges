@@ -19,6 +19,9 @@
 // PKCS#7 padding to block size 
 BYTE *pkcs7(const BYTE *byte, size_t nbyte, size_t block_size);
 
+// Encrypt using AES 128-bit CBC mode
+size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t nx, BYTE *key, BYTE *iv);
+
 #endif
 //==============================================================================
 //==============================================================================

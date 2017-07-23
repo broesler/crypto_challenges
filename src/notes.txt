@@ -1,0 +1,122 @@
+#------------------------------------------------------------------------------- 
+#        aes_128_ecb_cipher() encryption with 15-byte input 
+#-------------------------------------------------------------------------------
+(gdb) p in
+$11 = (BYTE *) "I was a terror "
+(gdb) p *out
+$12 = (BYTE *) ""
+(gdb) n
+# after running CipherUpdate, we are at this line (in aes_openssl.c):
+46          if (1 != EVP_CipherFinal_ex(ctx, *out + len, &len)) { handleErrors(); }
+# No encryption is done yet! The entire encryption is done in the "final" block:
+(gdb) n
+47          out_len += len;
+# Ciphertext length is a full 16 bytes:
+(gdb) p len
+$14 = 16
+# ctx structure looks like:
+(gdb) p *ctx
+$15 = {
+  cipher = ,
+  engine = ,
+  encrypt = 1,
+  buf_len = 15,
+  oiv =     '\000' <repeats 15 times>,
+  iv =     '\000' <repeats 15 times>,
+  buf =     "I was a terror \001", '\000' <repeats 15 times>,
+  num = 0,
+  app_data = ,
+  key_len = 16,
+  flags = 0,
+  cipher_data = ,
+  final_used = 0,
+  block_mask = 15,
+  final =     '\000' <repeats 31 times>
+}
+# We can see the "buf" field has the input text, padded with one byte '\001'.
+# The output (ciphertext) is:
+(gdb) p *out
+$17 = (BYTE *) "vY\270}\220@0\233\070|e\330\001\003~u"
+#--------------------
+# ./test1 output:
+Ciphertext:
+0000 - 76 59 b8 7d 90 40 30 9b-38 7c 65 d8 01 03 7e 75   vY.}.@0.8|e...~u
+ptext_len = 15
+ctext_len = 16
+dtext_len = 15
+
+#------------------------------------------------------------------------------- 
+#       aes_128_ecb_cipher() encryption with 16-byte input (1 "block") 
+#-------------------------------------------------------------------------------
+# An extra byte over the above example:
+(gdb) p in
+$2 = (BYTE *) "I was a terror s"
+(gdb) p *out
+$3 = (BYTE *) ""
+(gdb) n
+39          if (1 != EVP_CipherUpdate(ctx, *out, &len, in, in_len)) {
+(gdb)
+42          out_len = len;
+# Initial "CipherUpdate" buffer is all NULL
+(gdb) p *ctx
+$4 = {
+  cipher = ,
+  engine = ,
+  encrypt = 1,
+  buf_len = 0,
+  oiv =     '\000' <repeats 15 times>,
+  iv =     '\000' <repeats 15 times>,
+  buf =     '\000' <repeats 31 times>,
+  num = 0,
+  app_data = ,
+  key_len = 16,
+  flags = 0,
+  cipher_data = ,
+  final_used = 0,
+  block_mask = 15,
+  final =     '\000' <repeats 31 times>
+}
+(gdb) p len
+$5 = 16
+(gdb) p out
+$6 = (BYTE **)
+# but some cipher text has been added:
+(gdb) p *out
+$7 = (BYTE *) "\243_\267\032M\n\362JI\356\252\340\302\301ү"
+(gdb) n
+46          if (1 != EVP_CipherFinal_ex(ctx, *out + len, &len)) { handleErrors(); }
+(gdb)
+47          out_len += len;
+(gdb) p len
+$8 = 16
+(gdb) p *out
+$9 = (BYTE *) "\243_\267\032M\n\362JI\356\252\340\302\301ү`\372\066p~E\364\231۠\362[\222#\001\245"
+(gdb) n
+50          EVP_CIPHER_CTX_free(ctx);
+(gdb) p *ctx
+$10 = {
+  cipher = ,
+  engine = ,
+  encrypt = 1,
+  buf_len = 0,
+  oiv =     '\000' <repeats 15 times>,
+  iv =     '\000' <repeats 15 times>,
+  buf =     '\020' <repeats 16 times>, '\000' <repeats 15 times>,
+  num = 0,
+  app_data = ,
+  key_len = 16,
+  flags = 0,
+  cipher_data = ,
+  final_used = 0,
+  block_mask = 15,
+  final =     '\000' <repeats 31 times>
+}
+# After the "CipherFinal" call, the buffer just has 16 bytes of '\020' padding
+#--------------------
+# ./test1 output:
+Ciphertext:
+0000 - a3 5f b7 1a 4d 0a f2 4a-49 ee aa e0 c2 c1 d2 af   ._..M..JI.......
+0010 - 60 fa 36 70 7e 45 f4 99-db a0 f2 5b 92 23 01 a5   `.6p~E.....[.#..
+ptext_len = 16
+ctext_len = 32
+dtext_len = 16

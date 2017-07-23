@@ -16,16 +16,22 @@
 #include "header.h"
 #include "crypto_util.h"
 
+//------------------------------------------------------------------------------
+//      Constants
+//------------------------------------------------------------------------------
+#define BLOCK_SIZE 16   // 16 bytes == 128-bit
+
+//------------------------------------------------------------------------------
+//      Function declarations
+//------------------------------------------------------------------------------
 // OpenSSL helper functions
 void OpenSSL_init(void);
 void OpenSSL_cleanup(void);
 void handleErrors(void);
 
 // AES 128-bit ECB-mode encrypt/decrypt
-int aes_128_ecb_cipher(unsigned char **out, unsigned char *in, size_t in_len, 
-        unsigned char *key, int enc);
+size_t aes_128_ecb_cipher(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int enc);
 
 #endif
 //==============================================================================
 //==============================================================================
-

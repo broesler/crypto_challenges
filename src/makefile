@@ -29,10 +29,10 @@ LDLIBS = -lcrypto -lssl
 # Make options
 all: test1 test2 breakRepeatingXOR types
 break: breakRepeatingXOR
-debug: DEBUG = -DLOGSTATUS -g -ggdb
+debug: DEBUG += -DLOGSTATUS -ggdb3
 debug: all
-verbose: DEBUG = -DVERBOSE -DLOGSTATUS -g -ggdb
-verbose: all
+verbose: DEBUG = -DVERBOSE
+verbose: debug
 
 #------------------------------------------------------------------------------
 # 		Compile and link steps 
