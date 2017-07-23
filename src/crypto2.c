@@ -93,5 +93,50 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
     return y_len;
 }
 
+/*------------------------------------------------------------------------------
+ *         Decrypt AES 128-bit cipher in CBC mode 
+ *----------------------------------------------------------------------------*/
+size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
+{
+    size_t x_len = 0,   /* output length */
+           len = 0;     /* intermediate length */
+    BYTE *yp = NULL,    /* intermediate value of xor'd bytes */
+         *xi = NULL,    /* one block plaintext input */
+         *yi = NULL,    /* one block output of AES encryption */
+         *yim1 = NULL;  /* "previous" ciphertext block */
+
+    /* Number of blocks needed */
+    size_t n_blocks = y_len / BLOCK_SIZE;
+    if (x_len % BLOCK_SIZE) { n_blocks++; }
+
+    /* initialize output byte array with one extra block */
+    *x = init_byte(BLOCK_SIZE*(n_blocks+1));
+
+    OpenSSL_init();
+
+    /* Encrypt blocks of plaintext using Chain Block Cipher (CBC) mode */
+    for (size_t i = 0; i < n_blocks; i++) {
+        /* Input blocks */
+        yim1 = (i == 0) ? iv : yi;
+        yi = y + i*BLOCK_SIZE;
+
+        /* Decrypt single block using key and AES cipher */
+        len = aes_128_ecb_cipher(&yp, yi, BLOCK_SIZE, key, 0);
+
+        /* XOR decrypted ciphertext block with previous ciphertext block */
+        xi = fixedXOR(yp, yim1, BLOCK_SIZE);
+
+        /* Append decrypted text to output array */
+        memcpy(*x + x_len, xi, len);
+        x_len += len;
+
+        free(yp);
+        free(xi); /* could parallelize because x doesn't depend on xi */
+    }
+
+    /* Clean-up */
+    OpenSSL_cleanup();
+    return x_len;
+}
 /*==============================================================================
  *============================================================================*/

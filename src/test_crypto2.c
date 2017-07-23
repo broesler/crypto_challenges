@@ -78,6 +78,8 @@ int PKCS72()
 
 int CBCencrypt1()
 {
+    /* NOTE Memory leak occurs out output string (ctext) for BOTH of these
+     * cases... so it doesn't have to do with padding removal. */
     START_TEST_CASE;
     BYTE ptext1[] = "I was a terror since the public school era.";
     rs += CBCencrypt_test(ptext1);
@@ -97,12 +99,25 @@ int CBCencrypt_test(BYTE *ptext)
     BYTE *ctext = NULL;
     size_t ctext_len = aes_128_cbc_encrypt(&ctext, ptext, ptext_len, key, iv);
     SHOULD_BE((ctext_len % BLOCK_SIZE) == 0);
+    /*---------- Decrypt the ciphertext ----------*/
+    BYTE *dtext = NULL;
+    size_t dtext_len = aes_128_cbc_decrypt(&dtext, ctext, ctext_len, key, iv);
+    /* Compare with expected result */
+    SHOULD_BE(dtext_len == ptext_len);
+    SHOULD_BE(!memcmp(ptext, dtext, ptext_len));
 #ifdef LOGSTATUS
     printf("Ciphertext is:\n");
     BIO_dump_fp(stdout, (const char *)ctext, ctext_len);
-    printf("ptext_len = %zu\nctext_len = %zu\n", ptext_len, ctext_len);
+    printf("ptext_len = %zu\nctext_len = %zu\ndtext_len = %zu\n", 
+            ptext_len, ctext_len, dtext_len);
+    printf("ptext: '");
+    printall(ptext, ptext_len);
+    printf("'\ndtext: '");
+    printall(dtext, dtext_len);
+    printf("'\n");
 #endif
     free(ctext);
+    free(dtext);
     END_TEST_CASE;
 }
 
@@ -114,8 +129,8 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(PKCS71,       "Challenge 1: pkcs7() 1               ");
-    RUN_TEST(PKCS72,       "             pkcs7() 2               ");
+    /* RUN_TEST(PKCS71,       "Challenge 1: pkcs7() 1               "); */
+    /* RUN_TEST(PKCS72,       "             pkcs7() 2               "); */
     RUN_TEST(CBCencrypt1,  "Challenge 2: aes_128_cbc_encrypt() 1 ");
 
     /* Count errors */

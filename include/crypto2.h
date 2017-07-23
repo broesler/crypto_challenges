@@ -23,7 +23,10 @@ BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size);
 int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size);
 
 // Encrypt using AES 128-bit CBC mode
-size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t nx, BYTE *key, BYTE *iv);
+size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv);
+
+// Decrypt using AES 128-bit CBC mode
+size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv);
 
 #endif
 //==============================================================================

@@ -19,9 +19,8 @@ size_t aes_128_ecb_cipher(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int en
     int len = -1;
     int out_len = -1;
 
-    /* Initialize temp buffer for output */
-    /* *out = init_byte(in_len + BLOCK_SIZE + 1); */
-    BYTE *temp = init_byte(in_len + BLOCK_SIZE + 1);
+    /* Initialize output buffer -- save room for null-termination */
+    *out = init_byte(in_len + BLOCK_SIZE + 1);
 
     /* IMPORTANT - ensure you use a key and IV size appropriate for your cipher */
     if (BLOCK_SIZE != strlen((char *)key)) {
@@ -48,28 +47,23 @@ size_t aes_128_ecb_cipher(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int en
 
     /* Provide the message, and obtain the output.
      * EVP_CipherUpdate can be called multiple times if necessary */
-    if (1 != EVP_CipherUpdate(ctx, temp, &len, input, tot_len)) {
+    if (1 != EVP_CipherUpdate(ctx, *out, &len, input, tot_len)) {
         handleErrors(); 
     }
     out_len = len;
 
     /* Finalise the operation. Further out bytes may be written. Provide pointer
      * to end of output array (out+len) */
-    if (1 != EVP_CipherFinal_ex(ctx, temp + len, &len)) { handleErrors(); }
+    if (1 != EVP_CipherFinal_ex(ctx, *out + len, &len)) { handleErrors(); }
     out_len += len;
 
     /* Remove any padding from output on DEcryption only */
     if (!enc) { 
-        int n_pad = pkcs7_rmpad(temp, out_len, BLOCK_SIZE); 
+        int n_pad = pkcs7_rmpad(*out, out_len, BLOCK_SIZE); 
         out_len -= n_pad;
     }
 
-    /* Copy into output buffer */
-    *out = init_byte(out_len);
-    memcpy(*out, temp, out_len);
-
     /* Clean up */
-    free(temp);
     free(input);
     EVP_CIPHER_CTX_free(ctx);
     return out_len;
