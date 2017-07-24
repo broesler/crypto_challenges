@@ -36,14 +36,6 @@ int PKCS71()
     printall(block, nblock);
     printf("'\n");
 #endif
-    /* Remove padding */
-    int npout = pkcs7_rmpad(block, nblock, nbyte+n_pad);
-    SHOULD_BE(npout == n_pad);
-#ifdef LOGSTATUS
-    printf("Removed pad:   '");
-    printall(block, nbyte);
-    printf("'\n");
-#endif
     free(block);
     END_TEST_CASE;
 }
@@ -53,7 +45,7 @@ int PKCS72()
 {
     START_TEST_CASE;
     int n_pad = 0;
-    BYTE byte[] = "Bathroom passes.";
+    BYTE byte[] = "YELLOW SUBMARINE";
     size_t nbyte = strlen((char *)byte);
     BYTE *block = pkcs7_pad(byte, nbyte, nbyte+n_pad);
     size_t nblock = strlen((char *)block);
@@ -64,15 +56,48 @@ int PKCS72()
     printall(block, nblock);
     printf("'\n");
 #endif
-    /* Remove padding */
-    int npout = pkcs7_rmpad(block, nblock, nbyte+n_pad);
-    SHOULD_BE(npout == n_pad);
+    free(block);
+    END_TEST_CASE;
+}
+
+/* Test PKCS#7 padding removal (valid padding) */
+int PKCS73()
+{
+    START_TEST_CASE;
+    /* valid padding */
+    BYTE byte[] = "ICE ICE BABY\x04\x04\x04\x04";
+    size_t nbyte = strlen((char *)byte);
+    int npout = pkcs7_rmpad(byte, nbyte, 20);
+    SHOULD_BE(npout == 4);
 #ifdef LOGSTATUS
     printf("Removed pad:   '");
-    printall(block, nbyte);
+    printall(byte, nbyte);   /* sets byte[nbyte] = \x00 */
     printf("'\n");
 #endif
-    free(block);
+    END_TEST_CASE;
+}
+
+/* Test PKCS#7 padding (invalid 1) */
+int PKCS74()
+{
+    START_TEST_CASE;
+    /* valid padding */
+    BYTE byte[] = "ICE ICE BABY\x05\x05\x05\x05";
+    size_t nbyte = strlen((char *)byte);
+    int npout = pkcs7_rmpad(byte, nbyte, 20);
+    SHOULD_BE(npout == 0);
+    END_TEST_CASE;
+}
+
+/* Test PKCS#7 padding (invalid 2) */
+int PKCS75()
+{
+    START_TEST_CASE;
+    /* valid padding */
+    BYTE byte[] = "ICE ICE BABY\x01\x02\x03\x04";
+    size_t nbyte = strlen((char *)byte);
+    int npout = pkcs7_rmpad(byte, nbyte, 20);
+    SHOULD_BE(npout == 0);
     END_TEST_CASE;
 }
 
@@ -121,6 +146,53 @@ int CBCencrypt_test(BYTE *ptext)
     END_TEST_CASE;
 }
 
+/* Test AES in CBC mode decryption */
+int CBCdecrypt1()
+{
+    START_TEST_CASE;
+    /*---------- Read in b64 from file and convert to byte array ----------*/
+    char *b64 = NULL;
+    unsigned long file_length = fileToString(&b64, "../data/10.txt");
+    SHOULD_BE(file_length = 3904);
+    char *b64_clean = strrmchr(b64, "\n"); /* strip newlines */
+    SHOULD_BE(strlen(b64_clean) == 3840);
+    BYTE *byte = NULL;
+    size_t nbyte = b642byte(&byte, b64_clean);
+    /* Define the key -- 16 byte == 128 bit key */
+    BYTE key[] = "YELLOW SUBMARINE";
+    BYTE *plaintext = NULL;
+    BYTE iv[BLOCK_SIZE] = "";   /* BLOCK_SIZE-length array of '\0' chars */
+    /*---------- Break the code! ----------*/
+    int plaintext_len = aes_128_cbc_decrypt(&plaintext, byte, nbyte, key, iv);
+    /* Compare with expected result */
+    char *expect = NULL;
+    unsigned long expect_len = fileToString(&expect, "../data/play_that_funky_music.txt");
+    SHOULD_BE(expect_len == plaintext_len);
+    SHOULD_BE(!memcmp(plaintext, expect, plaintext_len));
+#ifdef LOGSTATUS
+    /* printf("----------------------------------------\n"); */
+    printf("plaintext_len = %d\nexpect_len = %zu\n", plaintext_len, expect_len);
+    printf("Got:\n%s\n", plaintext);
+    printf("----------------------------------------\n");
+    printf("Expected:\n%s\n", expect);
+    /*---------- Print all bytes */
+    /* printf("Got:\n\""); */
+    /* printall(plaintext, plaintext_len); */
+    /* printf("\"\n"); */
+    /* printf("----------------------------------------\n"); */
+    /* printf("Expected:\n\""); */
+    /* printall((BYTE *)expect, expect_len); */
+    /* printf("\"\n"); */
+#endif
+    /* Clean up */
+    free(b64);
+    free(b64_clean);
+    free(byte);
+    free(plaintext);
+    free(expect);
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -129,9 +201,13 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(PKCS71,       "Challenge 1: pkcs7() 1               ");
-    RUN_TEST(PKCS72,       "             pkcs7() 2               ");
-    RUN_TEST(CBCencrypt1,  "Challenge 2: aes_128_cbc_encrypt() 1 ");
+    RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1               ");
+    RUN_TEST(PKCS72,       "              pkcs7() 2               ");
+    RUN_TEST(PKCS73,       "              pkcs7() 3               ");
+    RUN_TEST(PKCS74,       "              pkcs7() 4               ");
+    RUN_TEST(PKCS75,       "              pkcs7() 5               ");
+    RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1 ");
+    RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2 ");
 
     /* Count errors */
     if (!fails) {

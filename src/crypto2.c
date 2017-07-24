@@ -43,10 +43,12 @@ int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size)
         for (int i = 0; i < n_pad; i++) {
             /* If a byte isn't the same as the pad byte, throw warning */
             if (byte[nbyte-1-i] != n_pad) {
-                printf("Byte = \"");
+#ifdef LOGSTATUS
+                printf("byte = \"");
                 printall(byte, nbyte);
                 printf("\"\n");
                 WARNING("Padding is invalid!");
+#endif
                 return 0;
             }
         }
