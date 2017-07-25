@@ -531,23 +531,26 @@ XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Look for blocks with 0 Hamming distance
  *----------------------------------------------------------------------------*/
-int hasIdenticalBlocks(const BYTE *byte, size_t nbyte, size_t k)
+int hasIdenticalBlocks(const BYTE *byte, size_t nbyte, size_t block_size)
 {
-    /* Maximum number of pairs of size k */
-    size_t n_blocks = (size_t)ceil(nbyte/(2.0*k) + 1);
+    /* Maximum number of pairs of size block_size */
+    size_t n_blocks = (size_t)ceil(nbyte/(2.0*block_size) + 1);
 
-    /* Take all combinations of blocks of length k */
+    /* Take all combinations of blocks of length block_size */
     for (int i = 0; i < n_blocks; i++) {
         for (int j = i+1; j < n_blocks; j++) {
-            const BYTE *a = byte + k*i;
-            const BYTE *b = byte + k*j;
+            const BYTE *a = byte + block_size*i;
+            const BYTE *b = byte + block_size*j;
             /* If we found identical blocks, break */
-            if (0 == hamming_dist(a,b,k)) { return 1; }
+            if (0 == hamming_dist(a,b,block_size)) { 
+                return 1; 
+            }
         }
     }
 
     return 0;
 }
+
 /*------------------------------------------------------------------------------
  *         Detect AES in ECB mode 
  *----------------------------------------------------------------------------*/
