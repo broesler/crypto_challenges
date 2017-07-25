@@ -7,12 +7,12 @@
  *
  *============================================================================*/
 /* User-defined headers */
-#include "aes_openssl.h"
+#include "unit_test.h"
 #include "header.h"
 #include "crypto_util.h"
+#include "aes_openssl.h"
 #include "crypto1.h"
 #include "crypto2.h"
-#include "unit_test.h"
 
 /* Meta test functions */
 int CBCencrypt_test(BYTE *ptext);
@@ -193,6 +193,40 @@ int CBCdecrypt1()
     END_TEST_CASE;
 }
 
+/* Generate a random AES key */
+int RandByte1()
+{
+    START_TEST_CASE;
+    /* srand(0); */
+    BYTE *key = rand_byte(BLOCK_SIZE);
+#ifdef LOGSTATUS
+    printf("key: \"");
+    printall(key, BLOCK_SIZE);
+    printf("\"\n");
+#endif
+    free(key);
+    END_TEST_CASE;
+}
+
+/* Randomly encrypt plaintext */
+int EncOracle1()
+{
+    START_TEST_CASE;
+    srand(0);
+    BYTE ptext[] = "I was a terror since the public school era.";
+    size_t ptext_len = strlen((char *)ptext);
+    /* Encrypt the text with randomly-chosen algorithm */
+    BYTE *ctext = NULL;
+    size_t ctext_len = encryption_oracle(&ctext, ptext, ptext_len);
+    SHOULD_BE((ctext_len % BLOCK_SIZE) == 0);
+#ifdef LOGSTATUS
+    printf("Ciphertext is:\n");
+    BIO_dump_fp(stdout, (const char *)ctext, ctext_len);
+#endif
+    free(ctext);
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -201,13 +235,15 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1               ");
-    RUN_TEST(PKCS72,       "              pkcs7() 2               ");
-    RUN_TEST(PKCS73,       "              pkcs7() 3               ");
-    RUN_TEST(PKCS74,       "              pkcs7() 4               ");
-    RUN_TEST(PKCS75,       "              pkcs7() 5               ");
-    RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1 ");
-    RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2 ");
+    /* RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1               "); */
+    /* RUN_TEST(PKCS72,       "              pkcs7() 2               "); */
+    /* RUN_TEST(PKCS73,       "              pkcs7() 3               "); */
+    /* RUN_TEST(PKCS74,       "              pkcs7() 4               "); */
+    /* RUN_TEST(PKCS75,       "              pkcs7() 5               "); */
+    /* RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1 "); */
+    /* RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2 "); */
+    /* RUN_TEST(RandByte1,     "Challenge 11: randByte() 1             "); */
+    RUN_TEST(EncOracle1,      "              encryption_oracle()  ");
 
     /* Count errors */
     if (!fails) {

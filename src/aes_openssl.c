@@ -47,11 +47,6 @@ size_t aes_128_ecb_block(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int enc
     /* Initialize output buffer -- save room for null-termination */
     *out = init_byte(in_len + BLOCK_SIZE + 1);
 
-    /* IMPORTANT - ensure you use a key and IV size appropriate for your cipher */
-    if (BLOCK_SIZE != strlen((char *)key)) {
-        ERROR("Key must be 16 bytes long for AES-128-ECB!");
-    }
-
     /* Initialize the context */
     if (!(ctx = EVP_CIPHER_CTX_new())) { handleErrors(); }
 

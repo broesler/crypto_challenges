@@ -28,6 +28,12 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
 // Decrypt using AES 128-bit CBC mode
 size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv);
 
+// Generate random AES key 
+BYTE *rand_byte(size_t len);
+
+// Encryption oracle: randomly encrypt with ECB or CBC
+size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len);
+
 #endif
 //==============================================================================
 //==============================================================================
