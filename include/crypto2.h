@@ -34,6 +34,9 @@ BYTE *rand_byte(size_t len);
 // Encryption oracle: randomly encrypt with ECB or CBC
 size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len);
 
+// Detect if oracle is in ECB mode or not (depends on strategic input)
+int is_oracle_ecb(BYTE *x, size_t x_len);
+
 #endif
 //==============================================================================
 //==============================================================================

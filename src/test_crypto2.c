@@ -14,6 +14,8 @@
 #include "crypto1.h"
 #include "crypto2.h"
 
+#define SRAND_INIT (0)
+
 /* Meta test functions */
 int CBCencrypt_test(BYTE *ptext);
 
@@ -197,7 +199,7 @@ int CBCdecrypt1()
 int RandByte1()
 {
     START_TEST_CASE;
-    /* srand(0); */
+    srand(SRAND_INIT);
     BYTE *key = rand_byte(BLOCK_SIZE);
 #ifdef LOGSTATUS
     printf("key: \"");
@@ -212,7 +214,7 @@ int RandByte1()
 int EncOracle1()
 {
     START_TEST_CASE;
-    srand(0);
+    srand(SRAND_INIT);
     BYTE ptext[] = "I was a terror since the public school era.";
     size_t ptext_len = strlen((char *)ptext);
     /* Encrypt the text with randomly-chosen algorithm */
@@ -227,6 +229,21 @@ int EncOracle1()
     END_TEST_CASE;
 }
 
+/* Test if oracle is in ECB mode */
+int EncOracle2()
+{
+    START_TEST_CASE;
+    srand(SRAND_INIT);
+    BYTE ptext[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"; /* 48 */
+    size_t ptext_len = strlen((char *)ptext);
+    int test = is_oracle_ecb(ptext, ptext_len);
+#ifdef LOGSTATUS
+    printf("is ecb? %d\n", test);
+#endif
+    SHOULD_BE(test == 1); /* if srand(0), we get ECB mode guaranteed */
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -235,15 +252,16 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1               "); */
-    /* RUN_TEST(PKCS72,       "              pkcs7() 2               "); */
-    /* RUN_TEST(PKCS73,       "              pkcs7() 3               "); */
-    /* RUN_TEST(PKCS74,       "              pkcs7() 4               "); */
-    /* RUN_TEST(PKCS75,       "              pkcs7() 5               "); */
-    /* RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1 "); */
-    /* RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2 "); */
-    /* RUN_TEST(RandByte1,     "Challenge 11: randByte() 1             "); */
-    RUN_TEST(EncOracle1,      "              encryption_oracle()  ");
+    /* RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1                "); */
+    /* RUN_TEST(PKCS72,       "              pkcs7() 2                "); */
+    /* RUN_TEST(PKCS73,       "              pkcs7() 3                "); */
+    /* RUN_TEST(PKCS74,       "              pkcs7() 4                "); */
+    /* RUN_TEST(PKCS75,       "              pkcs7() 5                "); */
+    /* RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1  "); */
+    /* RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2  "); */
+    /* RUN_TEST(RandByte1,     "Challenge 11: randByte() 1              "); */
+    RUN_TEST(EncOracle1,      "              encryption_oracle() 1 ");
+    RUN_TEST(EncOracle2,      "              encryption_oracle() 2 ");
 
     /* Count errors */
     if (!fails) {

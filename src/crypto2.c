@@ -209,7 +209,7 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     memcpy(x_aug+n_prepend,        x,        x_len);
     memcpy(x_aug+n_prepend+x_len,  append,   n_append);
 
-#ifdef LOGSTATUS
+#ifdef VERBOSE
     printf("n_prepend = %d, n_append = %d\n", n_prepend, n_append);
     printf("prepend = \"");
     printall(prepend, n_prepend);
@@ -227,9 +227,16 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     heads = RAND_RANGE(0,1);
 
     if (heads) {
+#ifdef LOGSTATUS
+        printf("[oracle]: Encrypting in ECB mode\n");
+#endif
         /* Use ECB mode */
         y_len = aes_128_ecb_cipher(y, x_aug, x_aug_len, key, 1);
+
     } else {
+#ifdef LOGSTATUS
+        printf("[oracle]: Encrypting in CBC mode\n");
+#endif
         /* Generate random IV */
         iv = rand_byte(BLOCK_SIZE);
 
@@ -245,6 +252,20 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
 
     return y_len;
 }
+
+/*------------------------------------------------------------------------------
+ *         Detect encryption_oracle mode 
+ *----------------------------------------------------------------------------*/
+int is_oracle_ecb(BYTE *x, size_t x_len)
+{
+    /* Encrypt the input with the oracle, AES in either ECB or CBC mode */
+    BYTE *c = NULL;
+    size_t c_len = encryption_oracle(&c, x, x_len);
+
+    /* 1 if in ECB mode, 0 if not (i.e. CBC mode) */
+    return hasIdenticalBlocks(c, c_len, BLOCK_SIZE);
+}
+
 
 /*==============================================================================
  *============================================================================*/
