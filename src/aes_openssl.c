@@ -93,35 +93,32 @@ size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc)
     /* initialize output byte array with one extra block */
     *y = init_byte(tot_len + BLOCK_SIZE);
 
+    /* Pad the input (n_pad only non-zero for last block) */
+    BYTE *x_pad = pkcs7_pad(x, x_len, BLOCK_SIZE);
+
     OpenSSL_init();
 
     /* Encrypt blocks of plaintext using Chain Block Cipher (CBC) mode */
     for (size_t i = 0; i < n_blocks; i++) {
         /* Input blocks */
-        xi = x + i*BLOCK_SIZE;
-
-        /* Pad the input (n_pad only non-zero for last block) */
-        size_t xi_len = (i == n_blocks-1) ? (x_len - i*BLOCK_SIZE) : BLOCK_SIZE;
-        BYTE *xi_pad = pkcs7_pad(xi, xi_len, BLOCK_SIZE);
+        xi = x_pad + i*BLOCK_SIZE;
 
         /* Encrypt single block using key and AES cipher */
-        len = aes_128_ecb_block(&yi, xi_pad, BLOCK_SIZE, key, enc);
-
-        /* Remove any padding from last block of output */
-        if (!enc && (i == n_blocks-1)) {
-            int n_pad = pkcs7_rmpad(yi, len, BLOCK_SIZE); 
-            len -= n_pad;
-        }
+        len = aes_128_ecb_block(&yi, xi, BLOCK_SIZE, key, enc);
 
         /* Append encrypted text to output array */
         memcpy(*y + y_len, yi, len);
         y_len += len;
+    }
 
-        free(xi_pad);
+    if (!enc) {
+        int n_pad = pkcs7_rmpad(*y, y_len, BLOCK_SIZE); 
+        y_len -= n_pad;
     }
 
     /* Clean-up */
     free(yi);
+    free(x_pad);
     OpenSSL_cleanup();
     return y_len;
 }
