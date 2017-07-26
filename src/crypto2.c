@@ -19,15 +19,13 @@
  *----------------------------------------------------------------------------*/
 BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size)
 {
-    if (nbyte > block_size) { ERROR("Input > block size!"); }
+    BYTE n_pad = block_size - (nbyte % block_size);
 
-    BYTE *out = init_byte(block_size);
+    BYTE *out = init_byte(nbyte + n_pad);
     memcpy(out, byte, nbyte);
-    BYTE *p = out+nbyte; /* start at end of original byte array */
+    BYTE *p = out + nbyte;      /* start at end of original byte array */
 
     /* Add N-bytes of char N */
-    BYTE n_pad = block_size - nbyte;
-
     for (int i = 0; i < n_pad; i++) {
         *p++ = n_pad;
     }
@@ -55,7 +53,7 @@ int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size)
                 return 0;
             }
         }
-        /* Otherwise we've reached the end of the string, add a NULL */
+        /* Otherwise we've reached the end of the bytes, add a NULL */
         byte[nbyte-n_pad] = '\0';
         return n_pad;
     } else {
@@ -83,20 +81,19 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
     /* initialize output byte array with one extra block */
     *y = init_byte(tot_len + BLOCK_SIZE);
 
+    /* pad byte array to multiple of BLOCK_SIZE */
+    BYTE *x_pad = pkcs7_pad(x, x_len, BLOCK_SIZE);
+
     OpenSSL_init();
 
     /* Encrypt blocks of plaintext using Chain Block Cipher (CBC) mode */
     for (size_t i = 0; i < n_blocks; i++) {
         /* Input blocks */
-        xi = x + i*BLOCK_SIZE;
+        xi = x_pad + i*BLOCK_SIZE;
         yim1 = (i == 0) ? iv : yi; /* chain the last ciphertext into the next */
 
-        /* Pad the input (n_pad only non-zero for last block) */
-        size_t xi_len = (i == n_blocks-1) ? (x_len - i*BLOCK_SIZE) : BLOCK_SIZE;
-        BYTE *xi_pad = pkcs7_pad(xi, xi_len, BLOCK_SIZE);
-
         /* XOR plaintext block with previous ciphertext block */
-        xp = fixedXOR(xi_pad, yim1, BLOCK_SIZE);
+        xp = fixedXOR(xi, yim1, BLOCK_SIZE);
 
         /* Encrypt single block using key and AES cipher */
         len = aes_128_ecb_block(&yi, xp, BLOCK_SIZE, key, 1);
@@ -106,11 +103,11 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
         y_len += len;
 
         free(xp);
-        free(xi_pad);
     }
 
     /* Clean-up */
     free(yi);
+    free(x_pad);
     OpenSSL_cleanup();
     return y_len;
 }
@@ -148,10 +145,6 @@ size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
         /* XOR decrypted ciphertext block with previous ciphertext block */
         xi = fixedXOR(yp, yim1, BLOCK_SIZE);
 
-        /* Remove any padding from output */
-        int n_pad = pkcs7_rmpad(xi, len, BLOCK_SIZE); 
-        len -= n_pad;
-
         /* Append decrypted text to output array */
         memcpy(*x + x_len, xi, len);
         x_len += len;
@@ -159,6 +152,10 @@ size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
         free(yp);
         free(xi); /* could parallelize because x doesn't depend on xi */
     }
+
+    /* Remove any padding from output */
+    int n_pad = pkcs7_rmpad(*x, x_len, BLOCK_SIZE); 
+    x_len -= n_pad;
 
     /* Clean-up */
     OpenSSL_cleanup();
