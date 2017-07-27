@@ -40,7 +40,7 @@ typedef struct _XOR_NODE XOR_NODE;
 //------------------------------------------------------------------------------
 //      Function Definitions
 //------------------------------------------------------------------------------
-// Convert hex string to base-64 string
+// Challenge 1: Convert hex string to base-64 string
 char *hex2b64(const char *hex);
 
 // Convert base-64 string to hex string
@@ -52,7 +52,7 @@ char *byte2b64(const BYTE *byte, size_t nbyte);
 // Decode base64 string to byte array
 size_t b642byte(BYTE **byte, const char *b64);
 
-// XOR two fixed-length byte arrays
+// Challenge 2: XOR two fixed-length byte arrays
 BYTE *fixedXOR(const BYTE *a, const BYTE *b, size_t nbyte);
 
 // Character frequency score
@@ -61,13 +61,13 @@ float charFreqScore(const BYTE *byte, size_t nbyte);
 // Allocate memory and initialize an XOR_NODE
 XOR_NODE *init_xor_node(void);
 
-// Single byte XOR decode
+// Challenge 3: Single byte XOR decode
 XOR_NODE *singleByteXORDecode(const BYTE *byte, size_t nbyte);
 
-// Search file for single byte XOR'd string
+// Challenge 4: Search file for single byte XOR'd string
 XOR_NODE *findSingleByteXOR(const char *filename);
 
-// Encode byte array using repeating-key XOR
+// Challenge 5: Encode byte array using repeating-key XOR
 BYTE *repeatingKeyXOR(const BYTE *byte, const BYTE *key_byte, size_t nbyte, size_t key_len);
 
 // Compute Hamming distance between strings 
@@ -79,13 +79,16 @@ float normMeanHamming(const BYTE *byte, size_t nbyte, size_t k);
 // Get most probable key length of repeating XOR 
 size_t getKeyLength(const BYTE *byte, size_t nbyte);
 
-//  Break repeating key XOR cipher 
+// Challenge 6: Break repeating key XOR cipher 
 XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte);
+
+// Challenge 7: AES 128-bit ECB-mode encrypt/decrypt entire byte array
+size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc);
 
 // Same as normMeanHamming except return logical value
 int hasIdenticalBlocks(const BYTE *byte, size_t nbyte, size_t block_size);
 
-// Detect AES in ECB mode 
+// Challenge 8: Detect AES in ECB mode 
 int find_AES_ECB(BYTE **out, const char *hex_filename);
 
 #endif

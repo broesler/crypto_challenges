@@ -32,9 +32,6 @@ void handleErrors(void);
 // AES 128-bit ECB-mode encrypt/decrypt single block
 size_t aes_128_ecb_block(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int enc);
 
-// AES 128-bit ECB-mode encrypt/decrypt entire byte array of plaintext
-size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc);
-
 #endif
 //==============================================================================
 //==============================================================================

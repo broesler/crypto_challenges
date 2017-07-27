@@ -20,7 +20,6 @@ CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 # Define source files, utility files (function files)
 SRC = test_crypto1.c breakRepeatingXOR.c  test_crypto2.c 
 UTIL = crypto1.c crypto2.c aes_openssl.c $(UTILDIR)/crypto_util.c
-# UTIL += $(UTILDIR)/dictionary.c $(UTILDIR)/hash.c
 
 # Look for header files here
 OPT = -I$(INCLDIR) -I$(SSLINCL) 

@@ -19,7 +19,7 @@ static const char B64_LUT[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
 /*------------------------------------------------------------------------------
- *          Convert hexadecimal string to base64 string
+ *          Challenge 1: Convert hexadecimal string to base64 string
  *----------------------------------------------------------------------------*/
 char *hex2b64(const char *hex)
 {
@@ -178,7 +178,7 @@ size_t b642byte(BYTE **byte, const char *b64)
 }
 
 /*------------------------------------------------------------------------------
- *      XOR two equal-length byte arrays
+ *          Challenge 2: XOR two equal-length byte arrays
  *----------------------------------------------------------------------------*/
 BYTE *fixedXOR(const BYTE *a, const BYTE *b, size_t nbyte)
 {
@@ -190,7 +190,6 @@ BYTE *fixedXOR(const BYTE *a, const BYTE *b, size_t nbyte)
     }
     return xor;
 }
-
 
 /*------------------------------------------------------------------------------
  *         Get character frequency score of string
@@ -252,7 +251,6 @@ float charFreqScore(const BYTE *byte, size_t nbyte)
     return score;
 }
 
-
 /*------------------------------------------------------------------------------
  *         Allocate memory and initialize an XOR_NODE
  *----------------------------------------------------------------------------*/
@@ -276,7 +274,7 @@ XOR_NODE *init_xor_node(void)
 }
 
 /*------------------------------------------------------------------------------
- *         Decode a string XOR'd against a single character
+ *         Challenge 3: Decode a string XOR'd against a single character
  *----------------------------------------------------------------------------*/
 XOR_NODE *singleByteXORDecode(const BYTE *byte, size_t nbyte)
 {
@@ -319,7 +317,7 @@ XOR_NODE *singleByteXORDecode(const BYTE *byte, size_t nbyte)
 }
 
 /*------------------------------------------------------------------------------
- *         Find single byte XOR string in a file
+ *         Challenge 4: Find single byte XOR string in a file
  *----------------------------------------------------------------------------*/
 XOR_NODE *findSingleByteXOR(const char *filename)
 {
@@ -382,7 +380,7 @@ XOR_NODE *findSingleByteXOR(const char *filename)
 }
 
 /*------------------------------------------------------------------------------
- *         Encode hex string using repeating-key XOR
+ *         Challenge 5: Encode hex string using repeating-key XOR
  *----------------------------------------------------------------------------*/
 BYTE *repeatingKeyXOR(const BYTE *byte, const BYTE *key_byte, size_t nbyte, size_t key_len)
 {
@@ -403,7 +401,6 @@ size_t hamming_dist(const BYTE *a, const BYTE *b, size_t nbyte)
     free(xor);
     return weight;
 }
-
 
 /*------------------------------------------------------------------------------
  *         Get the normalized mean Hamming distance
@@ -472,9 +469,8 @@ size_t getKeyLength(const BYTE *byte, size_t nbyte)
     return key_byte;
 }
 
-
 /*------------------------------------------------------------------------------
- *         Break repeating key XOR cipher
+ *         Challenge 6: Break repeating key XOR cipher
  *----------------------------------------------------------------------------*/
 XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
 {
@@ -552,7 +548,52 @@ int hasIdenticalBlocks(const BYTE *byte, size_t nbyte, size_t block_size)
 }
 
 /*------------------------------------------------------------------------------
- *         Detect AES in ECB mode 
+ *         Challenge 7: Encrypt AES in ECB mode
+ *----------------------------------------------------------------------------*/
+size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc)
+{
+    size_t y_len = 0,      /* output length */
+           len = 0;     /* intermediate length */
+    BYTE *xi = NULL,    /* one block plaintext input */
+         *yi = NULL;    /* one block output of AES encryption */
+
+    /* Number of blocks needed */
+    size_t n_blocks = x_len / BLOCK_SIZE;
+    if (x_len % BLOCK_SIZE) { n_blocks++; }
+    size_t tot_len = BLOCK_SIZE * n_blocks;
+
+    /* initialize output byte array with one extra block */
+    *y = init_byte(tot_len + BLOCK_SIZE);
+
+    /* Pad the input (n_pad only non-zero for last block) */
+    BYTE *x_pad = pkcs7_pad(x, x_len, BLOCK_SIZE);
+
+    /* Encrypt blocks of plaintext using Chain Block Cipher (CBC) mode */
+    for (size_t i = 0; i < n_blocks; i++) {
+        /* Input blocks */
+        xi = x_pad + i*BLOCK_SIZE;
+
+        /* Encrypt single block using key and AES cipher */
+        len = aes_128_ecb_block(&yi, xi, BLOCK_SIZE, key, enc);
+
+        /* Append encrypted text to output array */
+        memcpy(*y + y_len, yi, len);
+        y_len += len;
+        free(yi);
+    }
+
+    if (!enc) {
+        int n_pad = pkcs7_rmpad(*y, y_len, BLOCK_SIZE); 
+        y_len -= n_pad;
+    }
+
+    /* Clean-up */
+    free(x_pad);
+    return y_len;
+}
+
+/*------------------------------------------------------------------------------
+ *         Challenge 8: Detect AES in ECB mode 
  *----------------------------------------------------------------------------*/
 int find_AES_ECB(BYTE **out, const char *hex_filename)
 {
@@ -609,5 +650,6 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
     fclose(fp);
     return file_line; 
 }
+
 /*==============================================================================
  *============================================================================*/

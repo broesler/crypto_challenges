@@ -22,7 +22,7 @@ int AESDecrypt_test(BYTE *ptext);
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
-/* This tests conversion of a hex string to a base64 string */
+/* Challenge 1: This tests conversion of a hex string to a base64 string */
 int HexConvert2()
 {
     START_TEST_CASE;
@@ -155,7 +155,7 @@ int B64Convert2()
     END_TEST_CASE;
 }
 
-/* This tests the XOR of two hex-encoded strings, as well as printing their
+/* Challenge 2: This tests the XOR of two hex-encoded strings, as well as printing their
  * ASCII conversions */
 int FixedXOR1()
 {
@@ -210,7 +210,7 @@ int CharFreqScore1()
     END_TEST_CASE;
 }
 
-/* This function tests the decoding of a single byte XOR cipher */
+/* Challenge 3: This function tests the decoding of a single byte XOR cipher */
 int SingleByte1()
 {
     START_TEST_CASE;
@@ -236,7 +236,7 @@ int SingleByte1()
     END_TEST_CASE;
 }
 
-/* This function tests the decoding of multiple strings in a file */
+/* Challenge 4: This function tests the decoding of multiple strings in a file */
 int FileSingleByte1()
 {
     START_TEST_CASE;
@@ -254,7 +254,7 @@ int FileSingleByte1()
     END_TEST_CASE;
 }
 
-/* This function tests the implementation of repeating-key XOR */
+/* Challenge 5: This function tests the implementation of repeating-key XOR */
 int RepeatingKeyXOR1()
 {
     START_TEST_CASE;
@@ -320,7 +320,7 @@ int BreakRepeatingXOR1()
     END_TEST_CASE;
 }
 
-/* Test break repeating key XOR */
+/* Challenge 6: Test break repeating key XOR */
 int BreakRepeatingXOR2()
 {
     START_TEST_CASE;
@@ -411,7 +411,7 @@ int AESDecrypt_test(BYTE *ptext)
     END_TEST_CASE;
 }
 
-/* Test AES in ECB mode decryption */
+/* Challenge 7: Test AES in ECB mode decryption */
 int AESDecrypt2()
 {
     START_TEST_CASE;
@@ -438,9 +438,6 @@ int AESDecrypt2()
 #ifdef LOGSTATUS
     printf("----------------------------------------\n");
     printf("plaintext_len = %d\nexpect_len = %zu\n", plaintext_len, expect_len);
-    /* printf("Got:\n%s\n", plaintext); */
-    /* printf("----------------------------------------\n"); */
-    /* printf("Expected:\n%s\n", expect); */
     /*---------- Print all bytes */
     printf("Got:\n\"");
     printall(plaintext, plaintext_len);
@@ -469,7 +466,7 @@ int ECBDetect1()
     END_TEST_CASE;
 }
 
-/* Test ECB mode detection */
+/* Challenge 8: Test ECB mode detection */
 int ECBDetect2()
 {
     START_TEST_CASE;

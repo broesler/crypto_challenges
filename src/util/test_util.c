@@ -11,6 +11,7 @@
 
 /* User-defined headers */
 #include "header.h"
+#include "aes_openssl.h"
 #include "crypto_util.h"
 #include "unit_test.h"
 
@@ -173,6 +174,42 @@ int Strrmchr1()
     END_TEST_CASE;
 }
 
+/* Test AES in ECB mode decryption for single block */
+int AESDecrypt1()
+{
+    START_TEST_CASE;
+    BYTE ptext[] = "Firetruck races!"; /* 16 bytes */
+    size_t ptext_len = strlen((char *)ptext);
+    OpenSSL_init();
+    BYTE key[] = "YELLOW SUBMARINE"; /* 16-bit key */
+    /*---------- Encrypt the plaintext ----------*/
+    BYTE *ctext = NULL;
+    size_t ctext_len = aes_128_ecb_block(&ctext, ptext, ptext_len, key, 1);
+    SHOULD_BE(ctext_len == BLOCK_SIZE);
+    /*---------- Decrypt the ciphertext ----------*/
+    BYTE *dtext = NULL;
+    size_t dtext_len = aes_128_ecb_block(&dtext, ctext, ctext_len, key, 0);
+    /* Compare with expected result */
+    SHOULD_BE(dtext_len == ptext_len);
+    SHOULD_BE(!memcmp(ptext, dtext, ptext_len));
+#ifdef LOGSTATUS
+    printf("Ciphertext:\n");
+    BIO_dump_fp(stdout, (const char *)ctext, ctext_len);
+    printf("ptext_len = %zu\nctext_len = %zu\ndtext_len = %zu\n", 
+            ptext_len, ctext_len, dtext_len);
+    printf("ptext: '");
+    printall(ptext, ptext_len);
+    printf("'\ndtext: '");
+    printall(dtext, dtext_len);
+    printf("'\n");
+#endif
+    /* Clean up */
+    OpenSSL_cleanup();
+    free(ctext);
+    free(dtext);
+    END_TEST_CASE;
+}
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -181,15 +218,16 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(StrToUpper1,    "strtoupper()     ");
-    RUN_TEST(StrArray1,      "init_str_arr()   ");
-    RUN_TEST(IsPrintable1,   "isprintable()    ");
-    RUN_TEST(FindFreq1,      "countChars()     ");
-    RUN_TEST(GetHexByte1,    "getHexByte()     ");
-    RUN_TEST(HexConvert1,    "atoh(),htoa()    ");
-    RUN_TEST(Strnrepeat1,    "strnrepeat_hex() ");
-    RUN_TEST(HammingWeight1, "hamming_dist()   ");
-    RUN_TEST(Strrmchr1,      "strrmchr()       ");
+    RUN_TEST(StrToUpper1,    "strtoupper()        ");
+    RUN_TEST(StrArray1,      "init_str_arr()      ");
+    RUN_TEST(IsPrintable1,   "isprintable()       ");
+    RUN_TEST(FindFreq1,      "countChars()        ");
+    RUN_TEST(GetHexByte1,    "getHexByte()        ");
+    RUN_TEST(HexConvert1,    "atoh(),htoa()       ");
+    RUN_TEST(Strnrepeat1,    "strnrepeat_hex()    ");
+    RUN_TEST(HammingWeight1, "hamming_dist()      ");
+    RUN_TEST(Strrmchr1,      "strrmchr()          ");
+    RUN_TEST(AESDecrypt1,    "aes_128_ecb_block() ");
 
     /* Count errors */
     if (!fails) {

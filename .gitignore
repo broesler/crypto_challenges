@@ -37,3 +37,6 @@ data/
 
 # Binaries
 *.pdf
+
+# Other
+types.vim
