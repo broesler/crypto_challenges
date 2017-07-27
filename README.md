@@ -8,6 +8,8 @@ bit-flipping operations in about the lowest level language you can get short of
 machine code.
 
 ## The Structure ##
+
+```
 .
 ├── README.md
 ├── data
@@ -55,6 +57,7 @@ machine code.
         ├── crypto_util.c
         ├── makefile
         └── test_util.c
+```
 
 ##---------- Details ----------##
 ### `data/`
@@ -121,13 +124,15 @@ machine code.
 
 ## Build and Run ##
   * To build and run the challenges:
+
 ```shell
 $ cd src
 $ ./test_all.sh
 ```
+
   * This script will:
     1. Navigate to the `src/util/` directory, build and run the utilities test,
        and run a check to make sure all utilities pass.
     2. Navigate to the `src/` directory, build and run the tests for all
        challenges, and run a check to make sure all tests pass.
-  * Verbose output via `make debug` can be set in `test_all.sh`.
+  * Verbose output via `make debug`, or, for even more output, `make verbose`, can be set in `test_all.sh`.
