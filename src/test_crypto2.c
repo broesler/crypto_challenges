@@ -169,14 +169,10 @@ int CBCdecrypt1()
     SHOULD_BE(!memcmp(plaintext, expect, plaintext_len));
 #ifdef LOGSTATUS
     /* printf("----------------------------------------\n"); */
-    printf("plaintext_len = %d\nexpect_len = %zu\n", plaintext_len, expect_len);
-    printf("Got:\n%s\n", plaintext);
-    printf("----------------------------------------\n");
-    printf("Expected:\n%s\n", expect);
-    /*---------- Print all bytes */
-    /* printf("Got:\n\""); */
-    /* printall(plaintext, plaintext_len); */
-    /* printf("\"\n"); */
+    printf("plaintext_len = %d\nexpect_len    = %zu\n", plaintext_len, expect_len);
+    printf("Got:\n\"");
+    printall(plaintext, plaintext_len);
+    printf("\"\n");
     /* printf("----------------------------------------\n"); */
     /* printf("Expected:\n\""); */
     /* printall((BYTE *)expect, expect_len); */
@@ -298,7 +294,7 @@ int main(void)
     RUN_TEST(EncOracle2,   "              encryption_oracle() 2    ");
     RUN_TEST(GetBlockSize, "              getBlockSize()           ");
     RUN_TEST(IsECB,        "              isECB()                  ");
-    RUN_TEST(OneByteECB1,   "             simple_ECB_decrypt() 1   ");
+    RUN_TEST(OneByteECB1,  "              simple_ECB_decrypt() 1   ");
     OpenSSL_cleanup();
 
     /* Count errors */
@@ -310,8 +306,6 @@ int main(void)
         return 1;
     }
 }
-
-
 
 /*==============================================================================
  *============================================================================*/

@@ -442,10 +442,10 @@ int AESDecrypt2()
     printf("Got:\n\"");
     printall(plaintext, plaintext_len);
     printf("\"\n");
-    printf("----------------------------------------\n");
-    printf("Expected:\n\"");
-    printall((BYTE *)expect, expect_len);
-    printf("\"\n");
+    /* printf("----------------------------------------\n"); */
+    /* printf("Expected:\n\""); */
+    /* printall((BYTE *)expect, expect_len); */
+    /* printf("\"\n"); */
 #endif
     /* Clean up */
     OpenSSL_cleanup();

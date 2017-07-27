@@ -10,7 +10,7 @@
 SRCDIR  = ./
 UTILDIR = ./util/
 INCLDIR = ../include/
-SSLINCL = /usr/local/opt/openssl/include
+SSLINCL = /usr/local/opt/openssl/include/
 DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
@@ -19,7 +19,7 @@ CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 
 # Define source files, utility files (function files)
 SRC = test_crypto1.c breakRepeatingXOR.c  test_crypto2.c 
-UTIL = crypto1.c crypto2.c aes_openssl.c $(UTILDIR)/crypto_util.c
+UTIL = crypto1.c crypto2.c $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
 
 # Look for header files here
 OPT = -I$(INCLDIR) -I$(SSLINCL) 

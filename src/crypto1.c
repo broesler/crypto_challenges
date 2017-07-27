@@ -9,7 +9,9 @@
 #include <float.h>
 #include <math.h>
 
+#include "aes_openssl.h"
 #include "crypto1.h"
+#include "crypto2.h"
 #include "crypto_util.h"
 #include "header.h"
 
