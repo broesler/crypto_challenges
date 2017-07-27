@@ -121,11 +121,10 @@ machine code.
 
 ## Build and Run ##
   * To build and run the challenges:
-  ```shell
-  $ cd src
-
-  $ ./test_all.sh
-  ```
+```shell
+$ cd src
+$ ./test_all.sh
+```
   * This script will:
     1. Navigate to the `src/util/` directory, build and run the utilities test,
        and run a check to make sure all utilities pass.
