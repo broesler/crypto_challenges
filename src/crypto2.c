@@ -6,13 +6,15 @@
  *  Description: Solutions to Set 2 of Matasano Crypto Challenges
  *
  *============================================================================*/
+
 #include "header.h"
+#include "dictionary.h"
 #include "aes_openssl.h"
 #include "crypto1.h"
 #include "crypto2.h"
 
-/* Good enough for government work... or is it? */
-#define RAND_RANGE(A,B) ((rand() % ((B) + 1 - (A))) + (A))
+/* Global key used in encryption_oracle12 */
+static BYTE *global_key = NULL;
 
 /*------------------------------------------------------------------------------
  *         PKCS#7 padding to block size 
@@ -94,6 +96,7 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
 
         /* XOR plaintext block with previous ciphertext block */
         xp = fixedXOR(xi, yim1, BLOCK_SIZE);
+        free(yi); /* a new yi is malloc'd during ECB, so free the old one */
 
         /* Encrypt single block using key and AES cipher */
         len = aes_128_ecb_block(&yi, xp, BLOCK_SIZE, key, 1);
@@ -178,7 +181,7 @@ BYTE *rand_byte(size_t len)
 /*------------------------------------------------------------------------------
  *          Encryption oracle: randomly encrypt with ECB or CBC
  *----------------------------------------------------------------------------*/
-size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
+size_t encryption_oracle11(BYTE **y, BYTE *x, size_t x_len)
 {
     size_t x_aug_len = 0,
            y_len = 0;
@@ -236,15 +239,20 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
 #endif
         /* Generate random IV */
         iv = rand_byte(BLOCK_SIZE);
-
         /* Use CBC mode */
         y_len = aes_128_cbc_encrypt(y, x_aug, x_aug_len, key, iv);
+        free(iv);
     }
 
+#ifdef VERBOSE
+    printf("Oracle ciphertext is:\n");
+    BIO_dump_fp(stdout, (const char *)*y, y_len);
+#endif
+
     /* Clean-up */
-    free(key);
     free(prepend);
     free(append);
+    free(key);
     free(x_aug);
 
     return y_len;
@@ -253,16 +261,190 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
 /*------------------------------------------------------------------------------
  *         Detect encryption_oracle mode 
  *----------------------------------------------------------------------------*/
-int is_oracle_ecb(BYTE *x, size_t x_len)
+int is_oracle_ecb11(BYTE *x, size_t x_len)
 {
     /* Encrypt the input with the oracle, AES in either ECB or CBC mode */
     BYTE *c = NULL;
-    size_t c_len = encryption_oracle(&c, x, x_len);
+    size_t c_len = encryption_oracle11(&c, x, x_len);
 
     /* 1 if in ECB mode, 0 if not (i.e. CBC mode) */
-    return hasIdenticalBlocks(c, c_len, BLOCK_SIZE);
+    int test = hasIdenticalBlocks(c, c_len, BLOCK_SIZE);
+    free(c);
+    return test;
 }
 
+/*------------------------------------------------------------------------------
+ *         Encryption oracle for Challenge 12 
+ *----------------------------------------------------------------------------*/
+size_t encryption_oracle12(BYTE **y, BYTE *x, size_t x_len)
+{
+    size_t x_aug_len = 0,
+           y_len = 0;
+    BYTE *x_aug;
+
+    /* String to append to the plaintext (for decryption!) */
+    static const char *append_b64 = 
+        "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkg" \
+        "aGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBq" \
+        "dXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUg" \
+        "YnkK";
+
+    /* Convert to byte array */
+    static BYTE *append = NULL;
+    size_t n_append = b642byte(&append, append_b64);
+
+    /* Build actual input to oracle */
+    x_aug_len = x_len + n_append;
+    x_aug = init_byte(x_aug_len);
+
+    /* Move pointer along each chunk of bytes */
+    memcpy(x_aug,       x,      x_len);
+    memcpy(x_aug+x_len, append, n_append);
+
+    /* Generate a random key ONCE */
+    if (!global_key) {
+        global_key = rand_byte(BLOCK_SIZE);
+    }
+
+    /* Encrypt using ECB mode */
+    y_len = aes_128_ecb_cipher(y, x_aug, x_aug_len, global_key, 1);
+
+    /* Clean-up */
+    free(append);
+    free(x_aug);
+
+    return y_len;
+}
+
+/*------------------------------------------------------------------------------
+ *         Get block size of cipher 
+ *----------------------------------------------------------------------------*/
+/* Accepts function pointer to encryption oracle */
+size_t getBlockSize(size_t (*encrypt)(BYTE**, BYTE*, size_t))
+{
+    BYTE *y = NULL;
+    BYTE x[IMAX];
+    for (size_t i = 0; i < IMAX; i++) { x[i] = 'A'; } /* arbitrary byte */
+
+    /* Unknown string will be padded to N*block_size */
+    size_t Nblock = encrypt(&y, x, 0);
+    free(y); /* unused */
+
+    for (size_t i = 1; i < IMAX; i++) {
+        /* Keep adding bytes to input until we "overflow" to next block */
+        size_t Np1block = encrypt(&y, x, i);
+        free(y); /* unused */
+
+        if (Np1block != Nblock) {
+            return (Np1block - Nblock);
+        }
+    }
+    return 0;
+}
+
+/*------------------------------------------------------------------------------
+ *         Get block size of cipher 
+ *----------------------------------------------------------------------------*/
+/* Accepts function pointer to encryption oracle and block size */
+size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size)
+{
+    /* Encrypt two identical blocks of block size */
+    BYTE *y = NULL;
+    size_t x_len = 2*block_size;
+    BYTE x[x_len];
+    for (size_t i = 0; i < x_len; i++) { *(x+i) = 'A'; }
+    size_t y_len = encrypt(&y, x, x_len);
+    int test = hasIdenticalBlocks(y, y_len, block_size);
+    free(y);
+    return test;
+}
+
+/*------------------------------------------------------------------------------
+ *         Get single 
+ *----------------------------------------------------------------------------*/
+BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y, 
+        size_t y_len, size_t block_size)
+{
+    DICTIONARY *dict = NULL;
+    size_t i = 0,
+           x_len = 0,
+           in_len = 0;
+    BYTE *c = NULL,
+         *t = NULL,
+         *in = NULL;
+
+    /* Build input byte base (n-bytes short)
+     * Input is (block_size-1) known bytes + 1 unknown */
+    x_len = block_size - (y_len % block_size) - 1;
+    in_len = x_len + y_len + 1;
+
+    in = init_byte(in_len);
+    for (i = 0; i < x_len; i++) { *(in+i) = 'A'; }
+    memcpy(in + x_len, y, y_len);
+
+    /* Build dictionary of ECB output for each byte of input */
+    if (!(dict = initDictionary())) { ERROR("initDictionary failed!"); }
+
+    for (i = 0; i < 0x100; i++) {
+        /* Concatenate y + single char onto input */
+        *(in + x_len + y_len) = (BYTE)i;
+
+        /* Encrypt single-block input */
+        encrypt(&t, in, in_len);
+
+        /* Dictionary key is t, value is i */
+        /* NOTE need to malloc "data" for dictionary because it is free'd */
+        c = init_byte(1);
+        *c = (BYTE)i;
+        dAdd(dict, t, in_len, (void *)c);
+
+        free(t);
+    }
+
+    /* Encrypt just our one-byte-short string */ 
+    encrypt(&t, in, in_len);
+
+    /* cast (void *) to desired byte value */
+    BYTE b = *(BYTE *)dLookup(dict, t, in_len);
+
+    /* Clean-up */
+    free(t);
+    free(in);
+    freeDictionary(dict);
+
+    return b;
+}
+
+/*------------------------------------------------------------------------------
+ *         Decrypt unknown string encrypted using ECB 
+ *----------------------------------------------------------------------------*/
+/* Take input of the form (your-string||unknown-string, random-key), and decrypt
+ * the unknown string */
+/* size_t simple_ECB_decrypt(BYTE **y) */
+size_t simple_ECB_decrypt(BYTE y[])
+{
+    size_t block_size = 0,
+           i = 0,
+           unk_len = 138,
+           y_len = 0; /* length of unknown string (== n_append) */
+    BYTE *p = y;
+
+    /* Detect block size */
+    block_size = getBlockSize(encryption_oracle12);
+
+    /* Confirm function is using ECB */
+    MY_ASSERT(isECB(encryption_oracle12, block_size));
+
+    /* Decrypt unknown bytes */
+    for (i = 0; i < unk_len; i++){
+        if (!(*p++ = decodeNextByte(encryption_oracle12, (const BYTE *)y, y_len, block_size))) {
+            break; 
+        }
+        y_len++;
+    }
+
+    return y_len;
+}
 
 /*==============================================================================
  *============================================================================*/

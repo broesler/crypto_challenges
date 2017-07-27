@@ -109,6 +109,7 @@ size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc)
         /* Append encrypted text to output array */
         memcpy(*y + y_len, yi, len);
         y_len += len;
+        free(yi);
     }
 
     if (!enc) {
@@ -117,7 +118,6 @@ size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc)
     }
 
     /* Clean-up */
-    free(yi);
     free(x_pad);
     OpenSSL_cleanup();
     return y_len;

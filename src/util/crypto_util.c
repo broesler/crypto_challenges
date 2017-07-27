@@ -186,7 +186,7 @@ void printall(const BYTE *s, size_t nbyte)
         if (ispchar(c)) {
             printf("%c", c);
         } else {
-            printf("\\x%0.2X", c);
+            printf("\\x%.2X", c);
         }
     }
 }

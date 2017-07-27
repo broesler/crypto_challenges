@@ -11,25 +11,29 @@ SRCDIR  = ./
 UTILDIR = ./util/
 INCLDIR = ../include/
 SSLINCL = /usr/local/opt/openssl/include
+DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
-CC = gcc
-CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
+CC = gcc-7
+CFLAGS = -Wall -pedantic -std=c99 -funsigned-char -O3
 
 # Define source files, utility files (function files)
 SRC = test_crypto1.c breakRepeatingXOR.c  test_crypto2.c 
 UTIL = crypto1.c crypto2.c aes_openssl.c $(UTILDIR)/crypto_util.c
+# UTIL += $(UTILDIR)/dictionary.c $(UTILDIR)/hash.c
 
 # Look for header files here
-OPT = -I$(INCLDIR) -I$(SSLINCL)
+OPT = -I$(INCLDIR) -I$(SSLINCL) 
+OPT += -I$(DICTINCL)
 
 # Libraries
-LDLIBS = -lcrypto -lssl
+LDLIBS = -lcrypto -lssl 
+LDLIBS += -L$(DICTINCL) -ldict
 
 # Make options
 all: test1 test2 breakRepeatingXOR types
 break: breakRepeatingXOR
-debug: DEBUG += -DLOGSTATUS -ggdb3
+debug: DEBUG += -DLOGSTATUS -Og -ggdb3
 debug: all
 verbose: DEBUG = -DVERBOSE
 verbose: debug

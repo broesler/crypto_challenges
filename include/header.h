@@ -42,9 +42,8 @@
 #define NEW(t) malloc(sizeof(t))
 
 // Check whether  s is NULL or not. Quit this program if it is NULL.
-#define MYASSERT(s)  if (!(s))   { \
-    /* fprintf(stderr,"General Assert Error at %s:line %d\n", __FILE__, __LINE__); */ \
-    fprintf(stderr,"[%s:line %d]: %s\n",  __FILE__, __LINE__, strerror(errno));  \
+#define MY_ASSERT(s)  if (!(s))   { \
+    fprintf(stderr,"[%s:line %d]: General assert error\n",  __FILE__, __LINE__);  \
     exit(EXIT_FAILURE); \
 }
 

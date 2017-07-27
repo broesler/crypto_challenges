@@ -14,7 +14,7 @@
 #include "crypto1.h"
 #include "crypto2.h"
 
-#define SRAND_INIT (0)
+#define SRAND_INIT 0
 
 /* Meta test functions */
 int CBCencrypt_test(BYTE *ptext);
@@ -50,12 +50,10 @@ int PKCS72()
     BYTE byte[] = "YELLOW SUBMARINE";
     size_t nbyte = strlen((char *)byte);
     BYTE *block = pkcs7_pad(byte, nbyte, nbyte+n_pad);
-    size_t nblock = strlen((char *)block);
-    SHOULD_BE(nblock == nbyte+n_pad);
     for (int i = 0; i < n_pad; i++) { SHOULD_BE(*(block+nbyte+i) == n_pad); }
 #ifdef LOGSTATUS
     printf("Padded string: '");
-    printall(block, nblock);
+    printall(block, nbyte);
     printf("'\n");
 #endif
     free(block);
@@ -133,8 +131,6 @@ int CBCencrypt_test(BYTE *ptext)
     SHOULD_BE(dtext_len == ptext_len);
     SHOULD_BE(!memcmp(ptext, dtext, ptext_len));
 #ifdef LOGSTATUS
-    printf("Ciphertext is:\n");
-    BIO_dump_fp(stdout, (const char *)ctext, ctext_len);
     printf("ptext_len = %zu\nctext_len = %zu\ndtext_len = %zu\n", 
             ptext_len, ctext_len, dtext_len);
     printf("ptext: '");
@@ -219,12 +215,8 @@ int EncOracle1()
     size_t ptext_len = strlen((char *)ptext);
     /* Encrypt the text with randomly-chosen algorithm */
     BYTE *ctext = NULL;
-    size_t ctext_len = encryption_oracle(&ctext, ptext, ptext_len);
+    size_t ctext_len = encryption_oracle11(&ctext, ptext, ptext_len);
     SHOULD_BE((ctext_len % BLOCK_SIZE) == 0);
-#ifdef LOGSTATUS
-    printf("Ciphertext is:\n");
-    BIO_dump_fp(stdout, (const char *)ctext, ctext_len);
-#endif
     free(ctext);
     END_TEST_CASE;
 }
@@ -234,13 +226,46 @@ int EncOracle2()
 {
     START_TEST_CASE;
     srand(SRAND_INIT);
-    BYTE ptext[48] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"; /* 48 */
-    size_t ptext_len = strlen((char *)ptext);
-    int test = is_oracle_ecb(ptext, ptext_len);
+    /* Need at least (BLOCK_SIZE % 10) + 2*BLOCK_SIZE+1 bytes == 38 here */
+    BYTE ptext[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    int test = is_oracle_ecb11(ptext, 48);
 #ifdef LOGSTATUS
     printf("is ecb? %d\n", test);
 #endif
     SHOULD_BE(test == 1); /* if srand(0), we get ECB mode guaranteed */
+    END_TEST_CASE;
+}
+
+/* Test getBlockSize */
+int GetBlockSize()
+{
+    START_TEST_CASE;
+    srand(SRAND_INIT);
+    size_t block_size = getBlockSize(encryption_oracle12);
+    SHOULD_BE(block_size == BLOCK_SIZE);
+    END_TEST_CASE;
+}
+
+/* Test isECB */
+int IsECB()
+{
+    START_TEST_CASE;
+    srand(SRAND_INIT);
+    SHOULD_BE(1 == isECB(encryption_oracle12, BLOCK_SIZE));
+    END_TEST_CASE;
+}
+
+/* Byte-at-a-time decrypt ECB */
+int OneByteECB1()
+{
+    START_TEST_CASE;
+    srand(SRAND_INIT);
+    BYTE y[1024];
+    size_t y_len = simple_ECB_decrypt(y);
+    printf("y_len = %zu\n", y_len);
+    printf("Decrypted string: \"");
+    printall(y, y_len);
+    printf("\"\n");
     END_TEST_CASE;
 }
 
@@ -259,9 +284,12 @@ int main(void)
     /* RUN_TEST(PKCS75,       "              pkcs7() 5                "); */
     /* RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1  "); */
     /* RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2  "); */
-    /* RUN_TEST(RandByte1,     "Challenge 11: randByte() 1              "); */
-    RUN_TEST(EncOracle1,      "              encryption_oracle() 1 ");
-    RUN_TEST(EncOracle2,      "              encryption_oracle() 2 ");
+    /* RUN_TEST(RandByte1,    "Challenge 11: randByte() 1             "); */
+    /* RUN_TEST(EncOracle1,   "              encryption_oracle() 1    "); */
+    /* RUN_TEST(EncOracle2,   "              encryption_oracle() 2    "); */
+    /* RUN_TEST(GetBlockSize, "              getBlockSize()           "); */
+    /* RUN_TEST(IsECB,        "              isECB()                  "); */
+    RUN_TEST(OneByteECB1,   "             simple_ECB_decrypt() 1   ");
 
     /* Count errors */
     if (!fails) {

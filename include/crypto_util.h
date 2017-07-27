@@ -22,7 +22,11 @@
 //------------------------------------------------------------------------------
 //      Type Definitions
 //------------------------------------------------------------------------------
-typedef unsigned char BYTE;
+// Use raw bytes as the key
+#ifndef byte_DEFINED
+    #define byte_DEFINED
+    typedef unsigned char BYTE;
+#endif
 
 //------------------------------------------------------------------------------
 //      Function Definitions

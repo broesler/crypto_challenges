@@ -227,7 +227,7 @@ int SingleByte1()
     SHOULD_BE(fabsf(out->score - score_expect) < tol);
     SHOULD_BE(out->file_line == 0);
 #ifdef LOGSTATUS
-    printf("key   =  0x%0.2X\n",       *out->key);
+    printf("key   =  0x%.2X\n",       *out->key);
     printf("score = %20.16f\n",        out->score);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
@@ -246,7 +246,7 @@ int FileSingleByte1()
     SHOULD_BE(!memcmp(out->plaintext, expect, strlen(expect)));
 #ifdef LOGSTATUS
     printf("line  = %3d\n",            out->file_line);
-    printf("key   =  0x%0.2X\n",       *out->key);
+    printf("key   =  0x%.2X\n",       *out->key);
     printf("score = %8.4f\n",          out->score);
     printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
