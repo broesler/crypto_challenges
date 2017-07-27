@@ -29,14 +29,14 @@ printf "\n##### UNIT TEST LOG: $(date) #####\n"
 
 # Change into util directory and test those
 cd ./util
-make clean && make 
+make clean && make debug
 make_check
 ./test_util
 pass_check "$?" "Utilities"
 cd .. # change back to src
 
 # Build the main tests in the src directory
-make clean && make
+make clean && make debug
 make_check
 
 # Run tests
