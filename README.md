@@ -62,7 +62,7 @@ machine code.
     the Matasano site.
 
 ### `include/`
-  * Header files for the C code, see descriptions of [source](#source) below.
+  * Header files for the C code, see descriptions of [source](#src/) below.
   * `header.h`: general macros for allocating memory, initializing structures,
     and error checking or throwing warnings.
   * `unit_test.h`: macros for the unit testing routines. Keeps a count of failed
@@ -93,7 +93,7 @@ machine code.
     language. I decided C instilled a bit more discipline and made me feel like
     more of a hacker. So here we are. This code is no longer maintained.
 
-### <a name="source"></a>`src/`
+### `src/`
   * The main source code for my solutions to the challenges.
   * `breakRepeatingXOR.c`: Separate file to run `breakRepeatingXOR` as
     a standalone function to accept a filename as input. I'm experimenting with
@@ -105,7 +105,7 @@ machine code.
   * `crypto2.c`: All functions solving the challenges in [Set 2](https://cryptopals.com/sets/2).
     Top-level functions are labeled where appropriate. Helper functions also
     included.
-  * `makefile`: Makefile to build all challenge solutions. See [build and run](#buildandrun)
+  * `makefile`: Makefile to build all challenge solutions. See [build and run](#build-and-run)
     below for instructions.
   * `test_all.sh`: Shell script to run all tests.
   * `test_crypto1.c`: Unit test harness for set 1 challenges.
@@ -119,11 +119,11 @@ machine code.
   * `makefile`: Makefile to build the utilities.
   * `test_util.c`: Unit test harness for the utilities.
 
-## <a name="buildandrun"></a> Build and Run ##
+## Build and Run ##
   * To build and run the challenges:
   ```shell
   $ cd src
-  $ chmod +x test_all.sh
+
   $ ./test_all.sh
   ```
   * This script will:
