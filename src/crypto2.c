@@ -17,7 +17,7 @@
 static BYTE *global_key = NULL;
 
 /*------------------------------------------------------------------------------
- *         PKCS#7 padding to block size 
+ *         Challenge 9: PKCS#7 padding to block size 
  *----------------------------------------------------------------------------*/
 BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size)
 {
@@ -35,9 +35,8 @@ BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size)
     return out;
 }
 
-
 /*------------------------------------------------------------------------------
- *         Remove PKCS#7 padding bytes 
+ *         Challenge 15: Remove PKCS#7 padding bytes 
  *----------------------------------------------------------------------------*/
 int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size)
 {
@@ -64,7 +63,7 @@ int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size)
 }
 
 /*------------------------------------------------------------------------------
- *         Encrypt AES 128-bit cipher in CBC mode 
+ *         Challenge 10: Encrypt AES 128-bit cipher in CBC mode 
  *----------------------------------------------------------------------------*/
 size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
 {
@@ -165,7 +164,6 @@ size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
     return x_len;
 }
 
-
 /*------------------------------------------------------------------------------
  *         Generate random AES key 
  *----------------------------------------------------------------------------*/
@@ -179,7 +177,7 @@ BYTE *rand_byte(size_t len)
 }
 
 /*------------------------------------------------------------------------------
- *          Encryption oracle: randomly encrypt with ECB or CBC
+ *          randomly encrypt with ECB or CBC
  *----------------------------------------------------------------------------*/
 size_t encryption_oracle11(BYTE **y, BYTE *x, size_t x_len)
 {
@@ -259,7 +257,7 @@ size_t encryption_oracle11(BYTE **y, BYTE *x, size_t x_len)
 }
 
 /*------------------------------------------------------------------------------
- *         Detect encryption_oracle mode 
+ *          Challenge 11: Detect encryption_oracle mode 
  *----------------------------------------------------------------------------*/
 int is_oracle_ecb11(BYTE *x, size_t x_len)
 {
@@ -274,7 +272,7 @@ int is_oracle_ecb11(BYTE *x, size_t x_len)
 }
 
 /*------------------------------------------------------------------------------
- *         Encryption oracle for Challenge 12 
+ *          Encryption oracle for Challenge 12 
  *----------------------------------------------------------------------------*/
 size_t encryption_oracle12(BYTE **y, BYTE *x, size_t x_len)
 {
@@ -317,7 +315,7 @@ size_t encryption_oracle12(BYTE **y, BYTE *x, size_t x_len)
 }
 
 /*------------------------------------------------------------------------------
- *         Get block size of cipher 
+ *          Get block size of cipher 
  *----------------------------------------------------------------------------*/
 /* Accepts function pointer to encryption oracle */
 size_t getBlockSize(size_t (*encrypt)(BYTE**, BYTE*, size_t))
@@ -343,7 +341,7 @@ size_t getBlockSize(size_t (*encrypt)(BYTE**, BYTE*, size_t))
 }
 
 /*------------------------------------------------------------------------------
- *         Get block size of cipher 
+ *          Get block size of cipher 
  *----------------------------------------------------------------------------*/
 /* Accepts function pointer to encryption oracle and block size */
 size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size)
@@ -360,7 +358,7 @@ size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size)
 }
 
 /*------------------------------------------------------------------------------
- *         Get single 
+ *          Get single 
  *----------------------------------------------------------------------------*/
 BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y, 
         size_t y_len, size_t block_size)
@@ -416,7 +414,7 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
 }
 
 /*------------------------------------------------------------------------------
- *         Decrypt unknown string encrypted using ECB 
+ *         Challenge 12: Decrypt unknown string encrypted using ECB 
  *----------------------------------------------------------------------------*/
 /* Take input of the form (your-string||unknown-string, random-key), and decrypt
  * the unknown string */
@@ -445,6 +443,114 @@ size_t simple_ECB_decrypt(BYTE y[])
 
     return y_len;
 }
+
+/*------------------------------------------------------------------------------
+ *          Key=value parser
+ *----------------------------------------------------------------------------*/
+char *kv_parse(const char *str)
+{
+    char *kv_obj = NULL,
+         *brk,
+         *buf,
+         *pair,
+         *sep = "&";        /* token character */
+    char key[MAX_KEY_LEN+1],
+         val[MAX_KEY_LEN+1],
+         line[MAX_PAGE_NUM];
+    int val_int = 0;
+    size_t np,
+           n_cpy,
+           n_pair,
+           kv_obj_len;
+
+    /* format string == i.e. "%127[^=]=%127s" */
+    char fmt_key[] = "%" XSTR(MAX_KEY_LEN) "[^=]=",
+         fmt_val_str[] = "%*[^=]=%" XSTR(MAX_KEY_LEN) "s";
+
+    /* Get number of pairs and total output length (incl extra chars) */
+    n_pair = cntchr(str, '&') + 1;
+    kv_obj_len = 3 + strlen(str) + 5*n_pair;
+
+    /* Copy input into buffer so we don't destroy it */
+    buf = init_str(kv_obj_len);
+    strlcpy(buf, str, kv_obj_len);
+
+    /* Initialize output string */
+    kv_obj = init_str(kv_obj_len);
+    strlcpy(kv_obj, "{\n", kv_obj_len);
+
+    size_t line_len = strlen(kv_obj); /* == 2? */
+
+    /* Tokenize string on '&' */
+    for (pair = strtok_r(buf, sep, &brk);
+         pair;
+         pair = strtok_r(NULL, sep, &brk))
+    {
+        /* clear buffers */
+        BZERO(key, MAX_KEY_LEN);
+        BZERO(val, MAX_KEY_LEN);
+        BZERO(line, MAX_PAGE_NUM);
+
+        /* Read in key */
+        if ((1 != sscanf(pair, fmt_key, key))) { ERROR("sscanf failed!"); }
+
+        /* if key is "uid", read in int, otherwise read in string */
+        if (!strcmp(key, "uid")) {
+            sscanf(pair, "%*[^=]=%d", &val_int);  /* ignore key */
+            np = snprintf(line, MAX_PAGE_NUM, "\t%s: %d", key, val_int);
+        } else {
+            sscanf(pair, fmt_val_str, val);
+            np = snprintf(line, MAX_PAGE_NUM, "\t%s: '%s'", key, val);
+        }
+        
+        if (MAX_PAGE_NUM < np) { ERROR("Truncated input!"); }
+
+        /* if we're on last pair, no comma */
+        char *out_end = brk ? ",\n" : "\n";
+        if (MAX_PAGE_NUM < snprintf(line + np, MAX_PAGE_NUM, "%s", out_end)) { ERROR("Truncated input!"); }
+
+        /* append line to object */
+        if (kv_obj_len < (n_cpy = strlcpy(kv_obj + line_len, line, kv_obj_len))) { ERROR("Truncated input"); }
+
+        line_len += n_cpy; 
+    }
+
+    /* Final brace */
+    if (kv_obj_len < (n_cpy = strlcpy(kv_obj + line_len, "}", kv_obj_len))) { ERROR("Truncated input"); }
+
+    free(buf);
+    return kv_obj;
+}
+
+/*------------------------------------------------------------------------------
+ *          Key=value encoder (reverse of parser)
+ *----------------------------------------------------------------------------*/
+/* char *kv_encode(const char *str) */
+/* { */
+/*     return kv_enc; */
+/* } */
+
+/*------------------------------------------------------------------------------
+ *          Encode a user profile in k=v format
+ *----------------------------------------------------------------------------*/
+/* char *profile_for(const char *email) */
+/* { */
+/*     return kv_enc; */
+/* } */
+
+/*------------------------------------------------------------------------------
+ *          Encrypt encoded profile under random key
+ *----------------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------------------
+ *          Decrypt and parse user profile 
+ *----------------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------------------
+ *          Challenge 13: ECB cut-and-paste
+ *----------------------------------------------------------------------------*/
+/* Make a "role=admin" profile but using only user input to profile_for() to
+ * generate valid ciphertexts, then swap ciphertexts to get "role: 'admin'" */
 
 /*==============================================================================
  *============================================================================*/

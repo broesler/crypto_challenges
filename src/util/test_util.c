@@ -174,6 +174,16 @@ int Strrmchr1()
     END_TEST_CASE;
 }
 
+/* Test count chars */
+int CntChr1()
+{
+    START_TEST_CASE;
+    char str[] = "this is a test.";
+    size_t cnt = cntchr(str, 'i');
+    SHOULD_BE(cnt == 2);
+    END_TEST_CASE;
+}
+
 /* Test AES in ECB mode decryption for single block */
 int AESDecrypt1()
 {
@@ -227,6 +237,7 @@ int main(void)
     RUN_TEST(Strnrepeat1,    "strnrepeat_hex()    ");
     RUN_TEST(HammingWeight1, "hamming_dist()      ");
     RUN_TEST(Strrmchr1,      "strrmchr()          ");
+    RUN_TEST(CntChr1,        "cntchr()            ");
     RUN_TEST(AESDecrypt1,    "aes_128_ecb_block() ");
 
     /* Count errors */

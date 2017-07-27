@@ -63,6 +63,10 @@ size_t simple_ECB_decrypt(BYTE y[]);
 // Get next byte from one-byte-at-a-time ECB decryption
 BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y, 
         size_t y_len, size_t block_size);
+
+// Parse key=value pairs
+char *kv_parse(const char *str);
+
 #endif
 //==============================================================================
 //==============================================================================

@@ -16,12 +16,15 @@
 //      Constants
 //------------------------------------------------------------------------------
 #define NUM_LETTERS 27      // include space!!
-#define MAX_KEY_LEN 100
-#define MAX_PAGE_NUM 1000
-#define MAX_WORD_LEN 10000
+#define MAX_KEY_LEN 128     // All powers of 2
+#define MAX_PAGE_NUM 1024
+#define MAX_WORD_LEN 16384
 
 // Take minimum, but don't bother with type checking
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+#define XSTR(X) STR(X)
+#define STR(X) #X
 
 //------------------------------------------------------------------------------
 //      Structures

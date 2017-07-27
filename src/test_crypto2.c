@@ -272,6 +272,67 @@ int OneByteECB1()
     END_TEST_CASE;
 }
 
+/* Test Key=value parser */
+int KVParse1()
+{
+    START_TEST_CASE;
+    char in[] = "foo=bar&baz=qux&zap=zazzle&uid=56";
+    char *out = kv_parse(in);
+    char expect[] = "{\n\tfoo: 'bar',\n\tbaz: 'qux',\n\tzap: 'zazzle',\n\tuid: 56\n}";
+    SHOULD_BE(!strcmp(out, expect));
+#ifdef LOGSTATUS
+    printf("Got:\n%s\nExpect:\n%s\n", out, expect);
+#endif
+    free(out);
+    END_TEST_CASE;
+}
+
+/* #<{(| Test Key=value encoding (reverse of parser) |)}># */
+/* int KVEncode1() */
+/* { */
+/*     START_TEST_CASE; */
+/*     #<{(| char in[] = "email=foo@bar.com&uid=56&role=user"; |)}># */
+/*     #<{(| char *kv_p = kv_parse(in); |)}># */
+/*     char in[] = "{\n\temail: 'foo@bar.com',\n\tuid: 56,\n\trole: 'user'\n}"; */
+/*     char *out = kv_encode(kv_p); */
+/*     char expect[] = "email=foo@bar.com&uid=56&role=user"; */
+/*     SHOULD_BE(!strcmp(out, expect)); */
+/* #ifdef LOGSTATUS */
+/*     printf("Got:\n%s\nExpect:\n%s\n", out, expect); */
+/* #endif */
+/*     END_TEST_CASE; */
+/* } */
+
+/* #<{(| Test profile creation |)}># */
+/* int ProfileFor1() */
+/* { */
+/*     START_TEST_CASE; */
+/*     char in[] = "foo@bar.com"; */
+/*     char *out = profile_for(in); */
+/*     char expect[] = "email=foo@bar.com&uid=56&role=user"; */
+/*     SHOULD_BE(!strcmp(out, expect)); */
+/* #ifdef LOGSTATUS */
+/*     printf("Got:\n%s\nExpect:\n%s\n", out, expect); */
+/* #endif */
+/*     END_TEST_CASE; */
+/* } */
+/*  */
+/* #<{(| Test profile creation |)}># */
+/* int ProfileFor2() */
+/* { */
+/*     START_TEST_CASE; */
+/*     char in[] = "foo@bar.com&role=admin"; */
+/*     char *out = profile_for(in); */
+/*     char expect[] = "email=foo@bar.com&uid=56&role=user"; */
+/*     SHOULD_BE(!strcmp(out, expect)); */
+/* #ifdef LOGSTATUS */
+/*     printf("Got:\n%s\nExpect:\n%s\n", out, expect); */
+/* #endif */
+/*     END_TEST_CASE; */
+/* } */
+
+
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -282,19 +343,20 @@ int main(void)
 
     /* Run OpenSSL lines here for speed */
     OpenSSL_init();
-    RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1                ");
-    RUN_TEST(PKCS72,       "              pkcs7() 2                ");
-    RUN_TEST(PKCS73,       "              pkcs7() 3                ");
-    RUN_TEST(PKCS74,       "              pkcs7() 4                ");
-    RUN_TEST(PKCS75,       "              pkcs7() 5                ");
-    RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1  ");
-    RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2  ");
-    RUN_TEST(RandByte1,    "Challenge 11: randByte() 1             ");
-    RUN_TEST(EncOracle1,   "              encryption_oracle() 1    ");
-    RUN_TEST(EncOracle2,   "              encryption_oracle() 2    ");
-    RUN_TEST(GetBlockSize, "              getBlockSize()           ");
-    RUN_TEST(IsECB,        "              isECB()                  ");
-    RUN_TEST(OneByteECB1,  "              simple_ECB_decrypt() 1   ");
+    /* RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1                "); */
+    /* RUN_TEST(PKCS72,       "              pkcs7() 2                "); */
+    /* RUN_TEST(PKCS73,       "              pkcs7() 3                "); */
+    /* RUN_TEST(PKCS74,       "              pkcs7() 4                "); */
+    /* RUN_TEST(PKCS75,       "              pkcs7() 5                "); */
+    /* RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1  "); */
+    /* RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2  "); */
+    /* RUN_TEST(RandByte1,    "Challenge 11: randByte() 1             "); */
+    /* RUN_TEST(EncOracle1,   "              encryption_oracle() 1    "); */
+    /* RUN_TEST(EncOracle2,   "              encryption_oracle() 2    "); */
+    /* RUN_TEST(GetBlockSize, "              getBlockSize()           "); */
+    /* RUN_TEST(IsECB,        "              isECB()                  "); */
+    /* RUN_TEST(OneByteECB1,  "              simple_ECB_decrypt() 1   "); */
+    RUN_TEST(KVParse1,     "              kv_parse() 1   ");
     OpenSSL_cleanup();
 
     /* Count errors */
