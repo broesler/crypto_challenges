@@ -269,7 +269,7 @@ int OneByteECB1()
     SHOULD_BE(!memcmp(y, expect, y_len));
 #ifdef LOGSTATUS
     printf("y_len = %zu\n", y_len);
-    printf("Decrypted string: \"");
+    printf("Got: \"");
     printall(y, y_len);
     printf("\"\n");
 #endif
@@ -284,19 +284,22 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    /* RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1                "); */
-    /* RUN_TEST(PKCS72,       "              pkcs7() 2                "); */
-    /* RUN_TEST(PKCS73,       "              pkcs7() 3                "); */
-    /* RUN_TEST(PKCS74,       "              pkcs7() 4                "); */
-    /* RUN_TEST(PKCS75,       "              pkcs7() 5                "); */
-    /* RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1  "); */
-    /* RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2  "); */
-    /* RUN_TEST(RandByte1,    "Challenge 11: randByte() 1             "); */
-    /* RUN_TEST(EncOracle1,   "              encryption_oracle() 1    "); */
-    /* RUN_TEST(EncOracle2,   "              encryption_oracle() 2    "); */
-    /* RUN_TEST(GetBlockSize, "              getBlockSize()           "); */
-    /* RUN_TEST(IsECB,        "              isECB()                  "); */
+    /* Run OpenSSL lines here for speed */
+    OpenSSL_init();
+    RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1                ");
+    RUN_TEST(PKCS72,       "              pkcs7() 2                ");
+    RUN_TEST(PKCS73,       "              pkcs7() 3                ");
+    RUN_TEST(PKCS74,       "              pkcs7() 4                ");
+    RUN_TEST(PKCS75,       "              pkcs7() 5                ");
+    RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1  ");
+    RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2  ");
+    RUN_TEST(RandByte1,    "Challenge 11: randByte() 1             ");
+    RUN_TEST(EncOracle1,   "              encryption_oracle() 1    ");
+    RUN_TEST(EncOracle2,   "              encryption_oracle() 2    ");
+    RUN_TEST(GetBlockSize, "              getBlockSize()           ");
+    RUN_TEST(IsECB,        "              isECB()                  ");
     RUN_TEST(OneByteECB1,   "             simple_ECB_decrypt() 1   ");
+    OpenSSL_cleanup();
 
     /* Count errors */
     if (!fails) {

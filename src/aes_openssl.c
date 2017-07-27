@@ -96,8 +96,6 @@ size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc)
     /* Pad the input (n_pad only non-zero for last block) */
     BYTE *x_pad = pkcs7_pad(x, x_len, BLOCK_SIZE);
 
-    OpenSSL_init();
-
     /* Encrypt blocks of plaintext using Chain Block Cipher (CBC) mode */
     for (size_t i = 0; i < n_blocks; i++) {
         /* Input blocks */
@@ -119,7 +117,6 @@ size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc)
 
     /* Clean-up */
     free(x_pad);
-    OpenSSL_cleanup();
     return y_len;
 }
 
