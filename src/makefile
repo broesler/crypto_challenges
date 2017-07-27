@@ -15,7 +15,7 @@ DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6
 
 # Set the compiler options
 CC = gcc-7
-CFLAGS = -Wall -pedantic -std=c99 -funsigned-char -O3
+CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 
 # Define source files, utility files (function files)
 SRC = test_crypto1.c breakRepeatingXOR.c  test_crypto2.c 

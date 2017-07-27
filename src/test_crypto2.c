@@ -262,10 +262,17 @@ int OneByteECB1()
     srand(SRAND_INIT);
     BYTE y[1024];
     size_t y_len = simple_ECB_decrypt(y);
+    BYTE expect[] = "Rollin' in my 5.0\n" \
+                    "With my rag-top down so my hair can blow\n" \
+                    "The girlies on standby waving just to say hi\n" \
+                    "Did you stop? No, I just drove by\n";
+    SHOULD_BE(!memcmp(y, expect, y_len));
+#ifdef LOGSTATUS
     printf("y_len = %zu\n", y_len);
     printf("Decrypted string: \"");
     printall(y, y_len);
     printf("\"\n");
+#endif
     END_TEST_CASE;
 }
 

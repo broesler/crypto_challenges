@@ -376,10 +376,10 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
     /* Build input byte base (n-bytes short)
      * Input is (block_size-1) known bytes + 1 unknown */
     x_len = block_size - (y_len % block_size) - 1;
-    in_len = x_len + y_len + 1;
+    in_len = x_len + y_len + 1;  /* == n_block*block_size */
 
     in = init_byte(in_len);
-    for (i = 0; i < x_len; i++) { *(in+i) = 'A'; }
+    for (i = 0; i < x_len; i++) { *(in+i) = '0'; }
     memcpy(in + x_len, y, y_len);
 
     /* Build dictionary of ECB output for each byte of input */
@@ -402,7 +402,7 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
     }
 
     /* Encrypt just our one-byte-short string */ 
-    encrypt(&t, in, in_len);
+    encrypt(&t, in, x_len);
 
     /* cast (void *) to desired byte value */
     BYTE b = *(BYTE *)dLookup(dict, t, in_len);
