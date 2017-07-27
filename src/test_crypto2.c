@@ -287,21 +287,21 @@ int KVParse1()
     END_TEST_CASE;
 }
 
-/* #<{(| Test Key=value encoding (reverse of parser) |)}># */
-/* int KVEncode1() */
-/* { */
-/*     START_TEST_CASE; */
-/*     #<{(| char in[] = "email=foo@bar.com&uid=56&role=user"; |)}># */
-/*     #<{(| char *kv_p = kv_parse(in); |)}># */
-/*     char in[] = "{\n\temail: 'foo@bar.com',\n\tuid: 56,\n\trole: 'user'\n}"; */
-/*     char *out = kv_encode(kv_p); */
-/*     char expect[] = "email=foo@bar.com&uid=56&role=user"; */
-/*     SHOULD_BE(!strcmp(out, expect)); */
-/* #ifdef LOGSTATUS */
-/*     printf("Got:\n%s\nExpect:\n%s\n", out, expect); */
-/* #endif */
-/*     END_TEST_CASE; */
-/* } */
+/* Test Key=value encoding (reverse of parser) */
+int KVEncode1()
+{
+    START_TEST_CASE;
+    /* char in[] = "email=foo@bar.com&uid=56&role=user"; */
+    /* char *kv_p = kv_parse(in); */
+    char kv_p[] = "{\n\temail: 'foo@bar.com',\n\tuid: 56,\n\trole: 'user'\n}";
+    char *out = kv_encode(kv_p);
+    char expect[] = "email=foo@bar.com&uid=56&role=user";
+    SHOULD_BE(!strcmp(out, expect));
+#ifdef LOGSTATUS
+    printf("Got:\n%s\nExpect:\n%s\n", out, expect);
+#endif
+    END_TEST_CASE;
+}
 
 /* #<{(| Test profile creation |)}># */
 /* int ProfileFor1() */
@@ -356,7 +356,8 @@ int main(void)
     /* RUN_TEST(GetBlockSize, "              getBlockSize()           "); */
     /* RUN_TEST(IsECB,        "              isECB()                  "); */
     /* RUN_TEST(OneByteECB1,  "              simple_ECB_decrypt() 1   "); */
-    RUN_TEST(KVParse1,     "              kv_parse() 1   ");
+    RUN_TEST(KVParse1,     "              kv_parse()     ");
+    RUN_TEST(KVEncode1,    "              kv_encode()    ");
     OpenSSL_cleanup();
 
     /* Count errors */

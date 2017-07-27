@@ -32,7 +32,7 @@ LDLIBS += -L$(DICTINCL) -ldict
 # Make options
 all: test1 test2 breakRepeatingXOR types
 break: breakRepeatingXOR
-debug: DEBUG += -DLOGSTATUS -Og -ggdb3
+debug: DEBUG += -DLOGSTATUS -ggdb3
 debug: all
 verbose: DEBUG = -DVERBOSE
 verbose: debug

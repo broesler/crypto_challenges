@@ -64,8 +64,11 @@ size_t simple_ECB_decrypt(BYTE y[]);
 BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y, 
         size_t y_len, size_t block_size);
 
-// Parse key=value pairs
+// Parse key=value pairs (reverse of encode)
 char *kv_parse(const char *str);
+
+// Encode key=value object as '&'-delimited string (reverse of parse)
+char *kv_encode(const char *str);
 
 #endif
 //==============================================================================

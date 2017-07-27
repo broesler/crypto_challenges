@@ -455,31 +455,28 @@ char *kv_parse(const char *str)
          *pair,
          *sep = "&";        /* token character */
     char key[MAX_KEY_LEN+1],
-         val[MAX_KEY_LEN+1],
-         line[MAX_PAGE_NUM];
+         val[MAX_KEY_LEN+1];
     int val_int = 0;
-    size_t np,
-           n_cpy,
-           n_pair,
-           kv_obj_len;
+    size_t n_pair,
+           kv_obj_len,
+           line_len;
 
     /* format string == i.e. "%127[^=]=%127s" */
     char fmt_key[] = "%" XSTR(MAX_KEY_LEN) "[^=]=",
          fmt_val_str[] = "%*[^=]=%" XSTR(MAX_KEY_LEN) "s";
 
     /* Get number of pairs and total output length (incl extra chars) */
-    n_pair = cntchr(str, '&') + 1;
+    n_pair = cntchr(str, *sep) + 1;
     kv_obj_len = 3 + strlen(str) + 5*n_pair;
 
-    /* Copy input into buffer so we don't destroy it */
-    buf = init_str(kv_obj_len);
-    strlcpy(buf, str, kv_obj_len);
+    /* Copy input into buffer so we don't destroy it with strtok */
+    buf = init_str(strlen(str));
+    strlcpy(buf, str, strlen(str));
 
     /* Initialize output string */
     kv_obj = init_str(kv_obj_len);
     strlcpy(kv_obj, "{\n", kv_obj_len);
-
-    size_t line_len = strlen(kv_obj); /* == 2? */
+    line_len = 2;   /* 2 chars just appended */
 
     /* Tokenize string on '&' */
     for (pair = strtok_r(buf, sep, &brk);
@@ -489,34 +486,26 @@ char *kv_parse(const char *str)
         /* clear buffers */
         BZERO(key, MAX_KEY_LEN);
         BZERO(val, MAX_KEY_LEN);
-        BZERO(line, MAX_PAGE_NUM);
 
         /* Read in key */
-        if ((1 != sscanf(pair, fmt_key, key))) { ERROR("sscanf failed!"); }
+        sscanf(pair, fmt_key, key);
 
-        /* if key is "uid", read in int, otherwise read in string */
+        /* if key is "uid", val is int, otherwise val is string */
         if (!strcmp(key, "uid")) {
             sscanf(pair, "%*[^=]=%d", &val_int);  /* ignore key */
-            np = snprintf(line, MAX_PAGE_NUM, "\t%s: %d", key, val_int);
+            line_len += snprintf(kv_obj + line_len, kv_obj_len - line_len, "\t%s: %d", key, val_int);
         } else {
             sscanf(pair, fmt_val_str, val);
-            np = snprintf(line, MAX_PAGE_NUM, "\t%s: '%s'", key, val);
+            line_len += snprintf(kv_obj + line_len, kv_obj_len - line_len, "\t%s: '%s'", key, val);
         }
-        
-        if (MAX_PAGE_NUM < np) { ERROR("Truncated input!"); }
 
         /* if we're on last pair, no comma */
         char *out_end = brk ? ",\n" : "\n";
-        if (MAX_PAGE_NUM < snprintf(line + np, MAX_PAGE_NUM, "%s", out_end)) { ERROR("Truncated input!"); }
-
-        /* append line to object */
-        if (kv_obj_len < (n_cpy = strlcpy(kv_obj + line_len, line, kv_obj_len))) { ERROR("Truncated input"); }
-
-        line_len += n_cpy; 
+        line_len += strlcpy(kv_obj + line_len, out_end, kv_obj_len - line_len);
     }
 
     /* Final brace */
-    if (kv_obj_len < (n_cpy = strlcpy(kv_obj + line_len, "}", kv_obj_len))) { ERROR("Truncated input"); }
+    strlcpy(kv_obj + line_len, "}", kv_obj_len - line_len);
 
     free(buf);
     return kv_obj;
@@ -525,10 +514,69 @@ char *kv_parse(const char *str)
 /*------------------------------------------------------------------------------
  *          Key=value encoder (reverse of parser)
  *----------------------------------------------------------------------------*/
-/* char *kv_encode(const char *str) */
-/* { */
-/*     return kv_enc; */
-/* } */
+char *kv_encode(const char *str)
+{
+    char *kv_enc = NULL,
+         *brk,
+         *buf,
+         *pair,
+         *sep = ",";        /* token character */
+    char key[MAX_KEY_LEN+1],
+         val[MAX_KEY_LEN+1];
+    size_t n_pair,
+           kv_enc_len,
+           line_len;
+
+    /* format string == i.e. "%127[^=]=%127s" */
+    char fmt_key[] = "\t%" XSTR(MAX_KEY_LEN) "[^:]:",
+         fmt_val_str[] = "%*[^']\'%" XSTR(MAX_KEY_LEN) "[^\']s\',";
+
+    /* Get number of pairs and total output length (incl extra chars) */
+    /* ASSUME keys and values do NOT have commas in them... */
+    n_pair = cntchr(str, *sep) + 1;
+    kv_enc_len = strlen(str) - 3 - 5*n_pair;
+
+    /* Copy input into buffer so we don't destroy it */
+    if (strncmp("{\n", str, 2)) { ERROR("kv pairs not properly formatted!"); }
+    buf = init_str(strlen(str));
+    strlcpy(buf, str+2, strlen(str)); /* skip initial brace */
+
+    /* Initialize output string */
+    kv_enc = init_str(kv_enc_len);
+    line_len = 0;
+
+    /* Tokenize string on ',' */
+    for (pair = strtok_r(buf, sep, &brk);
+         pair;
+         pair = strtok_r(NULL, sep, &brk))
+    {
+        /* clear buffers */
+        BZERO(key, MAX_KEY_LEN);
+        BZERO(val, MAX_KEY_LEN);
+
+        /* Read in key */
+        sscanf(pair, fmt_key, key);
+
+        /* if key is "uid", val is int, otherwise val is string */
+        if (!strcmp(key, "uid")) {
+            sscanf(pair, "%*[^:]: %s", val);  /* no single quotes on int */
+        } else {
+            sscanf(pair, fmt_val_str, val);   /* yes single quotes on str */
+        }
+
+        /* Append key-value pairs to line */
+        line_len += snprintf(kv_enc + line_len, kv_enc_len - line_len, "%s=%s", key, val);
+
+        /* unless we're at the end, add an ampersand */
+        if (brk) { 
+            *(kv_enc + line_len) = '&';
+            line_len++;
+        }
+    }
+
+    free(buf);
+    return kv_enc;
+}
 
 /*------------------------------------------------------------------------------
  *          Encode a user profile in k=v format
