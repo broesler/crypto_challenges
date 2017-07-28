@@ -85,8 +85,6 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
     /* pad byte array to multiple of BLOCK_SIZE */
     BYTE *x_pad = pkcs7_pad(x, x_len, BLOCK_SIZE);
 
-    OpenSSL_init();
-
     /* Encrypt blocks of plaintext using Chain Block Cipher (CBC) mode */
     for (size_t i = 0; i < n_blocks; i++) {
         /* Input blocks */
@@ -110,7 +108,7 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
     /* Clean-up */
     free(yi);
     free(x_pad);
-    OpenSSL_cleanup();
+
     return y_len;
 }
 
@@ -132,8 +130,6 @@ size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
 
     /* initialize output byte array with one extra block */
     *x = init_byte(BLOCK_SIZE*(n_blocks+1));
-
-    OpenSSL_init();
 
     /* Encrypt blocks of plaintext using Chain Block Cipher (CBC) mode */
     for (size_t i = 0; i < n_blocks; i++) {
@@ -159,8 +155,6 @@ size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
     int n_pad = pkcs7_rmpad(*x, x_len, BLOCK_SIZE); 
     x_len -= n_pad;
 
-    /* Clean-up */
-    OpenSSL_cleanup();
     return x_len;
 }
 
@@ -226,14 +220,14 @@ size_t encryption_oracle11(BYTE **y, BYTE *x, size_t x_len)
 
     if (heads) {
 #ifdef LOGSTATUS
-        printf("[oracle]: Encrypting in ECB mode\n");
+        LOG("Encrypting in ECB mode");
 #endif
         /* Use ECB mode */
         y_len = aes_128_ecb_cipher(y, x_aug, x_aug_len, key, 1);
 
     } else {
 #ifdef LOGSTATUS
-        printf("[oracle]: Encrypting in CBC mode\n");
+        LOG("Encrypting in ECB mode");
 #endif
         /* Generate random IV */
         iv = rand_byte(BLOCK_SIZE);
@@ -243,7 +237,7 @@ size_t encryption_oracle11(BYTE **y, BYTE *x, size_t x_len)
     }
 
 #ifdef VERBOSE
-    printf("Oracle ciphertext is:\n");
+    LOG("Ciphertext is:");
     BIO_dump_fp(stdout, (const char *)*y, y_len);
 #endif
 
@@ -441,6 +435,7 @@ size_t simple_ECB_decrypt(BYTE y[])
         y_len++;
     }
 
+    free(global_key);
     return y_len;
 }
 

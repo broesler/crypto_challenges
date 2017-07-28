@@ -205,7 +205,7 @@ int AESDecrypt1()
     START_TEST_CASE;
     BYTE ptext[] = "Firetruck races!"; /* 16 bytes */
     size_t ptext_len = strlen((char *)ptext);
-    OpenSSL_init();
+    /* OpenSSL_init(); */
     BYTE key[] = "YELLOW SUBMARINE"; /* 16-bit key */
     /*---------- Encrypt the plaintext ----------*/
     BYTE *ctext = NULL;
@@ -229,7 +229,7 @@ int AESDecrypt1()
     printf("'\n");
 #endif
     /* Clean up */
-    OpenSSL_cleanup();
+    /* OpenSSL_cleanup(); */
     free(ctext);
     free(dtext);
     END_TEST_CASE;

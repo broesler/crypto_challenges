@@ -27,7 +27,7 @@
 #define min(x,y)   ((x)>(y))?(y):(x)
 
 // Print  s together with the source file name and the current line number.
-#define LOG(s)  printf("\033[0;34m[%s:%d]\033[0m %s\n", __FILE__, __LINE__, s)
+#define LOG(s)  printf("\033[0;34m[%s @ %s:%d]\033[0m %s\n", __func__,  __FILE__, __LINE__, s)
 
 // Print  s together with the source file name and the current line number.
 #define ERROR(s) do { \

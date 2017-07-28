@@ -264,7 +264,6 @@ int OneByteECB1()
                     "Did you stop? No, I just drove by\n";
     SHOULD_BE(!memcmp(y, expect, y_len));
 #ifdef LOGSTATUS
-    printf("y_len = %zu\n", y_len);
     printf("Got: \"");
     printall(y, y_len);
     printf("\"\n");
@@ -293,13 +292,14 @@ int KVEncode1()
     START_TEST_CASE;
     char in[] = "email=foo@bar.com&uid=56&role=user";
     char *kv_p = kv_parse(in);
-    /* char kv_p[] = "{\n\temail: 'foo@bar.com',\n\tuid: 56,\n\trole: 'user'\n}"; */
     char *out = kv_encode(kv_p);
     char expect[] = "email=foo@bar.com&uid=56&role=user";
     SHOULD_BE(!strcmp(out, expect));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", out, expect);
 #endif
+    free(kv_p);
+    free(out);
     END_TEST_CASE;
 }
 
@@ -343,6 +343,7 @@ int EDBCutAndPaste1()
 #ifdef LOGSTATUS
     printf("Got:\n%s\nExpect:\n%s\n", out, expect);
 #endif
+    free(out);
     END_TEST_CASE;
 }
 
@@ -357,7 +358,6 @@ int main(void)
     int total = 0;
 
     /* Run OpenSSL lines here for speed */
-    OpenSSL_init();
     RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1                ");
     RUN_TEST(PKCS72,       "              pkcs7() 2                ");
     RUN_TEST(PKCS73,       "              pkcs7() 3                ");
@@ -376,7 +376,6 @@ int main(void)
     RUN_TEST(ProfileFor1,  "              profile_for() 1          ");
     RUN_TEST(ProfileFor2,  "              profile_for() 2          ");
     RUN_TEST(EDBCutAndPaste1,  "             make_admin_profile()  ");
-    OpenSSL_cleanup();
 
     /* Count errors */
     if (!fails) {
