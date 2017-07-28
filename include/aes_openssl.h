@@ -32,6 +32,15 @@ void handleErrors(void);
 // AES 128-bit ECB-mode encrypt/decrypt single block
 size_t aes_128_ecb_block(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int enc);
 
+//------------------------------------------------------------------------------
+//      Padding challenges
+//------------------------------------------------------------------------------
+// Challenge 9: PKCS#7 padding to block size 
+BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size);
+
+// Challenge 15: Remove PKCS#7 padding
+int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size);
+
 #endif
 //==============================================================================
 //==============================================================================

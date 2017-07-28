@@ -16,51 +16,6 @@
 /* Global key used in encryption_oracle12 */
 static BYTE *global_key = NULL;
 
-/*------------------------------------------------------------------------------
- *         Challenge 9: PKCS#7 padding to block size 
- *----------------------------------------------------------------------------*/
-BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size)
-{
-    BYTE n_pad = block_size - (nbyte % block_size);
-
-    BYTE *out = init_byte(nbyte + n_pad);
-    memcpy(out, byte, nbyte);
-    BYTE *p = out + nbyte;      /* start at end of original byte array */
-
-    /* Add N-bytes of char N */
-    for (int i = 0; i < n_pad; i++) {
-        *p++ = n_pad;
-    }
-
-    return out;
-}
-
-/*------------------------------------------------------------------------------
- *         Challenge 15: Remove PKCS#7 padding bytes 
- *----------------------------------------------------------------------------*/
-int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size)
-{
-    int n_pad = byte[nbyte-1];      /* last byte is number of pads */
-    if (n_pad <= block_size) {
-        for (int i = 0; i < n_pad; i++) {
-            /* If a byte isn't the same as the pad byte, throw warning */
-            if (byte[nbyte-1-i] != n_pad) {
-#ifdef LOGSTATUS
-                printf("byte = \"");
-                printall(byte, nbyte);
-                printf("\"\n");
-                WARNING("Padding is invalid!");
-#endif
-                return 0;
-            }
-        }
-        /* Otherwise we've reached the end of the bytes, add a NULL */
-        byte[nbyte-n_pad] = '\0';
-        return n_pad;
-    } else {
-        return 0;
-    }        
-}
 
 /*------------------------------------------------------------------------------
  *         Challenge 10: Encrypt AES 128-bit cipher in CBC mode 

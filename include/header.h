@@ -11,7 +11,7 @@
 #ifndef _HEADER_H_
 #define _HEADER_H_
 
-#include <errno.h>
+#include <ctype.h>
 #include <memory.h>     // needed for memset()
 #include <sys/types.h>
 #include <unistd.h>

@@ -28,6 +28,9 @@ test1
 test2
 ruby_test
 breakRepeatingXOR
+aes_ecb_file
+findECB
+findSingleByteXOR
 
 # Data directory
 data/

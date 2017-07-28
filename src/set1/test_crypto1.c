@@ -236,24 +236,6 @@ int SingleByte1()
     END_TEST_CASE;
 }
 
-/* Challenge 4: This function tests the decoding of multiple strings in a file */
-int FileSingleByte1()
-{
-    START_TEST_CASE;
-    char filename[] = "../data/4.txt";
-    char expect[] = "Now that the party is jumping\n";
-    XOR_NODE *out = findSingleByteXOR(filename);
-    SHOULD_BE(!memcmp(out->plaintext, expect, strlen(expect)));
-#ifdef LOGSTATUS
-    printf("line  = %3d\n",            out->file_line);
-    printf("key   =  0x%.2X\n",       *out->key);
-    printf("score = %8.4f\n",          out->score);
-    printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
-#endif
-    free(out);
-    END_TEST_CASE;
-}
-
 /* Challenge 5: This function tests the implementation of repeating-key XOR */
 int RepeatingKeyXOR1()
 {
@@ -320,44 +302,6 @@ int BreakRepeatingXOR1()
     END_TEST_CASE;
 }
 
-/* Challenge 6: Test break repeating key XOR */
-int BreakRepeatingXOR2()
-{
-    START_TEST_CASE;
-    /*---------- Read in b64 from file and convert to byte array ----------*/
-    char b64_file[] = "../data/6.txt";
-    char *b64 = NULL;
-    unsigned long file_length = fileToString(&b64, b64_file);
-    SHOULD_BE(file_length == 3900);
-    char *b64_clean = strrmchr(b64, "\n"); /* strip newlines */
-    SHOULD_BE(strlen(b64_clean) == 3836);
-    BYTE *byte = NULL;
-    size_t nbyte = b642byte(&byte, b64_clean);
-    /* Read in expected file (hand-checked before) */
-    char *expect = NULL;
-    (void)fileToString(&expect, "../data/play_that_funky_music.txt");
-    char key_expect[] = "Terminator X: Bring the noise";
-    /*---------- Break the code! ----------*/
-    XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
-    SHOULD_BE(!memcmp(out->key, key_expect, out->key_byte));
-    SHOULD_BE(!memcmp(out->plaintext, expect, nbyte));
-    SHOULD_BE(out->score == FLT_MAX);
-    SHOULD_BE(out->file_line == 0);
-#ifdef LOGSTATUS
-    char *key_hex = byte2hex(out->key, out->key_byte);
-    printf("----------------------------------------\n");
-    printf("key   = 0x%s\n      = %s\n", key_hex, out->key);
-    printf("Got:\n%s\n", out->plaintext);
-    free(key_hex);
-#endif
-    free(b64);
-    free(b64_clean);
-    free(byte);
-    free(out);
-    free(expect);
-    END_TEST_CASE;
-}
-
 /* Test all AES en/decrypt cases */
 int AESDecrypt1()
 {
@@ -411,74 +355,12 @@ int AESDecrypt_test(BYTE *ptext)
     END_TEST_CASE;
 }
 
-/* Challenge 7: Test AES in ECB mode decryption */
-int AESDecrypt2()
-{
-    START_TEST_CASE;
-    /*---------- Read in b64 from file and convert to byte array ----------*/
-    char *b64 = NULL;
-    unsigned long file_length = fileToString(&b64, "../data/7.txt");
-    SHOULD_BE(file_length = 3904);
-    char *b64_clean = strrmchr(b64, "\n"); /* strip newlines */
-    SHOULD_BE(strlen(b64_clean) == 3840);
-    BYTE *byte = NULL;
-    size_t nbyte = b642byte(&byte, b64_clean);
-    /* Initialize the OpenSSL library */
-    OpenSSL_init();
-    /* Define the key -- 16 byte == 128 bit key */
-    BYTE key[] = "YELLOW SUBMARINE";
-    BYTE *plaintext = NULL;
-    /*---------- Break the code! ----------*/
-    int plaintext_len = aes_128_ecb_cipher(&plaintext, byte, nbyte, key, 0);
-    /* Compare with expected result */
-    char *expect = NULL;
-    unsigned long expect_len = fileToString(&expect, "../data/play_that_funky_music.txt");
-    SHOULD_BE(expect_len == plaintext_len);
-    SHOULD_BE(!memcmp(plaintext, expect, plaintext_len));
-#ifdef LOGSTATUS
-    printf("----------------------------------------\n");
-    printf("plaintext_len = %d\nexpect_len = %zu\n", plaintext_len, expect_len);
-    /*---------- Print all bytes */
-    printf("Got:\n\"");
-    printall(plaintext, plaintext_len);
-    printf("\"\n");
-    /* printf("----------------------------------------\n"); */
-    /* printf("Expected:\n\""); */
-    /* printall((BYTE *)expect, expect_len); */
-    /* printf("\"\n"); */
-#endif
-    /* Clean up */
-    OpenSSL_cleanup();
-    free(b64);
-    free(b64_clean);
-    free(byte);
-    free(plaintext);
-    free(expect);
-    END_TEST_CASE;
-}
-
 /* Test ECB mode detection */
 int ECBDetect1()
 {
     START_TEST_CASE;
     BYTE byte[] = "YELLOW SUBMARINEthis is a test!!YELLOW SUBMARINE";
     SHOULD_BE(1 == hasIdenticalBlocks(byte, strlen((char *)byte), 16));
-    END_TEST_CASE;
-}
-
-/* Challenge 8: Test ECB mode detection */
-int ECBDetect2()
-{
-    START_TEST_CASE;
-    BYTE *ciphertext = NULL;
-    int file_line = find_AES_ECB(&ciphertext, "../data/8.txt");
-    if (file_line < 0) { WARNING("ECB encryption not found!"); }
-    /* 133 on average Hamming, AND identical blocks! */
-    SHOULD_BE(file_line == 133);
-#ifdef LOGSTATUS
-    printf("line  = %3d\n", file_line);
-#endif
-    free(ciphertext);
     END_TEST_CASE;
 }
 
@@ -498,15 +380,11 @@ int main(void)
     RUN_TEST(FixedXOR1,         "Challenge  2: fixedXOR()             ");
     RUN_TEST(CharFreqScore1,    "Challenge  3: charFreqScore()        ");
     RUN_TEST(SingleByte1,       "              singleByteXORDecode()  ");
-    RUN_TEST(FileSingleByte1,   "Challenge  4: findSingleByteXOR()    ");
     RUN_TEST(RepeatingKeyXOR1,  "Challenge  5: repeatingKeyXOR()      ");
     RUN_TEST(HammingDist1,      "Challenge  6: hamming_dist()         ");
-    RUN_TEST(BreakRepeatingXOR1,"              breakRepeatingXOR() 1  ");
-    RUN_TEST(BreakRepeatingXOR2,"              breakRepeatingXOR() 2  ");
-    RUN_TEST(AESDecrypt1,       "Challenge  7: aes_128_ecb_cipher() 1 ");
-    RUN_TEST(AESDecrypt2,       "              aes_128_ecb_cipher() 2 ");
+    RUN_TEST(BreakRepeatingXOR1,"              breakRepeatingXOR()    ");
+    RUN_TEST(AESDecrypt1,       "Challenge  7: aes_128_ecb_cipher()   ");
     RUN_TEST(ECBDetect1,        "Challenge  8: find_AES_ECB() 1       ");
-    RUN_TEST(ECBDetect2,        "              find_AES_ECB() 2       ");
 
     /* Count errors */
     if (!fails) {

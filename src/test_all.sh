@@ -8,24 +8,11 @@
 #
 #===============================================================================
 
-pass_check() {
-  if [ "$1" -eq 0 ]; then
-    printf "\033[0;32m##### $2 passed test! #####\033[0m\n"
-  else
-    printf "\033[0;31m##### $2 failed test! #####\033[0m\n"
-    exit 1
-  fi
-}
-
-make_check() {
-  if [ "$?" -ne 0 ]; then
-    printf "[$0: $LINENO]: Error! make failed to execute properly.\n"
-    exit 2
-  fi
-}
+# Include test functions
+source "./test_funcs.sh"
 
 # Log file header
-printf "\n##### UNIT TEST LOG: $(date) #####\n"
+printf "\n##### TEST LOG: $(date) #####\n"
 
 # Change into util directory and test those
 cd ./util
