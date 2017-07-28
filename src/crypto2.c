@@ -577,24 +577,87 @@ char *kv_encode(const char *str)
 /*------------------------------------------------------------------------------
  *          Encode a user profile in k=v format
  *----------------------------------------------------------------------------*/
-/* char *profile_for(const char *email) */
-/* { */
-/*     return kv_enc; */
-/* } */
+char *profile_for(const char *email)
+{
+    char email_key[] = "email=";
+    char profile_data[] = "&uid=56&role=user"; /* append to email */
+    char *email_clean,
+         *kv_enc;
+    size_t tot_len,
+           len = 0;
+
+    /* Strip "metacharacters" from the input */
+    email_clean = strrmchr(email, "&=");
+
+    /* Initialize output */
+    tot_len = sizeof(email_key) + strlen(email_clean)+1 + sizeof(profile_data);
+    kv_enc = init_str(tot_len);
+
+    /* Concatenate profile into output buffer */
+    len  = strlcpy(kv_enc,     email_key,    tot_len);
+    len += strlcpy(kv_enc+len, email_clean,  tot_len - len);
+    len += strlcpy(kv_enc+len, profile_data, tot_len - len);
+
+    free(email_clean);
+    return kv_enc;
+}
 
 /*------------------------------------------------------------------------------
  *          Encrypt encoded profile under random key
  *----------------------------------------------------------------------------*/
+size_t encrypt_profile(BYTE **y, BYTE **key, char *profile)
+{
+    /* Set key once only */
+    if (!(*key)) {
+        *key = rand_byte(BLOCK_SIZE);
+    }
+    return aes_128_ecb_cipher(y, (BYTE *)profile, strlen(profile), *key, 1);
+}
 
 /*------------------------------------------------------------------------------
  *          Decrypt and parse user profile 
  *----------------------------------------------------------------------------*/
+char *decrypt_profile(BYTE *x, size_t x_len, BYTE *key)
+{
+    BYTE *y = NULL;
+    size_t y_len = aes_128_ecb_cipher(&y, x, x_len, key, 0);
+    char *str = byte2str(y, y_len);
+    char *profile = kv_parse(str);
+    free(y);
+    free(str);
+    return profile;
+}
 
 /*------------------------------------------------------------------------------
  *          Challenge 13: ECB cut-and-paste
  *----------------------------------------------------------------------------*/
 /* Make a "role=admin" profile but using only user input to profile_for() to
  * generate valid ciphertexts, then swap ciphertexts to get "role: 'admin'" */
+char *make_admin_profile(void)
+{
+    char *profile = NULL;
+    static BYTE *key = NULL;
+    BYTE *y = NULL;
+
+    /* Make profile */
+    profile = profile_for("bernie@me.com");
+    size_t y_len = encrypt_profile(&y, &key, profile);
+
+    /* Attacker now knows the ciphertext! */
+
+    /* How are we going to feed different "emails" to profile_for() to generate
+     * ciphertext that will decrypt to "...&role=admin"??? */
+
+    /* Decrypt substituted ciphertext */
+    char *prof_out = decrypt_profile(y, y_len, key);
+
+    /* Clean-up */
+    free(y);
+    free(key);
+    free(profile);
+
+    return prof_out;
+}
 
 /*==============================================================================
  *============================================================================*/

@@ -70,6 +70,18 @@ char *kv_parse(const char *str);
 // Encode key=value object as '&'-delimited string (reverse of parse)
 char *kv_encode(const char *str);
 
+// Create profile given email address
+char *profile_for(const char *email);
+
+// Encrypt profile with random key
+size_t encrypt_profile(BYTE **y, BYTE **key, char *profile);
+
+// Decrypt and parse profile
+char *decrypt_profile(BYTE *x, size_t x_len, BYTE *key);
+
+// Challenge 13: ECB cut-and-paste
+char *make_admin_profile(void);
+
 #endif
 //==============================================================================
 //==============================================================================

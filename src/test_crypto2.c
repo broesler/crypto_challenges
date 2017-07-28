@@ -291,45 +291,60 @@ int KVParse1()
 int KVEncode1()
 {
     START_TEST_CASE;
-    /* char in[] = "email=foo@bar.com&uid=56&role=user"; */
-    /* char *kv_p = kv_parse(in); */
-    char kv_p[] = "{\n\temail: 'foo@bar.com',\n\tuid: 56,\n\trole: 'user'\n}";
+    char in[] = "email=foo@bar.com&uid=56&role=user";
+    char *kv_p = kv_parse(in);
+    /* char kv_p[] = "{\n\temail: 'foo@bar.com',\n\tuid: 56,\n\trole: 'user'\n}"; */
     char *out = kv_encode(kv_p);
     char expect[] = "email=foo@bar.com&uid=56&role=user";
+    SHOULD_BE(!strcmp(out, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", out, expect);
+#endif
+    END_TEST_CASE;
+}
+
+/* Test profile creation */
+int ProfileFor1()
+{
+    START_TEST_CASE;
+    char in[] = "foo@bar.com";
+    char *out = profile_for(in);
+    char expect[] = "email=foo@bar.com&uid=56&role=user";
+    SHOULD_BE(!strcmp(out, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", out, expect);
+#endif
+    free(out);
+    END_TEST_CASE;
+}
+
+/* Test profile creation */
+int ProfileFor2()
+{
+    START_TEST_CASE;
+    char in[] = "foo@bar.com&role=admin";
+    char *out = profile_for(in);
+    char expect[] = "email=foo@bar.comroleadmin&uid=56&role=user";
+    SHOULD_BE(!strcmp(out, expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", out, expect);
+#endif
+    free(out);
+    END_TEST_CASE;
+}
+
+/* Test profile encrypt/decrypt */
+int ProfileFor3()
+{
+    START_TEST_CASE;
+    char *out = make_admin_profile();
+    char expect[] = "{\n\temail: 'bernie@me.com',\n\tuid: 56,\n\trole: 'user'\n}";
     SHOULD_BE(!strcmp(out, expect));
 #ifdef LOGSTATUS
     printf("Got:\n%s\nExpect:\n%s\n", out, expect);
 #endif
     END_TEST_CASE;
 }
-
-/* #<{(| Test profile creation |)}># */
-/* int ProfileFor1() */
-/* { */
-/*     START_TEST_CASE; */
-/*     char in[] = "foo@bar.com"; */
-/*     char *out = profile_for(in); */
-/*     char expect[] = "email=foo@bar.com&uid=56&role=user"; */
-/*     SHOULD_BE(!strcmp(out, expect)); */
-/* #ifdef LOGSTATUS */
-/*     printf("Got:\n%s\nExpect:\n%s\n", out, expect); */
-/* #endif */
-/*     END_TEST_CASE; */
-/* } */
-/*  */
-/* #<{(| Test profile creation |)}># */
-/* int ProfileFor2() */
-/* { */
-/*     START_TEST_CASE; */
-/*     char in[] = "foo@bar.com&role=admin"; */
-/*     char *out = profile_for(in); */
-/*     char expect[] = "email=foo@bar.com&uid=56&role=user"; */
-/*     SHOULD_BE(!strcmp(out, expect)); */
-/* #ifdef LOGSTATUS */
-/*     printf("Got:\n%s\nExpect:\n%s\n", out, expect); */
-/* #endif */
-/*     END_TEST_CASE; */
-/* } */
 
 
 
@@ -356,8 +371,11 @@ int main(void)
     /* RUN_TEST(GetBlockSize, "              getBlockSize()           "); */
     /* RUN_TEST(IsECB,        "              isECB()                  "); */
     /* RUN_TEST(OneByteECB1,  "              simple_ECB_decrypt() 1   "); */
-    RUN_TEST(KVParse1,     "              kv_parse()     ");
-    RUN_TEST(KVEncode1,    "              kv_encode()    ");
+    RUN_TEST(KVParse1,     "Challenge 12: kv_parse()               ");
+    RUN_TEST(KVEncode1,    "              kv_encode()              ");
+    RUN_TEST(ProfileFor1,  "              profile_for() 1          ");
+    RUN_TEST(ProfileFor2,  "              profile_for() 2          ");
+    RUN_TEST(ProfileFor3,  "              profile_for() 3          ");
     OpenSSL_cleanup();
 
     /* Count errors */
