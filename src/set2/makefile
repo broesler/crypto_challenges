@@ -41,6 +41,7 @@ test: test2
 c10: aes_cbc_file
 c11: detect_block_mode
 c12: one_byte_ecb
+c13: make_admin_profile
 
 debug: DEBUG += -DLOGSTATUS -ggdb3
 debug: all
@@ -63,6 +64,9 @@ detect_block_mode: detect_block_mode.o $(OBJ_UTIL)
 one_byte_ecb: one_byte_ecb.o $(OBJ_UTIL)
 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
 
+make_admin_profile: make_admin_profile.o $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
+
 # Objects depend on source and headers
 %.o: %.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
@@ -70,7 +74,7 @@ one_byte_ecb: one_byte_ecb.o $(OBJ_UTIL)
 # Highlight custom types, unions, and structs!
 types: .types.vim
 .types.vim: $(SRC) $(UTIL) $(INCLDIR)/*.h
-	ctags --c-kinds=gstu -o- ../**/*.[ch] |\
+	ctags --c-kinds=gstu -o- ../../**/*.[ch] |\
 		awk 'BEGIN{printf("syntax keyword Type\t")}\
 			{printf("%s ", $$1)}END{print ""}' > $@
 

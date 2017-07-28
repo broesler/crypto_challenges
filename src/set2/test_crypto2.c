@@ -221,20 +221,6 @@ int ProfileFor2()
     END_TEST_CASE;
 }
 
-/* Test profile encrypt/decrypt */
-int EDBCutAndPaste1()
-{
-    START_TEST_CASE;
-    char *out = make_admin_profile();
-    char expect[] = "{\n\temail: 'bernie@me.com',\n\tuid: 56,\n\trole: 'admin'\n}";
-    SHOULD_BE(!strcmp(out, expect));
-#ifdef LOGSTATUS
-    printf("Got:\n%s\nExpect:\n%s\n", out, expect);
-#endif
-    free(out);
-    END_TEST_CASE;
-}
-
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -255,7 +241,6 @@ int main(void)
     RUN_TEST(KVEncode1,        "              kv_encode()              ");
     RUN_TEST(ProfileFor1,      "              profile_for() 1          ");
     RUN_TEST(ProfileFor2,      "              profile_for() 2          ");
-    RUN_TEST(EDBCutAndPaste1,  "              make_admin_profile()     ");
 
     /* Count errors */
     if (!fails) {

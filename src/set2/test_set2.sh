@@ -14,12 +14,12 @@ source "../test_funcs.sh"
 DATA_PATH="../../data/"
 
 # Log file header
-printf "\n##### TEST LOG: $(date) #####\n"
+printf "##### TEST LOG: $(date) #####\n"
 
 # Make all executables
 make clean > /dev/null && make > /dev/null
 if [ "$?" -ne 0 ]; then
-    printf "[$0: $LINENO]: Error! make failed to execute properly.\n"
+    printf "\033[0;31[$0: $LINENO]: Error! make failed to execute properly.\033[0m\n"
     exit 2
 fi
 
@@ -41,6 +41,11 @@ pass_check "$?" "Challenge 11"
 diff <(./one_byte_ecb "${DATA_PATH}/12.txt") \
     "${DATA_PATH}rollin.txt"
 pass_check "$?" "Challenge 12"
+
+# Test challenge 13
+diff <(./make_admin_profile) \
+    <(printf "{\n\temail: 'bernie@me.com',\n\tuid: 56,\n\trole: 'admin'\n}")
+pass_check "$?" "Challenge 13"
 
 exit 0
 #===============================================================================
