@@ -520,16 +520,16 @@ char *kv_encode(const char *str)
            line_len;
 
     /* format string == i.e. "%127[^=]=%127s" */
-    char fmt_key[] = "\t%" XSTR(MAX_KEY_LEN) "[^:]:",
+    char fmt_key[] = " %" XSTR(MAX_KEY_LEN) "[^:]:",
          fmt_val_str[] = "%*[^']\'%" XSTR(MAX_KEY_LEN) "[^\']s\',";
 
     /* Get number of pairs and total output length (incl extra chars) */
     kv_enc_len = strlen(str);
 
     /* Copy input into buffer so we don't destroy it */
-    if (strncmp("{\n", str, 2)) { ERROR("kv pairs not properly formatted!"); }
+    if (*str != '{') { ERROR("kv pairs not properly formatted!"); }
     buf = init_str(strlen(str));
-    strlcpy(buf, str+2, strlen(str)-3); /* skip initial and closing braces */
+    strlcpy(buf, str+1, strlen(str)-2); /* skip initial and closing braces */
 
     /* Initialize output string */
     kv_enc = init_str(kv_enc_len);

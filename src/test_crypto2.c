@@ -358,24 +358,24 @@ int main(void)
     int total = 0;
 
     /* Run OpenSSL lines here for speed */
-    RUN_TEST(PKCS71,       "Challenge  9: pkcs7() 1                ");
-    RUN_TEST(PKCS72,       "              pkcs7() 2                ");
-    RUN_TEST(PKCS73,       "              pkcs7() 3                ");
-    RUN_TEST(PKCS74,       "              pkcs7() 4                ");
-    RUN_TEST(PKCS75,       "              pkcs7() 5                ");
-    RUN_TEST(CBCencrypt1,  "Challenge 10: aes_128_cbc_encrypt() 1  ");
-    RUN_TEST(CBCdecrypt1,  "              aes_128_cbc_encrypt() 2  ");
-    RUN_TEST(RandByte1,    "Challenge 11: randByte() 1             ");
-    RUN_TEST(EncOracle1,   "              encryption_oracle() 1    ");
-    RUN_TEST(EncOracle2,   "              encryption_oracle() 2    ");
-    RUN_TEST(GetBlockSize, "              getBlockSize()           ");
-    RUN_TEST(IsECB,        "              isECB()                  ");
-    RUN_TEST(OneByteECB1,  "              simple_ECB_decrypt() 1   ");
-    RUN_TEST(KVParse1,     "Challenge 12: kv_parse()               ");
-    RUN_TEST(KVEncode1,    "              kv_encode()              ");
-    RUN_TEST(ProfileFor1,  "              profile_for() 1          ");
-    RUN_TEST(ProfileFor2,  "              profile_for() 2          ");
-    RUN_TEST(EDBCutAndPaste1,  "             make_admin_profile()  ");
+    RUN_TEST(PKCS71,           "Challenge  9: pkcs7() 1                ");
+    RUN_TEST(PKCS72,           "              pkcs7() 2                ");
+    RUN_TEST(PKCS73,           "              pkcs7() 3                ");
+    RUN_TEST(PKCS74,           "              pkcs7() 4                ");
+    RUN_TEST(PKCS75,           "              pkcs7() 5                ");
+    RUN_TEST(CBCencrypt1,      "Challenge 10: aes_128_cbc_encrypt() 1  ");
+    RUN_TEST(CBCdecrypt1,      "              aes_128_cbc_encrypt() 2  ");
+    RUN_TEST(RandByte1,        "Challenge 11: randByte() 1             ");
+    RUN_TEST(EncOracle1,       "              encryption_oracle() 1    ");
+    RUN_TEST(EncOracle2,       "              encryption_oracle() 2    ");
+    RUN_TEST(GetBlockSize,     "              getBlockSize()           ");
+    RUN_TEST(IsECB,            "              isECB()                  ");
+    RUN_TEST(OneByteECB1,      "              simple_ECB_decrypt() 1   ");
+    RUN_TEST(KVParse1,         "Challenge 12: kv_parse()               ");
+    RUN_TEST(KVEncode1,        "              kv_encode()              ");
+    RUN_TEST(ProfileFor1,      "              profile_for() 1          ");
+    RUN_TEST(ProfileFor2,      "              profile_for() 2          ");
+    RUN_TEST(EDBCutAndPaste1,  "              make_admin_profile()     ");
 
     /* Count errors */
     if (!fails) {
