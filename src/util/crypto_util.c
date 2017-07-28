@@ -385,6 +385,44 @@ char *strrmchr(const char *src, const char *charset)
 }
 
 /*------------------------------------------------------------------------------
+ *        Escape chars in set occuring in string
+ *----------------------------------------------------------------------------*/
+char *strescchr(const char *src, const char *charset)
+{
+    const char *s = src;
+    const char *c = charset;
+
+    /* This "lookup table" makes our algorithm O(N+n). We don't have to scan
+     * through the charset for ever char in src ==> worst-case O(N*(n+1)) */
+    /* boolean of which chars in charset are in src */
+    static const int totchars = 256;
+    int escchar[totchars];
+    for (size_t i = 0; i < totchars; i++) { escchar[i] = 0; }
+
+    /* Step through charset and mark which chars are there */
+    while (*c) {
+        escchar[(size_t)*c++] = 1; 
+    }
+
+    /* malloc double the length in case we have to escape all chars in string */
+    char *dest = init_str(2*strlen(src));
+    char *d = dest;
+
+    /* Step through string and copy characters not in charset to dest */
+    while (*s) {
+        if (escchar[(size_t)*s]) {
+            *d++ = '\\';
+            *d++ = *s;
+        } else {
+            *d++ = *s;
+        }
+        s++;
+    }
+
+    return dest; 
+}
+
+/*------------------------------------------------------------------------------
  *          Count occurrences of character in string
  *----------------------------------------------------------------------------*/
 size_t cntchr(const char *str, const char c)

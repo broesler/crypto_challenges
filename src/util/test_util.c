@@ -184,6 +184,21 @@ int CntChr1()
     END_TEST_CASE;
 }
 
+/* Test strescchr function */
+int Strescchr1()
+{
+    START_TEST_CASE;
+    char str[] = "Hello, World!";
+    char *dest = strescchr(str, "l!");
+    char expect[] = "He\\l\\lo, Wor\\ld\\!";
+    SHOULD_BE(!strcmp(dest,expect));
+#ifdef LOGSTATUS
+    printf("Got:    %s\nExpect: %s\n", dest, expect);
+#endif
+    free(dest);
+    END_TEST_CASE;
+}
+
 /* Test AES in ECB mode decryption for single block */
 int AESDecrypt1()
 {
@@ -237,6 +252,7 @@ int main(void)
     RUN_TEST(Strnrepeat1,    "strnrepeat_hex()    ");
     RUN_TEST(HammingWeight1, "hamming_dist()      ");
     RUN_TEST(Strrmchr1,      "strrmchr()          ");
+    RUN_TEST(Strescchr1,     "strescchr()         ");
     RUN_TEST(CntChr1,        "cntchr()            ");
     RUN_TEST(AESDecrypt1,    "aes_128_ecb_block() ");
 
