@@ -358,7 +358,7 @@ size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size)
 }
 
 /*------------------------------------------------------------------------------
- *          Get single 
+ *          Get single byte of unknown string
  *----------------------------------------------------------------------------*/
 BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y, 
         size_t y_len, size_t block_size)
@@ -586,8 +586,8 @@ char *profile_for(const char *email)
     size_t tot_len,
            len = 0;
 
-    /* Strip "metacharacters" from the input */
-    email_clean = strrmchr(email, "&=");
+    /* Escape "metacharacters" from the input */
+    email_clean = strescchr(email, "&=");
 
     /* Initialize output */
     tot_len = sizeof(email_key) + strlen(email_clean)+1 + sizeof(profile_data);
@@ -635,28 +635,57 @@ char *decrypt_profile(BYTE *x, size_t x_len, BYTE *key)
  * generate valid ciphertexts, then swap ciphertexts to get "role: 'admin'" */
 char *make_admin_profile(void)
 {
-    char *profile = NULL;
-    static BYTE *key = NULL;
-    BYTE *y = NULL;
+    char *profile1 = NULL,
+         *profile2 = NULL,
+         *profile = NULL;
+    static BYTE *key = NULL;   /* random key, save for decryption */
+    BYTE *y1 = NULL,
+         *y2 = NULL,
+         *y = NULL;
 
-    /* Make profile */
-    profile = profile_for("bernie@me.com");
-    size_t y_len = encrypt_profile(&y, &key, profile);
+    /* Strategy: Create block with just "admin" and block with profile up to
+     * "role=", then combine the two ciphertexts to get the entire profile */
 
-    /* Attacker now knows the ciphertext! */
+    /* Need "admin" at the start of a ciphertext block */
+    /* total string will be "email=bernie@me.|admin\x0B...\x0B|&uid=..." */
+    char email1[] = "bernie@me.admin";
+    size_t faux_block = 2*BLOCK_SIZE - strlen("email=");
+    BYTE *email1_pad = pkcs7_pad((BYTE *)email1, strlen(email1), faux_block);
 
-    /* How are we going to feed different "emails" to profile_for() to generate
-     * ciphertext that will decrypt to "...&role=admin"??? */
+    /* Need email long enough to push "user" into third block, so second block
+     * ends with "role=". Now we combine the first two ciphertext blocks of this
+     * email, and the 2nd blocks of the email masking off "admin\x0B...", which
+     * will decrypt to "email=bernie@me.|com&uid=56&role=|admin\x0B..." */
+    /* total string will be: "email=bernie@me.|com&uid=56&role=|user\x0C..." */
+    char email2[] = "bernie@me.com";
 
+    /* Make profiles */
+    profile1 = profile_for((char *)email1_pad);
+    profile2 = profile_for(email2);
+
+    /* Encrypt each email and swap blocks */
+    encrypt_profile(&y1, &key, profile1);
+    encrypt_profile(&y2, &key, profile2);
+
+    /* Build faux ciphertext */
+    size_t y_len = 3*BLOCK_SIZE;
+    y = init_byte(y_len);
+    memcpy(y, y2, 2*BLOCK_SIZE);                       /* first two blocks */
+    memcpy(y+2*BLOCK_SIZE, y1+BLOCK_SIZE, BLOCK_SIZE); /* 2nd block */
+    
     /* Decrypt substituted ciphertext */
-    char *prof_out = decrypt_profile(y, y_len, key);
+    profile = decrypt_profile(y, y_len, key);
 
     /* Clean-up */
+    free(email1_pad);
+    free(profile1);
+    free(profile2);
     free(y);
+    free(y1);
+    free(y2);
     free(key);
-    free(profile);
 
-    return prof_out;
+    return profile;
 }
 
 /*==============================================================================
