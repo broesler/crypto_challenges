@@ -457,8 +457,7 @@ char *kv_parse(const char *str)
     char key[MAX_KEY_LEN+1],
          val[MAX_KEY_LEN+1];
     int val_int = 0;
-    size_t n_pair,
-           kv_obj_len,
+    size_t kv_obj_len,
            line_len;
 
     /* format string == i.e. "%127[^=]=%127s" */
@@ -466,12 +465,11 @@ char *kv_parse(const char *str)
          fmt_val_str[] = "%*[^=]=%" XSTR(MAX_KEY_LEN) "s";
 
     /* Get number of pairs and total output length (incl extra chars) */
-    n_pair = cntchr(str, *sep) + 1;
-    kv_obj_len = 3 + strlen(str) + 5*n_pair;
+    kv_obj_len = 3*strlen(str) + 1;
 
     /* Copy input into buffer so we don't destroy it with strtok */
     buf = init_str(strlen(str));
-    strlcpy(buf, str, strlen(str));
+    strlcpy(buf, str, strlen(str)+1);
 
     /* Initialize output string */
     kv_obj = init_str(kv_obj_len);
@@ -523,8 +521,7 @@ char *kv_encode(const char *str)
          *sep = ",";        /* token character */
     char key[MAX_KEY_LEN+1],
          val[MAX_KEY_LEN+1];
-    size_t n_pair,
-           kv_enc_len,
+    size_t kv_enc_len,
            line_len;
 
     /* format string == i.e. "%127[^=]=%127s" */
@@ -532,20 +529,19 @@ char *kv_encode(const char *str)
          fmt_val_str[] = "%*[^']\'%" XSTR(MAX_KEY_LEN) "[^\']s\',";
 
     /* Get number of pairs and total output length (incl extra chars) */
-    /* ASSUME keys and values do NOT have commas in them... */
-    n_pair = cntchr(str, *sep) + 1;
-    kv_enc_len = strlen(str) - 3 - 5*n_pair;
+    kv_enc_len = strlen(str);
 
     /* Copy input into buffer so we don't destroy it */
     if (strncmp("{\n", str, 2)) { ERROR("kv pairs not properly formatted!"); }
     buf = init_str(strlen(str));
-    strlcpy(buf, str+2, strlen(str)); /* skip initial brace */
+    strlcpy(buf, str+2, strlen(str)-3); /* skip initial and closing braces */
 
     /* Initialize output string */
     kv_enc = init_str(kv_enc_len);
     line_len = 0;
 
-    /* Tokenize string on ',' */
+    /* Tokenize string on ','
+     * ASSUME keys and values do NOT have commas in them... */
     for (pair = strtok_r(buf, sep, &brk);
          pair;
          pair = strtok_r(NULL, sep, &brk))
