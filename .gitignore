@@ -31,6 +31,9 @@ breakRepeatingXOR
 aes_ecb_file
 findECB
 findSingleByteXOR
+aes_cbc_file
+detect_block_mode
+one_byte_ecb
 
 # Data directory
 data/

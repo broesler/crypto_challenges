@@ -1,21 +1,24 @@
 #!/usr/local/bin/bash
 #===============================================================================
-#     File: test_funcs.sh
-#  Created: 07/28/2017, 14:01
+#     File: test_util.sh
+#  Created: 07/28/2017, 17:27
 #   Author: Bernie Roesler
 #
-#  Description: General utility functions for shell script testing
+#  Description: Test utilities
 #
 #===============================================================================
 
-pass_check() {
-  if [ "$1" -eq 0 ]; then
-    printf "\033[0;32m##### $2 passed test! #####\033[0m\n"
-  else
-    printf "\033[0;31m##### $2 failed test! #####\033[0m\n"
-    exit 1
-  fi
-}
+# Include test functions
+source "../test_funcs.sh"
+
+make clean > /dev/null && make > /dev/null
+if [ "$?" -ne 0 ]; then
+    printf "[$0: $LINENO]: Error! make failed to execute properly.\n"
+    exit 2
+fi
+
+./test_util
+pass_check "$?" "Utilities"
 
 #===============================================================================
 #===============================================================================

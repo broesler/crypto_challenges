@@ -16,22 +16,20 @@ printf "\n##### TEST LOG: $(date) #####\n"
 
 # Change into util directory and test those
 cd ./util
-make clean && make debug
-make_check
-./test_util
-pass_check "$?" "Utilities"
+./test_util.sh
 cd .. # change back to src
 
-# Build the main tests in the src directory
-make clean && make debug
-make_check
+# cd into each set and run their tests
 
-# Run tests
-./test1
-pass_check "$?" "Set 1"
+# Set 1
+cd set1
+./test_set1.sh
+cd ..
 
-./test2
-pass_check "$?" "Set 2"
+# Set 2
+cd set2
+./test_set2.sh
+cd ..
 
 exit 0
 #===============================================================================

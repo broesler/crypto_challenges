@@ -1,10 +1,10 @@
 #!/usr/local/bin/bash
 #===============================================================================
-#     File: test_set1.sh
-#  Created: 07/28/2017, 13:56
+#     File: test_set2.sh
+#  Created: 07/28/2017, 16:04
 #   Author: Bernie Roesler
 #
-#  Description: Run unit tests and challenge tests for Set 1
+#  Description: Run unit tests and challenge tests for Set 2
 #
 #===============================================================================
 
@@ -24,28 +24,23 @@ if [ "$?" -ne 0 ]; then
 fi
 
 # Test utilities
-./test1
-pass_check "$?" "Set 1 Utilities"
+./test2
+pass_check "$?" "Set 2 Utilities"
 
-# Test challenge 4
-diff <(./findSingleByteXOR "${DATA_PATH}/4.txt") \
-    <(printf "Now that the party is jumping\n\n")
-pass_check "$?" "Challenge 4"
+# Test challenge 10
+diff <(./aes_cbc_file "${DATA_PATH}/10.txt") \
+    "${DATA_PATH}play_that_funky_music.txt"
+pass_check "$?" "Challenge 10"
 
-# Test challenge 6
-diff <(./breakRepeatingXOR "${DATA_PATH}/6.txt") \
-    "${DATA_PATH}/play_that_funky_music.txt"
-pass_check "$?" "Challenge 6"
+# Test challenge 11
+isecb=$(./detect_block_mode)
+[[ "$isecb" -eq "ECB" ]]
+pass_check "$?" "Challenge 11"
 
-# Test challenge 7
-diff <(./aes_ecb_file "${DATA_PATH}/7.txt") \
-    "${DATA_PATH}/play_that_funky_music.txt"
-pass_check "$?" "Challenge 7"
-
-# Test challenge 7
-line=$(./findECB "${DATA_PATH}/8.txt")
-[ "$line" -eq 133 ]
-pass_check "$?" "Challenge 8"
+# Test challenge 12
+diff <(./one_byte_ecb "${DATA_PATH}/12.txt") \
+    "${DATA_PATH}rollin.txt"
+pass_check "$?" "Challenge 12"
 
 exit 0
 #===============================================================================

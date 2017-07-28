@@ -25,31 +25,24 @@ LDLIBS = -lcrypto -lssl
 # Headers
 INCL = $(wildcard $(INCLDIR)*.h)
 
-# Define source files, utility files (function files)
+# Define source files
+SRC      = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
 UTIL     = crypto1.c $(UTILDIR)crypto_util.c
 AES_UTIL = aes_ecb.c $(UTILDIR)aes_openssl.c
 
-SRC_TEST = test_crypto1.c $(AES_UTIL) $(UTIL)
-SRC_c4   = findSingleByteXOR.c $(UTIL)
-SRC_c6   = breakRepeatingXOR.c $(UTIL)
-SRC_c7   = aes_ecb_file.c $(AES_UTIL) $(UTIL)
-SRC_c8   = findECB.c $(AES_UTIL) $(UTIL)
-
-OBJ_TEST = $(SRC_TEST:%.c=%.o)
-OBJ_c4   = $(SRC_c4:%.c=%.o)
-OBJ_c6   = $(SRC_c6:%.c=%.o)
-OBJ_c7   = $(SRC_c7:%.c=%.o)
-OBJ_c8   = $(SRC_c8:%.c=%.o)
+OBJ_UTIL = $(UTIL:%.c=%.o)
+OBJ_AES  = $(AES_UTIL:%.c=%.o)
 
 #------------------------------------------------------------------------------ 
 #         Make options
 #------------------------------------------------------------------------------
-all: test1 breakRepeatingXOR findSingleByteXOR types
+all: test1 breakRepeatingXOR findSingleByteXOR aes_ecb_file findECB types
 test: test1
 c4: findSingleByteXOR
 c6: breakRepeatingXOR
 c7: aes_ecb_file
 c8: findECB
+
 debug: CFLAGS += -DLOGSTATUS -ggdb3
 debug: all
 verbose: CFLAGS += -DVERBOSE
@@ -59,20 +52,20 @@ verbose: debug
 # 		Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test1: $(OBJ_TEST)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $(OBJ_TEST) $(LDLIBS)
+test1: test_crypto1.o $(OBJ_AES) $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
 
-findSingleByteXOR: $(OBJ_c4)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $(OBJ_c4) 
+findSingleByteXOR: findSingleByteXOR.o $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $?
 
-breakRepeatingXOR: $(OBJ_c6)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $(OBJ_c6)
+breakRepeatingXOR: breakRepeatingXOR.o $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $?
 
-aes_ecb_file: $(OBJ_c7)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $(OBJ_c7) $(LDLIBS)
+aes_ecb_file: aes_ecb_file.o $(OBJ_AES) $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
 
-findECB: $(OBJ_c8)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $(OBJ_c8) $(LDLIBS)
+findECB: findECB.o $(OBJ_AES) $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)
@@ -80,7 +73,7 @@ findECB: $(OBJ_c8)
 
 # Highlight custom types, unions, and structs!
 types: .types.vim
-.types.vim: $(SRC_TEST) $(SRC_c4) $(SRC_c6) $(SRC_c7) $(INCL)
+.types.vim: $(SRC) $(INCL)
 	ctags --c-kinds=gstu -o- ../../**/*.[ch] |\
 		awk 'BEGIN{printf("syntax keyword Type\t")}\
 			{printf("%s ", $$1)}END{print ""}' > $@
@@ -98,6 +91,8 @@ clean:
 	rm -f test1
 	rm -f findSingleByteXOR
 	rm -f breakRepeatingXOR
+	rm -f aes_ecb_file
+	rm -f findECB
 	rm -f .types.vim
 
 #==============================================================================

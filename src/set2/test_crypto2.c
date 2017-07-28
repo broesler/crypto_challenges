@@ -144,49 +144,6 @@ int CBCencrypt_test(BYTE *ptext)
     END_TEST_CASE;
 }
 
-/* Test AES in CBC mode decryption */
-int CBCdecrypt1()
-{
-    START_TEST_CASE;
-    /*---------- Read in b64 from file and convert to byte array ----------*/
-    char *b64 = NULL;
-    unsigned long file_length = fileToString(&b64, "../data/10.txt");
-    SHOULD_BE(file_length = 3904);
-    char *b64_clean = strrmchr(b64, "\n"); /* strip newlines */
-    SHOULD_BE(strlen(b64_clean) == 3840);
-    BYTE *byte = NULL;
-    size_t nbyte = b642byte(&byte, b64_clean);
-    /* Define the key -- 16 byte == 128 bit key */
-    BYTE key[] = "YELLOW SUBMARINE";
-    BYTE *plaintext = NULL;
-    BYTE iv[BLOCK_SIZE] = "";   /* BLOCK_SIZE-length array of '\0' chars */
-    /*---------- Break the code! ----------*/
-    int plaintext_len = aes_128_cbc_decrypt(&plaintext, byte, nbyte, key, iv);
-    /* Compare with expected result */
-    char *expect = NULL;
-    unsigned long expect_len = fileToString(&expect, "../data/play_that_funky_music.txt");
-    SHOULD_BE(expect_len == plaintext_len);
-    SHOULD_BE(!memcmp(plaintext, expect, plaintext_len));
-#ifdef LOGSTATUS
-    /* printf("----------------------------------------\n"); */
-    printf("plaintext_len = %d\nexpect_len    = %zu\n", plaintext_len, expect_len);
-    printf("Got:\n\"");
-    printall(plaintext, plaintext_len);
-    printf("\"\n");
-    /* printf("----------------------------------------\n"); */
-    /* printf("Expected:\n\""); */
-    /* printall((BYTE *)expect, expect_len); */
-    /* printf("\"\n"); */
-#endif
-    /* Clean up */
-    free(b64);
-    free(b64_clean);
-    free(byte);
-    free(plaintext);
-    free(expect);
-    END_TEST_CASE;
-}
-
 /* Generate a random AES key */
 int RandByte1()
 {
@@ -199,75 +156,6 @@ int RandByte1()
     printf("\"\n");
 #endif
     free(key);
-    END_TEST_CASE;
-}
-
-/* Randomly encrypt plaintext */
-int EncOracle1()
-{
-    START_TEST_CASE;
-    srand(SRAND_INIT);
-    BYTE ptext[] = "I was a terror since the public school era.";
-    size_t ptext_len = strlen((char *)ptext);
-    /* Encrypt the text with randomly-chosen algorithm */
-    BYTE *ctext = NULL;
-    size_t ctext_len = encryption_oracle11(&ctext, ptext, ptext_len);
-    SHOULD_BE((ctext_len % BLOCK_SIZE) == 0);
-    free(ctext);
-    END_TEST_CASE;
-}
-
-/* Test if oracle is in ECB mode */
-int EncOracle2()
-{
-    START_TEST_CASE;
-    srand(SRAND_INIT);
-    /* Need at least (BLOCK_SIZE % 10) + 2*BLOCK_SIZE+1 bytes == 38 here */
-    BYTE ptext[] = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    int test = is_oracle_ecb11(ptext, 48);
-#ifdef LOGSTATUS
-    printf("is ecb? %d\n", test);
-#endif
-    SHOULD_BE(test == 1); /* if srand(0), we get ECB mode guaranteed */
-    END_TEST_CASE;
-}
-
-/* Test getBlockSize */
-int GetBlockSize()
-{
-    START_TEST_CASE;
-    srand(SRAND_INIT);
-    size_t block_size = getBlockSize(encryption_oracle12);
-    SHOULD_BE(block_size == BLOCK_SIZE);
-    END_TEST_CASE;
-}
-
-/* Test isECB */
-int IsECB()
-{
-    START_TEST_CASE;
-    srand(SRAND_INIT);
-    SHOULD_BE(1 == isECB(encryption_oracle12, BLOCK_SIZE));
-    END_TEST_CASE;
-}
-
-/* Byte-at-a-time decrypt ECB */
-int OneByteECB1()
-{
-    START_TEST_CASE;
-    srand(SRAND_INIT);
-    BYTE y[1024];
-    size_t y_len = simple_ECB_decrypt(y);
-    BYTE expect[] = "Rollin' in my 5.0\n" \
-                    "With my rag-top down so my hair can blow\n" \
-                    "The girlies on standby waving just to say hi\n" \
-                    "Did you stop? No, I just drove by\n";
-    SHOULD_BE(!memcmp(y, expect, y_len));
-#ifdef LOGSTATUS
-    printf("Got: \"");
-    printall(y, y_len);
-    printf("\"\n");
-#endif
     END_TEST_CASE;
 }
 
@@ -347,8 +235,6 @@ int EDBCutAndPaste1()
     END_TEST_CASE;
 }
 
-
-
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -364,13 +250,7 @@ int main(void)
     RUN_TEST(PKCS74,           "              pkcs7() 4                ");
     RUN_TEST(PKCS75,           "              pkcs7() 5                ");
     RUN_TEST(CBCencrypt1,      "Challenge 10: aes_128_cbc_encrypt() 1  ");
-    RUN_TEST(CBCdecrypt1,      "              aes_128_cbc_encrypt() 2  ");
     RUN_TEST(RandByte1,        "Challenge 11: randByte() 1             ");
-    RUN_TEST(EncOracle1,       "              encryption_oracle() 1    ");
-    RUN_TEST(EncOracle2,       "              encryption_oracle() 2    ");
-    RUN_TEST(GetBlockSize,     "              getBlockSize()           ");
-    RUN_TEST(IsECB,            "              isECB()                  ");
-    RUN_TEST(OneByteECB1,      "              simple_ECB_decrypt() 1   ");
     RUN_TEST(KVParse1,         "Challenge 12: kv_parse()               ");
     RUN_TEST(KVEncode1,        "              kv_encode()              ");
     RUN_TEST(ProfileFor1,      "              profile_for() 1          ");

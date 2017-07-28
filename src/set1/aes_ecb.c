@@ -6,7 +6,6 @@
  *  Description: AES ECB encryption function
  *
  *============================================================================*/
-
 #include "aes_openssl.h"
 #include "crypto_util.h"
 #include "crypto1.h"

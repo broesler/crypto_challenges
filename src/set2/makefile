@@ -7,31 +7,41 @@
 #==============================================================================
 
 # Directories where source files are kept
-SRCDIR  = ./
-UTILDIR = ./util/
-INCLDIR = ../include/
-SSLINCL = /usr/local/opt/openssl/include/
+SRCDIR   = ./
+UTILDIR  = ../util/
+INCLDIR  = ../../include/
+SSLINCL  = /usr/local/opt/openssl/include/
 DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
 CC = gcc-7
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 
-# Define source files, utility files (function files)
-SRC = test_crypto1.c breakRepeatingXOR.c  test_crypto2.c 
-UTIL = crypto1.c crypto2.c $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
-
 # Look for header files here
-OPT = -I$(INCLDIR) -I$(SSLINCL) 
-OPT += -I$(DICTINCL)
+OPT = -I$(INCLDIR) -I$(SSLINCL) -I$(DICTINCL)
 
 # Libraries
 LDLIBS = -lcrypto -lssl 
-LDLIBS += -L$(DICTINCL) -ldict
+DLIBS = -L$(DICTINCL) -ldict
+
+# Headers
+INCL = $(wildcard $(INCLDIR)*.h)
+
+# Define source files
+SRC   = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
+UTIL  = crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c 
+UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
+
+# Object files
+OBJ_UTIL = $(UTIL:%.c=%.o)
 
 # Make options
-all: test1 test2 breakRepeatingXOR types
-break: breakRepeatingXOR
+all: test2 c10 c11 types
+test: test2
+c10: aes_cbc_file
+c11: detect_block_mode
+c12: one_byte_ecb
+
 debug: DEBUG += -DLOGSTATUS -ggdb3
 debug: all
 verbose: DEBUG = -DVERBOSE
@@ -41,19 +51,25 @@ verbose: debug
 # 		Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test1: test_crypto1.c $(UTIL)
-	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ test_crypto1.c $(UTIL) $(LDLIBS)
+test2: test_crypto2.o $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
 
-test2: test_crypto2.c $(UTIL)
-	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ test_crypto2.c $(UTIL) $(LDLIBS)
+aes_cbc_file: aes_cbc_file.o $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
 
-# Secondary executables:
-breakRepeatingXOR: breakRepeatingXOR.c $(UTIL)
-	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ breakRepeatingXOR.c $(UTIL) $(LDLIBS)
+detect_block_mode: detect_block_mode.o $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+
+one_byte_ecb: one_byte_ecb.o $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
+
+# Objects depend on source and headers
+%.o: %.c $(INCL)
+	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
 
 # Highlight custom types, unions, and structs!
-types: types.vim
-types.vim: $(SRC) $(UTIL) $(INCLDIR)/*.h
+types: .types.vim
+.types.vim: $(SRC) $(UTIL) $(INCLDIR)/*.h
 	ctags --c-kinds=gstu -o- ../**/*.[ch] |\
 		awk 'BEGIN{printf("syntax keyword Type\t")}\
 			{printf("%s ", $$1)}END{print ""}' > $@
@@ -62,15 +78,19 @@ types.vim: $(SRC) $(UTIL) $(INCLDIR)/*.h
 .PHONY: depend clean
 clean:
 	rm -f *~
+	rm -f ../set1/*.o
+	rm -f ../set1/*.gch
+	rm -rf ../set1/*.dSYM/
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
 	rm -f $(UTILDIR)*.o
 	rm -f $(UTILDIR)*.gch
 	rm -rf $(UTILDIR)*.dSYM/
-	rm -f test1 test2
-	rm -f breakRepeatingXOR
-	rm -f types.vim
+	rm -f test2
+	rm -f aes_cbc_file
+	rm -f detect_block_mode
+	rm -f .types.vim
 
 #==============================================================================
 #==============================================================================

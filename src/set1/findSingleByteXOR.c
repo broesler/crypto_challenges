@@ -27,13 +27,10 @@ int main(int argc, char **argv)
     /* Find and decrypt */
     XOR_NODE *out = findSingleByteXOR(filename);
 
-    /* char expect[] = "Now that the party is jumping\n"; */
-
 #ifdef LOGSTATUS
     printf("line  = %3d\n",            out->file_line);
     printf("key   =  0x%.2X\n",       *out->key);
     printf("score = %8.4f\n",          out->score);
-    printf("Got:    %s\nExpect: %s\n", out->plaintext, expect);
 #endif
 
     /* Print discovered string */
