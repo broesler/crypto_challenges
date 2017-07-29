@@ -17,7 +17,7 @@
 //      Macros
 //------------------------------------------------------------------------------
 // maximum bytes to feed into getBlockSize
-#define IMAX 32
+#define IMAX 48
 
 // Random number in range (inclusive)
 // Good enough for government work... or is it? not truly "uniform"
@@ -36,7 +36,7 @@ size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
 BYTE *rand_byte(size_t len);
 
 // Get block size given function pointer
-size_t getBlockSize(size_t (*encrypt)(BYTE**, BYTE*, size_t));
+size_t getBlockSize(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t *cnt, size_t *n);
 
 // Test if oracle is ECB
 size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size);
