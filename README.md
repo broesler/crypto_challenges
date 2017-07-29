@@ -2,10 +2,10 @@
 
 Here are my solutions to the [Matasano Crypto Challenges](https://cryptopals.com)!
 
-Partially because I'm a masochist and partically because it feels more hacker-y,
-I wrote them in C. There's something deeply satisfying about performing actual
-bit-flipping operations in about the lowest level language you can get short of
-machine code.
+Partially because I'm a masochist, and partically because it feels more
+hacker-y, I wrote them in C. There's something deeply satisfying about
+performing actual bit-flipping operations in about the lowest level language
+you can get short of machine code.
 
 ## The Structure ##
 

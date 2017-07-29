@@ -33,7 +33,8 @@ findECB
 findSingleByteXOR
 aes_cbc_file
 detect_block_mode
-one_byte_ecb
+one_byte_ecb_easy
+one_byte_ecb_hard
 make_admin_profile
 
 # Data directory
@@ -46,4 +47,4 @@ data/
 *.pdf
 
 # Other
-types.vim
+.types.vim
