@@ -20,6 +20,7 @@
 /* Global key used in encryption_oracle12 */
 static BYTE *global_key = NULL;
 static BYTE *global_prepend = NULL;
+static BYTE *global_append = NULL;
 
 /* Take input of the form (your-string||unknown-string, random-key), and decrypt
  * the unknown string */
@@ -68,10 +69,10 @@ int main(void)
 
     /* Print decrypted string! */
     printall(y, y_len);
-    printf("\n");
 
     free(global_key);
     free(global_prepend);
+    free(global_append);
     return 0;
 }
 
@@ -82,12 +83,14 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
 {
     size_t x_aug_len = 0,
            y_len = 0;
-    static size_t n_prepend = 0; /* only compute ONCE */
+    static size_t n_prepend = 0, /* only compute ONCE */
+                  n_append = 0;
     BYTE *x_aug;
 
     /* Convert to byte array */
-    static BYTE *append = NULL;
-    size_t n_append = b642byte(&append, append_b64);
+    if (!global_append) {
+        n_append = b642byte(&global_append, append_b64);
+    }
 
     /* Prepend random bytes */
     if (!global_prepend) {
@@ -101,9 +104,9 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     x_aug = init_byte(x_aug_len);
 
     /* Move pointer along each chunk of bytes */
-    memcpy(x_aug,             global_prepend, n_prepend);
-    memcpy(x_aug + n_prepend,              x,     x_len);
-    memcpy(x_aug + x_len,             append,  n_append);
+    memcpy(x_aug,                     global_prepend, n_prepend);
+    memcpy(x_aug + n_prepend,                      x,     x_len);
+    memcpy(x_aug + n_prepend + x_len,  global_append,  n_append);
 
     /* Generate a random key ONCE */
     if (!global_key) {
@@ -114,7 +117,6 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     y_len = aes_128_ecb_cipher(y, x_aug, x_aug_len, global_key, 1);
 
     /* Clean-up */
-    free(append);
     free(x_aug);
 
     return y_len;
@@ -129,7 +131,7 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
     DICTIONARY *dict = NULL;
     size_t i = 0,
            x_len = 0,
-           t_len = 0,
+           /* t_len = 0, */
            in_len = 0;
     static size_t p_len = 0;
     BYTE *c = NULL,
@@ -141,12 +143,6 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
     p_len = block_size - (n_prepend % block_size); /* virtual block size */
     x_len = block_size - (y_len     % block_size) - 1;
     in_len = x_len + p_len + y_len + 1;  /* == n*block_size */
-    t_len = x_len + y_len + 1; /* length to store in dictionary */
-
-    /* x_len goes 15-0, y_len counts up, in_len goes up by chunks of 16, offset
-     * by n_prepend */
-    /* printf("p_len = %zu\tx_len = %zu\tin_len = %zu\tt_len = %zu\n", */
-    /*         p_len, x_len, in_len, t_len); */
 
     in = init_byte(in_len);
     for (i = 0; i < (x_len + p_len); i++) { *(in+i) = 'A'; }
@@ -166,16 +162,16 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
         /* NOTE need to malloc "data" for dictionary because it is free'd */
         c = init_byte(1);
         *c = (BYTE)i;
-        dAdd(dict, t + p_len, t_len, (void *)c);
+        dAdd(dict, t, in_len, (void *)c);
 
         free(t);
     }
 
     /* Encrypt just our one-byte-short string */ 
-    size_t out_len = encrypt(&t, in, x_len + p_len);
+    encrypt(&t, in, x_len + p_len);
 
     /* cast (void *) to desired byte value */
-    BYTE b = *(BYTE *)dLookup(dict, t + p_len, t_len);
+    BYTE b = *(BYTE *)dLookup(dict, t, in_len);
 
     /* Clean-up */
     free(t);

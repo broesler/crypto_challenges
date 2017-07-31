@@ -16,7 +16,6 @@ DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6
 # Set the compiler options
 CC = gcc-7
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
-CFLAGS += -DLOGSTATUS -ggdb3
 
 # Look for header files here
 OPT = -I$(INCLDIR) -I$(SSLINCL) -I$(DICTINCL)
@@ -101,7 +100,6 @@ clean:
 	rm -f detect_block_mode
 	rm -f one_byte_ecb_easy
 	rm -f one_byte_ecb_hard
-	rm -f .types.vim
 
 #==============================================================================
 #==============================================================================

@@ -157,6 +157,7 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
     }
 
     /* Encrypt just our one-byte-short string */ 
+    /* x_len = in_len - y_len - 1 */
     encrypt(&t, in, x_len);
 
     /* cast (void *) to desired byte value */

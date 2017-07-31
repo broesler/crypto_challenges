@@ -17,11 +17,15 @@ DATA_PATH="../../data/"
 printf "##### TEST LOG: $(date) #####\n"
 
 # Make all executables
+printf "Building executables...\n"
 make clean > /dev/null && make > /dev/null
 if [ "$?" -ne 0 ]; then
     printf "\033[0;31[$0: $LINENO]: Error! make failed to execute properly.\033[0m\n"
     exit 2
 fi
+printf "done.\n"
+
+printf "Running tests...\n"
 
 # Test utilities
 ./test2
@@ -38,7 +42,7 @@ isecb=$(./detect_block_mode)
 pass_check "$?" "Challenge 11"
 
 # Test challenge 12
-diff <(./one_byte_ecb "${DATA_PATH}/12.txt") \
+diff <(./one_byte_ecb_easy "${DATA_PATH}/12.txt") \
     "${DATA_PATH}rollin.txt"
 pass_check "$?" "Challenge 12"
 
@@ -47,6 +51,12 @@ diff <(./make_admin_profile) \
     <(printf "{\n\temail: 'bernie@me.com',\n\tuid: 56,\n\trole: 'admin'\n}")
 pass_check "$?" "Challenge 13"
 
+# Test challenge 12
+diff <(./one_byte_ecb_hard "${DATA_PATH}/12.txt") \
+    "${DATA_PATH}rollin.txt"
+pass_check "$?" "Challenge 14"
+
+printf "done.\n"
 exit 0
 #===============================================================================
 #===============================================================================
