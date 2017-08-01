@@ -17,6 +17,9 @@
 
 #define SRAND_INIT 56
 
+/* Mode of operation (easy or hard) */
+static int mode = 0;
+
 /* Global key used in encryption_oracle12 */
 static BYTE *global_key = NULL;
 static BYTE *global_prepend = NULL;
@@ -40,23 +43,34 @@ static const char append_b64[] =
 /*------------------------------------------------------------------------------
  *         Main function
  *----------------------------------------------------------------------------*/
-int main(void)
+int main(int argc, char **argv)
 {
     size_t block_size = 0,
            i = 0,
-           cnt = 0,
+           count = 0,
            n = 0,
            unk_len = sizeof(append_b64)*3/4, /* == 138 */
            y_len = 0; /* length of unknown string (== n_append) */
     BYTE y[1024];
     BYTE *p = y;
 
+    if (argc < 1) {
+        printf("Usage: %s [easy|hard]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    /* choose mode of operation */
+    mode = strncmp(argv[1], "easy", 4) ? 1 : 0;
+
     /* initialize PRNG */
     srand(SRAND_INIT);
 
     /* Detect block size */
-    block_size = getBlockSize(encryption_oracle, &cnt, &n);
-    size_t n_prepend = n*block_size - unk_len - cnt;
+    block_size = getBlockSize(encryption_oracle, &count, &n);
+    size_t n_prepend = n*block_size - unk_len - count;
+
+    /* Confirm function is using ECB */
+    MY_ASSERT(isECB(encryption_oracle, block_size));
 
     /* Decrypt unknown bytes */
     for (i = 0; i < unk_len; i++){
@@ -71,8 +85,8 @@ int main(void)
     printall(y, y_len);
 
     free(global_key);
-    free(global_prepend);
     free(global_append);
+    if (mode) { free(global_prepend); }
     return 0;
 }
 
@@ -93,7 +107,8 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     }
 
     /* Prepend random bytes */
-    if (!global_prepend) {
+    /* only prepend in "hard" mode */
+    if (mode && !global_prepend) {
         /* n_prepend = RAND_RANGE(1, BLOCK_SIZE-1); */
         n_prepend = 3;
         global_prepend = rand_byte(n_prepend); 
@@ -118,7 +133,6 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
 
     /* Clean-up */
     free(x_aug);
-
     return y_len;
 }
 

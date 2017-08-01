@@ -42,7 +42,7 @@ isecb=$(./detect_block_mode)
 pass_check "$?" "Challenge 11"
 
 # Test challenge 12
-diff <(./one_byte_ecb_easy "${DATA_PATH}/12.txt") \
+diff <(./one_byte_ecb easy "${DATA_PATH}/12.txt") \
     "${DATA_PATH}rollin.txt"
 pass_check "$?" "Challenge 12"
 
@@ -52,7 +52,7 @@ diff <(./make_admin_profile) \
 pass_check "$?" "Challenge 13"
 
 # Test challenge 12
-diff <(./one_byte_ecb_hard "${DATA_PATH}/12.txt") \
+diff <(./one_byte_ecb hard "${DATA_PATH}/12.txt") \
     "${DATA_PATH}rollin.txt"
 pass_check "$?" "Challenge 14"
 
