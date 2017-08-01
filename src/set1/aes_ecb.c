@@ -13,12 +13,13 @@
 /*------------------------------------------------------------------------------
  *         Challenge 7: Encrypt AES in ECB mode
  *----------------------------------------------------------------------------*/
-size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc)
+int aes_128_ecb_cipher(BYTE **y, size_t *y_len, BYTE *x, size_t x_len, BYTE *key, int enc)
 {
-    size_t y_len = 0,      /* output length */
-           len = 0;     /* intermediate length */
+    size_t len = 0;     /* intermediate length */
+    *y_len = 0;         /* output length */
     BYTE *xi = NULL,    /* one block plaintext input */
          *yi = NULL;    /* one block output of AES encryption */
+    int n_pad = 0;
 
     /* Number of blocks needed */
     size_t n_blocks = x_len / BLOCK_SIZE;
@@ -37,22 +38,30 @@ size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc)
         xi = x_pad + i*BLOCK_SIZE;
 
         /* Encrypt single block using key and AES cipher */
-        len = aes_128_ecb_block(&yi, xi, BLOCK_SIZE, key, enc);
+        if (0 != aes_128_ecb_block(&yi, &len, xi, BLOCK_SIZE, key, enc)) {
+                ERROR("Encryption failed!");
+        }
 
         /* Append encrypted text to output array */
-        memcpy(*y + y_len, yi, len);
-        y_len += len;
+        memcpy(*y + *y_len, yi, len);
+        *y_len += len;
         free(yi);
-    }
-
-    if (!enc) {
-        int n_pad = pkcs7_rmpad(*y, y_len, BLOCK_SIZE); 
-        y_len -= n_pad;
     }
 
     /* Clean-up */
     free(x_pad);
-    return y_len;
+
+    /* Remove padding on decryption, or return error code */
+    if (!enc) {
+        if ((n_pad = pkcs7_rmpad(*y, *y_len, BLOCK_SIZE)) < 0) {
+            return -1;
+        }
+
+        /* Adjust output length to removed padding */
+        *y_len -= n_pad;
+    }
+
+    return 0;
 }
 
 /*==============================================================================

@@ -16,7 +16,7 @@
 
 #define SRAND_INIT 0
 
-size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len);
+int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len);
 
 /*------------------------------------------------------------------------------
  *         Main function
@@ -38,10 +38,9 @@ int main(void)
 /*------------------------------------------------------------------------------
  *          Randomly encrypt with ECB or CBC
  *----------------------------------------------------------------------------*/
-size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
+int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
 {
-    size_t x_aug_len = 0,
-           y_len = 0;
+    size_t x_aug_len = 0;
     BYTE *prepend,
          *append,
          *iv,
@@ -50,6 +49,8 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     int n_prepend,
         n_append,
         heads;
+
+    *y_len = 0;
 
     /* Randomly generate 5-10 bytes to pre-/append to input */
     n_prepend = RAND_RANGE(5,10);
@@ -88,7 +89,7 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
         LOG("Encrypting in ECB mode");
 #endif
         /* Use ECB mode */
-        y_len = aes_128_ecb_cipher(y, x_aug, x_aug_len, key, 1);
+        aes_128_ecb_cipher(y, y_len, x_aug, x_aug_len, key, 1);
 
     } else {
 #ifdef LOGSTATUS
@@ -97,7 +98,7 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
         /* Generate random IV */
         iv = rand_byte(BLOCK_SIZE);
         /* Use CBC mode */
-        y_len = aes_128_cbc_encrypt(y, x_aug, x_aug_len, key, iv);
+        aes_128_cbc_encrypt(y, y_len, x_aug, x_aug_len, key, iv);
         free(iv);
     }
 
@@ -112,7 +113,7 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     free(key);
     free(x_aug);
 
-    return y_len;
+    return 0;
 }
 
 /*==============================================================================

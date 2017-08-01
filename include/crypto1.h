@@ -86,7 +86,7 @@ size_t getKeyLength(const BYTE *byte, size_t nbyte);
 XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte);
 
 // Challenge 7: AES 128-bit ECB-mode encrypt/decrypt entire byte array
-size_t aes_128_ecb_cipher(BYTE **y, BYTE *x, size_t x_len, BYTE *key, int enc);
+int aes_128_ecb_cipher(BYTE **y, size_t *y_len, BYTE *x, size_t x_len, BYTE *key, int enc);
 
 // Same as normMeanHamming except return logical value
 int hasIdenticalBlocks(const BYTE *byte, size_t nbyte, size_t block_size);

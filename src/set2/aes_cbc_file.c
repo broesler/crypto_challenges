@@ -38,10 +38,11 @@ int main(int argc, char **argv)
     /* Define the key -- 16 byte == 128 bit key */
     BYTE key[] = "YELLOW SUBMARINE";
     BYTE *plaintext = NULL;
+    size_t plaintext_len = 0;
     BYTE iv[BLOCK_SIZE] = "";   /* BLOCK_SIZE-length array of '\0' chars */
 
     /*---------- Break the code! ----------*/
-    int plaintext_len = aes_128_cbc_decrypt(&plaintext, byte, nbyte, key, iv);
+    aes_128_cbc_decrypt(&plaintext, &plaintext_len, byte, nbyte, key, iv);
 
     /* Write to stdout */
     printall(plaintext, plaintext_len); /* works even for non-printables */

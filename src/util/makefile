@@ -31,7 +31,7 @@ INCL = $(wildcard $(INCLDIR)*.h)
 LDLIBS = -lcrypto -lssl 
 
 # Make options
-all: test_util
+all: test_util types
 debug: DEBUG = -DLOGSTATUS -Og -ggdb3
 debug: all
 
@@ -45,6 +45,13 @@ test_util: $(OBJ)
 # object rules
 %.o: %.c $(INCL)
 	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -c $< -o $@
+
+# Highlight custom types, unions, and structs!
+types: .types.vim
+.types.vim: $(SRC) $(UTIL) $(INCLDIR)/*.h
+	ctags --c-kinds=gstu -o- ../../**/*.[ch] |\
+		awk 'BEGIN{printf("syntax keyword Type\t")}\
+			{printf("%s ", $$1)}END{print ""}' > $@
 
 # clean up (do not do anything with file named clean)
 .PHONY: depend clean

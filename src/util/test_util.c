@@ -224,12 +224,16 @@ int AESDecrypt1()
     BYTE key[] = "YELLOW SUBMARINE"; /* 16-bit key */
     /*---------- Encrypt the plaintext ----------*/
     BYTE *ctext = NULL;
-    size_t ctext_len = aes_128_ecb_block(&ctext, ptext, ptext_len, key, 1);
+    size_t ctext_len = 0;
+    int out = aes_128_ecb_block(&ctext, &ctext_len, ptext, ptext_len, key, 1);
+    SHOULD_BE(out == 0);
     SHOULD_BE(ctext_len == BLOCK_SIZE);
     /*---------- Decrypt the ciphertext ----------*/
     BYTE *dtext = NULL;
-    size_t dtext_len = aes_128_ecb_block(&dtext, ctext, ctext_len, key, 0);
+    size_t dtext_len = 0;
+    out = aes_128_ecb_block(&dtext, &dtext_len, ctext, ctext_len, key, 0);
     /* Compare with expected result */
+    SHOULD_BE(out == 0);
     SHOULD_BE(dtext_len == ptext_len);
     SHOULD_BE(!memcmp(ptext, dtext, ptext_len));
 #ifdef LOGSTATUS

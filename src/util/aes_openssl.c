@@ -37,11 +37,12 @@ void handleErrors(void)
  *          General encryption/decryption function for one block
  *----------------------------------------------------------------------------*/
 /* Set enc to 1 for encryption, 0 for decryption */
-size_t aes_128_ecb_block(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int enc)
+int aes_128_ecb_block(BYTE **out, size_t *out_len, BYTE *in, size_t in_len, 
+        BYTE *key, int enc)
 {
     EVP_CIPHER_CTX *ctx = NULL;
     int len = -1;
-    int out_len = -1;
+    *out_len = 0;
 
     if (in_len != BLOCK_SIZE) { ERROR("Input must be multiple of BLOCK_SIZE!"); }
 
@@ -64,16 +65,16 @@ size_t aes_128_ecb_block(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int enc
     if (1 != EVP_CipherUpdate(ctx, *out, &len, in, in_len)) {
         handleErrors(); 
     }
-    out_len = len;
+    *out_len = len;
 
     /* Finalise the operation. Further out bytes may be written. Provide pointer
      * to end of output array (out+len) */
     if (1 != EVP_CipherFinal_ex(ctx, *out + len, &len)) { handleErrors(); }
-    out_len += len;
+    *out_len += len;
 
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
-    return out_len;
+    return 0;
 }
 
 /*------------------------------------------------------------------------------
@@ -98,28 +99,23 @@ BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size)
 /*------------------------------------------------------------------------------
  *         Challenge 15: Remove PKCS#7 padding bytes 
  *----------------------------------------------------------------------------*/
-int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size)
+int pkcs7_rmpad(const BYTE *byte, size_t nbyte, size_t block_size)
 {
     int n_pad = byte[nbyte-1];      /* last byte is number of pads */
     if (n_pad <= block_size) {
         for (int i = 0; i < n_pad; i++) {
-            /* If a byte isn't the same as the pad byte, throw warning */
+            /* If a byte isn't the same as the pad byte, return error code */
             if (byte[nbyte-1-i] != n_pad) {
-#ifdef LOGSTATUS
-                printf("byte = \"");
-                printall(byte, nbyte);
-                printf("\"\n");
-                WARNING("Padding is invalid!");
-#endif
-                return 0;
+                return -1;
             }
         }
-        /* Otherwise we've reached the end of the bytes, add a NULL */
-        byte[nbyte-n_pad] = '\0';
+
+        /* Otherwise we've reached the end of the bytes, mark end with NULL */
+        /* byte[nbyte-n_pad] = '\0'; */
         return n_pad;
-    } else {
-        return 0;
-    }        
+    }
+
+    return 0;
 }
 
 /*==============================================================================

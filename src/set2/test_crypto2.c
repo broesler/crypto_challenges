@@ -85,7 +85,7 @@ int PKCS74()
     BYTE byte[] = "ICE ICE BABY\x05\x05\x05\x05";
     size_t nbyte = strlen((char *)byte);
     int npout = pkcs7_rmpad(byte, nbyte, 20);
-    SHOULD_BE(npout == 0);
+    SHOULD_BE(npout == -1);
     END_TEST_CASE;
 }
 
@@ -97,7 +97,7 @@ int PKCS75()
     BYTE byte[] = "ICE ICE BABY\x01\x02\x03\x04";
     size_t nbyte = strlen((char *)byte);
     int npout = pkcs7_rmpad(byte, nbyte, 20);
-    SHOULD_BE(npout == 0);
+    SHOULD_BE(npout == -1);
     END_TEST_CASE;
 }
 
@@ -122,11 +122,13 @@ int CBCencrypt_test(BYTE *ptext)
     BYTE iv[BLOCK_SIZE] = "";   /* BLOCK_SIZE-length array of '\0' chars */
     /* Encrypt the text */
     BYTE *ctext = NULL;
-    size_t ctext_len = aes_128_cbc_encrypt(&ctext, ptext, ptext_len, key, iv);
+    size_t ctext_len = 0;
+    aes_128_cbc_encrypt(&ctext, &ctext_len, ptext, ptext_len, key, iv);
     SHOULD_BE((ctext_len % BLOCK_SIZE) == 0);
     /*---------- Decrypt the ciphertext ----------*/
     BYTE *dtext = NULL;
-    size_t dtext_len = aes_128_cbc_decrypt(&dtext, ctext, ctext_len, key, iv);
+    size_t dtext_len = 0;
+    aes_128_cbc_decrypt(&dtext, &dtext_len, ctext, ctext_len, key, iv);
     /* Compare with expected result */
     SHOULD_BE(dtext_len == ptext_len);
     SHOULD_BE(!memcmp(ptext, dtext, ptext_len));

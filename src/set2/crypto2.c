@@ -14,14 +14,14 @@
 /*------------------------------------------------------------------------------
  *         Challenge 10: Encrypt AES 128-bit cipher in CBC mode 
  *----------------------------------------------------------------------------*/
-size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
+int aes_128_cbc_encrypt(BYTE **y, size_t *y_len, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
 {
-    size_t y_len = 0,      /* output length */
-           len = 0;     /* intermediate length */
+    size_t len = 0;     /* intermediate length */
     BYTE *xp = NULL,    /* intermediate value of xor'd bytes */
          *xi = NULL,    /* one block plaintext input */
          *yi = NULL,    /* one block output of AES encryption */
          *yim1 = NULL;  /* "previous" ciphertext block */
+    *y_len = 0;         /* output length */
 
     /* Number of blocks needed */
     size_t n_blocks = x_len / BLOCK_SIZE;
@@ -45,11 +45,13 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
         free(yi); /* a new yi is malloc'd during ECB, so free the old one */
 
         /* Encrypt single block using key and AES cipher */
-        len = aes_128_ecb_block(&yi, xp, BLOCK_SIZE, key, 1);
+        if (0 != aes_128_ecb_block(&yi, &len, xp, BLOCK_SIZE, key, 1)) {
+            ERROR("Encryption failed!");
+        }
 
         /* Append encrypted text to output array */
-        memcpy(*y + y_len, yi, len);
-        y_len += len;
+        memcpy(*y + *y_len, yi, len);
+        *y_len += len;
 
         free(xp);
     }
@@ -58,24 +60,26 @@ size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv)
     free(yi);
     free(x_pad);
 
-    return y_len;
+    return 0;
 }
 
 /*------------------------------------------------------------------------------
  *         Decrypt AES 128-bit cipher in CBC mode 
  *----------------------------------------------------------------------------*/
-size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
+int aes_128_cbc_decrypt(BYTE **x, size_t *x_len, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
 {
-    size_t x_len = 0,   /* output length */
-           len = 0;     /* intermediate length */
+    size_t len = 0;     /* intermediate length */
     BYTE *yp = NULL,    /* intermediate value of xor'd bytes */
          *xi = NULL,    /* one block plaintext input */
          *yi = NULL,    /* one block output of AES encryption */
          *yim1 = NULL;  /* "previous" ciphertext block */
+    int n_pad = 0;
+
+    *x_len = 0;         /* output length */
 
     /* Number of blocks needed */
     size_t n_blocks = y_len / BLOCK_SIZE;
-    if (x_len % BLOCK_SIZE) { n_blocks++; }
+    if (*x_len % BLOCK_SIZE) { n_blocks++; }
 
     /* initialize output byte array with one extra block */
     *x = init_byte(BLOCK_SIZE*(n_blocks+1));
@@ -87,24 +91,28 @@ size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv)
         yi = y + i*BLOCK_SIZE;
 
         /* Decrypt single block using key and AES cipher */
-        len = aes_128_ecb_block(&yp, yi, BLOCK_SIZE, key, 0);
+        if (0 != aes_128_ecb_block(&yp, &len, yi, BLOCK_SIZE, key, 0)) {
+            ERROR("Decryption failed!");
+        }
 
         /* XOR decrypted ciphertext block with previous ciphertext block */
         xi = fixedXOR(yp, yim1, BLOCK_SIZE);
 
         /* Append decrypted text to output array */
-        memcpy(*x + x_len, xi, len);
-        x_len += len;
+        memcpy(*x + *x_len, xi, len);
+        *x_len += len;
 
         free(yp);
         free(xi); /* could parallelize because x doesn't depend on xi */
     }
 
-    /* Remove any padding from output */
-    int n_pad = pkcs7_rmpad(*x, x_len, BLOCK_SIZE); 
-    x_len -= n_pad;
+    /* Remove any padding from output, or error code if invalid */
+    if ((n_pad = pkcs7_rmpad(*x, *x_len, BLOCK_SIZE)) < 0) {
+        return -1;
+    }
 
-    return x_len;
+    *x_len -= n_pad;
+    return 0;
 }
 
 /*------------------------------------------------------------------------------
@@ -123,7 +131,7 @@ BYTE *rand_byte(size_t len)
  *          Test if we're encrypting in ECB mode or not
  *----------------------------------------------------------------------------*/
 /* Accepts function pointer to encryption oracle and block size */
-size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size)
+size_t isECB(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t block_size)
 {
     /* Encrypt 3 identical blocks, guarantees we will get 2 consecutive */
     size_t x_len = 3*block_size;
@@ -132,7 +140,8 @@ size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size)
 
     /* Encrypt and check for identical blocks */
     BYTE *y = NULL;
-    size_t y_len = encrypt(&y, x, x_len);
+    size_t y_len = 0;
+    encrypt(&y, &y_len, x, x_len);
 
     int test = hasIdenticalBlocks(y, y_len, block_size);
 
@@ -145,7 +154,7 @@ size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size)
  *          Get block size of cipher 
  *----------------------------------------------------------------------------*/
 /* Accepts function pointer to encryption oracle */
-size_t getBlockSize(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t *count, size_t *n)
+size_t getBlockSize(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t *count, size_t *n)
 {
     BYTE *y = NULL;
     *count = 0;
@@ -154,12 +163,14 @@ size_t getBlockSize(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t *count, siz
     for (size_t i = 0; i < IMAX; i++) { x[i] = 'A'; } /* arbitrary byte */
 
     /* Unknown string will be padded to N*block_size */
-    size_t Nblock = encrypt(&y, x, 0);
+    size_t Nblock = 0; 
+    encrypt(&y, &Nblock, x, 0);
     free(y); /* unused */
 
     for (size_t i = 1; i < IMAX; i++) {
         /* Keep adding bytes to input until we "overflow" to next block */
-        size_t Np1block = encrypt(&y, x, i);
+        size_t Np1block = 0; 
+        encrypt(&y, &Np1block, x, i);
         free(y); /* unused */
 
         if (Np1block != Nblock) {
@@ -334,13 +345,14 @@ char *profile_for(const char *email)
 /*------------------------------------------------------------------------------
  *          Encrypt encoded profile under random key
  *----------------------------------------------------------------------------*/
-size_t encrypt_profile(BYTE **y, BYTE **key, char *profile)
+int encrypt_profile(BYTE **y, size_t *y_len, BYTE **key, char *profile)
 {
     /* Set key once only */
     if (!(*key)) {
         *key = rand_byte(BLOCK_SIZE);
     }
-    return aes_128_ecb_cipher(y, (BYTE *)profile, strlen(profile), *key, 1);
+    aes_128_ecb_cipher(y, y_len, (BYTE *)profile, strlen(profile), *key, 1);
+    return 0;
 }
 
 /*------------------------------------------------------------------------------
@@ -349,7 +361,10 @@ size_t encrypt_profile(BYTE **y, BYTE **key, char *profile)
 char *decrypt_profile(BYTE *x, size_t x_len, BYTE *key)
 {
     BYTE *y = NULL;
-    size_t y_len = aes_128_ecb_cipher(&y, x, x_len, key, 0);
+    size_t y_len = 0;
+    if (0 != aes_128_ecb_cipher(&y, &y_len, x, x_len, key, 0)) {
+        ERROR("Invalid padding!");
+    }
     char *str = byte2str(y, y_len);
     char *profile = kv_parse(str);
     free(y);

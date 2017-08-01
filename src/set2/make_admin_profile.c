@@ -30,6 +30,8 @@ int main(void)
     BYTE *y1 = NULL,
          *y2 = NULL,
          *y = NULL;
+    size_t y1_len = 0,
+           y2_len = 0;
 
     /* Strategy: Create block with just "admin" and block with profile up to
      * "role=", then combine the two ciphertexts to get the entire profile */
@@ -55,8 +57,8 @@ int main(void)
     profile2 = profile_for((char *)email2_pad);
 
     /* Encrypt each email and swap blocks */
-    encrypt_profile(&y1, &key, profile1);
-    encrypt_profile(&y2, &key, profile2);
+    encrypt_profile(&y1, &y1_len, &key, profile1);
+    encrypt_profile(&y2, &y2_len, &key, profile2);
 
     /* Build faux ciphertext */
     size_t y_len = 3*BLOCK_SIZE;

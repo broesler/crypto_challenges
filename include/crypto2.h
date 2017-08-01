@@ -27,19 +27,19 @@
 //      Function Definitions
 //------------------------------------------------------------------------------
 // Challenge 10: Encrypt using AES 128-bit CBC mode
-size_t aes_128_cbc_encrypt(BYTE **y, BYTE *x, size_t x_len, BYTE *key, BYTE *iv);
+int aes_128_cbc_encrypt(BYTE **y, size_t *y_len, BYTE *x, size_t x_len, BYTE *key, BYTE *iv);
 
 // Decrypt using AES 128-bit CBC mode
-size_t aes_128_cbc_decrypt(BYTE **x, BYTE *y, size_t y_len, BYTE *key, BYTE *iv);
+int aes_128_cbc_decrypt(BYTE **x, size_t *x_len, BYTE *y, size_t y_len, BYTE *key, BYTE *iv);
 
 // Generate random AES key 
 BYTE *rand_byte(size_t len);
 
 // Get block size given function pointer
-size_t getBlockSize(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t *cnt, size_t *n);
+size_t getBlockSize(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t *count, size_t *n);
 
 // Test if oracle is ECB
-size_t isECB(size_t (*encrypt)(BYTE**, BYTE*, size_t), size_t block_size);
+size_t isECB(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t block_size);
 
 // Parse key=value pairs (reverse of encode)
 char *kv_parse(const char *str);
@@ -51,7 +51,7 @@ char *kv_encode(const char *str);
 char *profile_for(const char *email);
 
 // Encrypt profile with random key
-size_t encrypt_profile(BYTE **y, BYTE **key, char *profile);
+int encrypt_profile(BYTE **y, size_t *y_len, BYTE **key, char *profile);
 
 // Decrypt and parse profile
 char *decrypt_profile(BYTE *x, size_t x_len, BYTE *key);

@@ -40,9 +40,12 @@ int main(int argc, char **argv)
     /* Define the key -- 16 byte == 128 bit key */
     BYTE key[] = "YELLOW SUBMARINE";
     BYTE *plaintext = NULL;
+    size_t plaintext_len = 0;
 
     /*---------- Break the code! ----------*/
-    int plaintext_len = aes_128_ecb_cipher(&plaintext, byte, nbyte, key, 0);
+    if (0 != aes_128_ecb_cipher(&plaintext, &plaintext_len, byte, nbyte, key, 0)) {
+        ERROR("Invalid padding!");
+    }
 
     /* Write to stdout */
     printall(plaintext, plaintext_len); /* works even for non-printables */

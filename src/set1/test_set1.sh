@@ -17,11 +17,15 @@ DATA_PATH="../../data/"
 printf "\n##### TEST LOG: $(date) #####\n"
 
 # Make all executables
+printf "Building executables...\n"
 make clean > /dev/null && make > /dev/null
 if [ "$?" -ne 0 ]; then
     printf "[$0: $LINENO]: Error! make failed to execute properly.\n"
     exit 2
 fi
+printf "done.\n"
+
+printf "Running tests...\n"
 
 # Test utilities
 ./test1
@@ -47,6 +51,7 @@ line=$(./findECB "${DATA_PATH}/8.txt")
 [ "$line" -eq 133 ]
 pass_check "$?" "Challenge 8"
 
+printf "done.\n"
 exit 0
 #===============================================================================
 #===============================================================================

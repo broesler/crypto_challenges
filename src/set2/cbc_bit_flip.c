@@ -23,7 +23,7 @@ static BYTE *global_iv  = NULL;
 
 /* Take input of the form (your-string||unknown-string, random-key), and decrypt
  * the unknown string */
-size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len);
+int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len);
 
 /* Decrypt and parse for ';admin=true;' */
 int isadmin(BYTE *y, size_t y_len);
@@ -36,9 +36,16 @@ int main(int argc, char **argv)
     /* initialize PRNG */
     srand(SRAND_INIT);
 
+    /* Define string */
+    BYTE x[] = ";admin=true;";
+    size_t x_len = sizeof(x);
+
     /* Encrypt our string */
     BYTE *y = NULL;
-    size_t y_len = encryption_oracle(&y, NULL, 0);
+    size_t y_len = 0;
+    if (0 != encryption_oracle(&y, &y_len, x, x_len)) {
+        ERROR("Incorrect padding!");
+    }
 
     /* See if we have an admin */
     int test = isadmin(y, y_len);
@@ -51,13 +58,14 @@ int main(int argc, char **argv)
 /*------------------------------------------------------------------------------
  *          Encryption oracle
  *----------------------------------------------------------------------------*/
-size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
+int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
 {
     size_t xa_len = 0,
-           x_aug_len = 0,
-           y_len = 0;
+           x_aug_len = 0;
     static size_t n_prepend = 0,
                   n_append = 0;
+
+    *y_len = 0;
 
     /* Prepend this string */
     static char prepend[] = "comment1=cooking%20MCs;userdata=";
@@ -78,6 +86,7 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
 
     /* Escape ';' and '=' before encrypting */
     char *x_aug = strhtmlesc((char *)xa, ";=");
+    free(xa);
     x_aug_len = strlen(x_aug);
 
     /* Generate a random key ONCE */
@@ -91,14 +100,17 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     }
 
     /* Encrypt using ECB mode */
-    y_len = aes_128_cbc_encrypt(y, (BYTE *)x_aug, x_aug_len, global_key, global_iv);
-
-    /* Clean-up */
-    free(xa);
+    int out = aes_128_cbc_encrypt(y, y_len, (BYTE *)x_aug, x_aug_len, 
+            global_key, global_iv);
     free(x_aug);
-    return y_len;
-}
 
+    /* Padding is invalid */
+    if (0 != out) { 
+        return -1; 
+    }
+
+    return 0;
+}
 
 /*------------------------------------------------------------------------------
  *         Decrypt and find ';admin=true;' 
@@ -107,7 +119,8 @@ int isadmin(BYTE *y, size_t y_len)
 {
     /* Decrypt ciphertext */ 
     BYTE *x = NULL;
-    size_t x_len = aes_128_cbc_decrypt(&x, y, y_len, global_key, global_iv);
+    size_t x_len = 0;
+    aes_128_cbc_decrypt(&x, &x_len, y, y_len, global_key, global_iv);
 
     /* Parse for ';admin=true;' */
     char *test = strnstr((char *)x, ";admin=true;", x_len);

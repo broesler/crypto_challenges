@@ -30,7 +30,8 @@ void OpenSSL_cleanup(void);
 void handleErrors(void);
 
 // AES 128-bit ECB-mode encrypt/decrypt single block
-size_t aes_128_ecb_block(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int enc);
+int aes_128_ecb_block(BYTE **out, size_t *out_len, BYTE *in, size_t in_len, 
+        BYTE *key, int enc);
 
 //------------------------------------------------------------------------------
 //      Padding challenges
@@ -39,7 +40,7 @@ size_t aes_128_ecb_block(BYTE **out, BYTE *in, size_t in_len, BYTE *key, int enc
 BYTE *pkcs7_pad(const BYTE *byte, size_t nbyte, size_t block_size);
 
 // Challenge 15: Remove PKCS#7 padding
-int pkcs7_rmpad(BYTE *byte, size_t nbyte, size_t block_size);
+int pkcs7_rmpad(const BYTE *byte, size_t nbyte, size_t block_size);
 
 #endif
 //==============================================================================

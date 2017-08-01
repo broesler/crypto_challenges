@@ -27,10 +27,10 @@ static BYTE *global_append = NULL;
 
 /* Take input of the form (your-string||unknown-string, random-key), and decrypt
  * the unknown string */
-size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len);
+int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len);
 
 // Get next byte from one-byte-at-a-time ECB decryption
-BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y, 
+BYTE decodeNextByte(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), const BYTE *y, 
         size_t y_len, size_t block_size, size_t n_prepend);
 
 /* String to append to the plaintext (for decryption!) */
@@ -93,13 +93,14 @@ int main(int argc, char **argv)
 /*------------------------------------------------------------------------------
  *          Encryption oracle
  *----------------------------------------------------------------------------*/
-size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
+int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
 {
-    size_t x_aug_len = 0,
-           y_len = 0;
+    size_t x_aug_len = 0;
     static size_t n_prepend = 0, /* only compute ONCE */
                   n_append = 0;
     BYTE *x_aug;
+
+    *y_len = 0;
 
     /* Convert to byte array */
     if (!global_append) {
@@ -129,23 +130,23 @@ size_t encryption_oracle(BYTE **y, BYTE *x, size_t x_len)
     }
 
     /* Encrypt using ECB mode */
-    y_len = aes_128_ecb_cipher(y, x_aug, x_aug_len, global_key, 1);
+    aes_128_ecb_cipher(y, y_len, x_aug, x_aug_len, global_key, 1);
 
     /* Clean-up */
     free(x_aug);
-    return y_len;
+    return 0;
 }
 
 /*------------------------------------------------------------------------------
  *          Get single byte of unknown string
  *----------------------------------------------------------------------------*/
-BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y, 
+BYTE decodeNextByte(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), const BYTE *y, 
         size_t y_len, size_t block_size, size_t n_prepend)
 {
     DICTIONARY *dict = NULL;
     size_t i = 0,
            x_len = 0,
-           /* t_len = 0, */
+           t_len = 0,
            in_len = 0;
     static size_t p_len = 0;
     BYTE *c = NULL,
@@ -170,7 +171,7 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
         *(in + in_len - 1) = (BYTE)i;
 
         /* Encrypt input with one "guess" byte */
-        encrypt(&t, in, in_len);
+        encrypt(&t, &t_len, in, in_len);
 
         /* Store encrypted "guess" */
         /* NOTE need to malloc "data" for dictionary because it is free'd */
@@ -182,7 +183,7 @@ BYTE decodeNextByte(size_t (*encrypt)(BYTE**, BYTE*, size_t), const BYTE *y,
     }
 
     /* Encrypt just our one-byte-short string */ 
-    encrypt(&t, in, x_len + p_len);
+    encrypt(&t, &t_len, in, x_len + p_len);
 
     /* cast (void *) to desired byte value */
     BYTE b = *(BYTE *)dLookup(dict, t, in_len);
