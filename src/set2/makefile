@@ -36,13 +36,13 @@ UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
 # Make options
-all: test2 c10 c11 c12 c13 c14 types
+all: test2 c10 c11 c13 c14 c16 types
 test: test2
 c10: aes_cbc_file
 c11: detect_block_mode
-c12: one_byte_ecb_easy
 c13: make_admin_profile
-c14: one_byte_ecb_hard
+c14: one_byte_ecb
+c16: cbc_bit_flip
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3
 debug: all
@@ -62,13 +62,13 @@ aes_cbc_file: aes_cbc_file.o $(OBJ_UTIL)
 detect_block_mode: detect_block_mode.o $(OBJ_UTIL)
 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
 
-one_byte_ecb_easy: one_byte_ecb_easy.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
-
 make_admin_profile: make_admin_profile.o $(OBJ_UTIL)
 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
 
-one_byte_ecb_hard: one_byte_ecb_hard.o $(OBJ_UTIL)
+one_byte_ecb: one_byte_ecb.o $(OBJ_UTIL)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
+
+cbc_bit_flip: cbc_bit_flip.o $(OBJ_UTIL)
 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
 
 # Objects depend on source and headers

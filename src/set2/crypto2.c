@@ -316,7 +316,7 @@ char *profile_for(const char *email)
            len = 0;
 
     /* Escape "metacharacters" from the input */
-    email_clean = strescchr(email, "&=");
+    email_clean = strhtmlesc(email, "&=");
 
     /* Initialize output */
     tot_len = sizeof(email_key) + strlen(email_clean)+1 + sizeof(profile_data);

@@ -212,7 +212,7 @@ int ProfileFor2()
     START_TEST_CASE;
     char in[] = "foo@bar.com&role=admin";
     char *out = profile_for(in);
-    char expect[] = "email=foo@bar.com\\&role\\=admin&uid=56&role=user";
+    char expect[] = "email=foo@bar.com%26role%3Dadmin&uid=56&role=user";
     SHOULD_BE(!strcmp(out, expect));
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", out, expect);

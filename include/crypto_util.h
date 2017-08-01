@@ -97,6 +97,9 @@ char *strrmchr(const char *src, const char *charset);
 // Escape chars in set
 char *strescchr(const char *src, const char *charset);
 
+// HTML %-escape chars
+char *strhtmlesc(const char *src, const char *charset);
+
 // Count occurrences of character in string
 size_t cntchr(const char *str, const char c);
 
