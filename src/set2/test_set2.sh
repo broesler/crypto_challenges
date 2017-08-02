@@ -56,6 +56,10 @@ diff <(./one_byte_ecb hard "${DATA_PATH}/12.txt") \
     "${DATA_PATH}rollin.txt"
 pass_check "$?" "Challenge 14"
 
+# Test challenge 16
+./cbc_bit_flip
+pass_check "$?" "Challenge 16"
+
 printf "done.\n"
 exit 0
 #===============================================================================
