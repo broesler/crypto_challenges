@@ -12,13 +12,17 @@
 source "../test_funcs.sh"
 
 DATA_PATH="../../data/"
+make_opt=''
 
 # Log file header
 printf "##### TEST LOG: $(date) #####\n"
 
 # Make all executables
 printf "Building executables...\n"
-make clean > /dev/null && make > /dev/null
+if [ "$1" == "-v" ]; then
+    make_opt='verbose'
+fi
+make clean > /dev/null && make $make_opt > /dev/null
 if [ "$?" -ne 0 ]; then
     printf "\033[0;31[$0: $LINENO]: Error! make failed to execute properly.\033[0m\n"
     exit 2

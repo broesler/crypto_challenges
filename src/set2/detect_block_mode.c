@@ -104,7 +104,7 @@ int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
 
 #ifdef VERBOSE
     LOG("Ciphertext is:");
-    BIO_dump_fp(stdout, (const char *)*y, y_len);
+    BIO_dump_fp(stdout, (const char *)*y, (int)y_len);
 #endif
 
     /* Clean-up */

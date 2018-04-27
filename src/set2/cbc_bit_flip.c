@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     BYTE x[x_len+1];
     BYTE *p = x;
     /* Fill one full block with garbage so we don't worry about garbling it */
-    for (size_t i = 0; i < BLOCK_SIZE; i++) { *p++ = 'A'; }
+    for (size_t i = 0; i < BLOCK_SIZE; i++) { *p++ = 'X'; }
     /* Add k to "escaped" bytes so they don't get escaped */
     *p++ = ';' ^ k;
     memcpy(p, "admin", 5);
@@ -66,9 +66,9 @@ int main(int argc, char **argv)
     }
 
     /* Un-add escaped bytes with k to get the desired bytes */
-    y[32] ^= k;
-    y[38] ^= k;
-    y[43] ^= k;
+    y[x_len]    ^= k;
+    y[x_len+6]  ^= k; /* len("admin")+1 */
+    y[x_len+11] ^= k; /* len("true")+1 */
 
     /* See if we have an admin */
     int test = isadmin(y, y_len); /* bash convention 0 == ok */
@@ -125,7 +125,7 @@ int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
     }
 
     /* Encrypt using CBC mode */
-    int out = aes_128_cbc_encrypt(y, y_len, (BYTE *)xa, xa_len, 
+    int out = aes_128_cbc_encrypt(y, y_len, (BYTE *)xa, xa_len,
             global_key, global_iv);
 
     /* Clean-up */
@@ -133,19 +133,19 @@ int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
     free(x_clean);
 
     /* Padding is invalid */
-    if (0 != out) { 
-        return -1; 
+    if (0 != out) {
+        return -1;
     }
 
     return 0;
 }
 
 /*------------------------------------------------------------------------------
- *         Decrypt and find ';admin=true;' 
+ *         Decrypt and find ';admin=true;'
  *----------------------------------------------------------------------------*/
-int isadmin(BYTE *y, size_t y_len) 
+int isadmin(BYTE *y, size_t y_len)
 {
-    /* Decrypt ciphertext */ 
+    /* Decrypt ciphertext */
     BYTE *x = NULL;
     size_t x_len = 0;
     aes_128_cbc_decrypt(&x, &x_len, y, y_len, global_key, global_iv);
@@ -157,7 +157,7 @@ int isadmin(BYTE *y, size_t y_len)
     printf("\"\n");
 #endif
 
-    /* Will not work if output has NULL before our admin check... */
+    /* WARNING Will not work if output has NULL before our admin check!! */
     char *test = strnstr((char *)x, ";admin=true;", x_len);
 
     free(x);

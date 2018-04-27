@@ -298,7 +298,7 @@ XOR_NODE *singleByteXORDecode(const BYTE *byte, size_t nbyte)
             cfreq_score = charFreqScore(ptext, nbyte);
 
 #ifdef VERBOSE
-            printf("%0.2X\t%s\t%10.4e\n", key, ptext, cfreq_score);
+            printf("%.2X\t%s\t%10.4e\n", key, ptext, cfreq_score);
 #endif
             /* Track minimum chi-squared score and actual key */
             if (cfreq_score < out->score) {

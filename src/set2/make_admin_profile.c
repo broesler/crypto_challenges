@@ -56,11 +56,11 @@ int main(void)
     profile1 = profile_for(email1);
     profile2 = profile_for((char *)email2_pad);
 
-    /* Encrypt each email and swap blocks */
+    /* Encrypt each email */
     encrypt_profile(&y1, &y1_len, &key, profile1);
     encrypt_profile(&y2, &y2_len, &key, profile2);
 
-    /* Build faux ciphertext */
+    /* Swap blocks to build faux ciphertext */
     size_t y_len = 3*BLOCK_SIZE;
     y = init_byte(y_len);
     memcpy(y,                y1,              2*BLOCK_SIZE); /* #1-2 */
