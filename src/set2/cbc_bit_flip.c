@@ -26,7 +26,7 @@ static BYTE *global_iv  = NULL;
 int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len);
 
 /* Decrypt and parse for ';admin=true;' */
-int isadmin(BYTE *y, size_t y_len);
+int decrypt_and_checkadmin(BYTE *y, size_t y_len);
 
 /*------------------------------------------------------------------------------
  *         Main function
@@ -54,8 +54,10 @@ int main(int argc, char **argv)
     *p++ = ';' ^ k;
     *p = '\0';
 
+
 #ifdef LOGSTATUS
-    printf("x = %s\n", x);
+    printf("x  = \"%s\"\n", x);
+    /* x == "XXXXXXXXXXXXXXXX>admin8true>", for k = 0x05 */
 #endif
 
     /* Encrypt our string */
@@ -65,13 +67,20 @@ int main(int argc, char **argv)
         ERROR("Incorrect padding!");
     }
 
-    /* Un-add escaped bytes with k to get the desired bytes */
+    /* Flip bits in FIRST (junk) block of our ciphertext, so that when this
+     * block is XOR'd with the SECOND (data) block, we get the ";=" chars!
+     * x  : XXXXXXXXXXXXXXXX >admin8true>
+     * y  : YYYYYYYYYYYYYYYY YYYYYYYYYYYY\x04\x04\x04\x04
+     * Flip bits to get:
+     * y  : pYYYYYpYYYYpYYYY YYYYYYYYYYYY\x04\x04\x04\x04
+     * x' : GARBAGEDECRYPTED ;admin=true;
+     */
     y[x_len]    ^= k;
     y[x_len+6]  ^= k; /* len("admin")+1 */
     y[x_len+11] ^= k; /* len("true")+1 */
 
-    /* See if we have an admin */
-    int test = isadmin(y, y_len); /* bash convention 0 == ok */
+    /* Decrypt y to see if we have an admin */
+    int test = decrypt_and_checkadmin(y, y_len); /* bash convention 0 == ok */
 
 #ifdef LOGSTATUS
     if (!test) { printf("Found admin!\n"); }
@@ -125,17 +134,11 @@ int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
     }
 
     /* Encrypt using CBC mode */
-    int out = aes_128_cbc_encrypt(y, y_len, (BYTE *)xa, xa_len,
-            global_key, global_iv);
+    aes_128_cbc_encrypt(y, y_len, (BYTE *)xa, xa_len, global_key, global_iv);
 
     /* Clean-up */
     free(xa);
     free(x_clean);
-
-    /* Padding is invalid */
-    if (0 != out) {
-        return -1;
-    }
 
     return 0;
 }
@@ -143,16 +146,20 @@ int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
 /*------------------------------------------------------------------------------
  *         Decrypt and find ';admin=true;'
  *----------------------------------------------------------------------------*/
-int isadmin(BYTE *y, size_t y_len)
+int decrypt_and_checkadmin(BYTE *y, size_t y_len)
 {
     /* Decrypt ciphertext */
     BYTE *x = NULL;
     size_t x_len = 0;
-    aes_128_cbc_decrypt(&x, &x_len, y, y_len, global_key, global_iv);
+    
+    /* Check if padding is valid */
+    if (0 != aes_128_cbc_decrypt(&x, &x_len, y, y_len, global_key, global_iv)) {
+        return -1;
+    }
 
     /* Parse for ';admin=true;' */
 #ifdef LOGSTATUS
-    printf("test = \"");
+    printf("x' = \"");
     printall(x, x_len);
     printf("\"\n");
 #endif
