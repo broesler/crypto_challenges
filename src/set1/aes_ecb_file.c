@@ -16,12 +16,22 @@
 int main(int argc, char **argv)
 {
     char *b64_file = NULL;
+    int enc = 0; /* 0 == decrypt, 1 == encrypt */
 
     /* Get one more argument of filename */
     if (argc > 1) {
         b64_file = argv[1];
+        if (argc > 2) {
+            char c = argv[2][0];
+            if (isdigit(c)) {
+                enc = c - '0';
+            } else {
+                printf("Invalid encryption flag '%c'. "
+                       "Decrypting file anyway...\n", c);
+            }
+        }
     } else {
-        fprintf(stderr, "Usage: %s [base64_file]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [base64_file] [encrypt?]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -43,7 +53,7 @@ int main(int argc, char **argv)
     size_t plaintext_len = 0;
 
     /*---------- Break the code! ----------*/
-    if (0 != aes_128_ecb_cipher(&plaintext, &plaintext_len, byte, nbyte, key, 0)) {
+    if (0 != aes_128_ecb_cipher(&plaintext, &plaintext_len, byte, nbyte, key, enc)) {
         ERROR("Invalid padding!");
     }
 

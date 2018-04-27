@@ -42,7 +42,7 @@ diff <(./breakRepeatingXOR "${DATA_PATH}/6.txt") \
 pass_check "$?" "Challenge 6"
 
 # Test challenge 7
-diff <(./aes_ecb_file "${DATA_PATH}/7.txt") \
+diff <(./aes_ecb_file "${DATA_PATH}/7.txt" 0) \
     "${DATA_PATH}/play_that_funky_music.txt"
 pass_check "$?" "Challenge 7"
 
