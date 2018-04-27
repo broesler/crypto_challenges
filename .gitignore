@@ -1,3 +1,6 @@
+# IGNORE .gitignore FILES -- AUTO-GENERATED!!
+.gitignore
+
 # misc files
 .gdb_history
 valout
@@ -37,15 +40,16 @@ strassign_test
 test_strtoul
 test_util
 test1
-test2
 ruby_test
 breakRepeatingXOR
-aes_ecb_file
 findECB
 findSingleByteXOR
-aes_cbc_file
-detect_block_mode
-one_byte_ecb
-make_admin_profile
-cbc_bit_flip
+aes_ecb_file
+
+# test2
+# aes_cbc_file
+# detect_block_mode
+# make_admin_profile
+# one_byte_ecb
+# cbc_bit_flip
 

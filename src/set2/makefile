@@ -55,22 +55,30 @@ verbose: debug
 #------------------------------------------------------------------------------
 # Main executable:
 test2: test_crypto2.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-aes_cbc_file: aes_cbc_file.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+aes_cbc_file: aes_cbc_file.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-detect_block_mode: detect_block_mode.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+detect_block_mode: detect_block_mode.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-make_admin_profile: make_admin_profile.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
+make_admin_profile: make_admin_profile.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
 
-one_byte_ecb: one_byte_ecb.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
+one_byte_ecb: one_byte_ecb.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
 
-cbc_bit_flip: cbc_bit_flip.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
+cbc_bit_flip: cbc_bit_flip.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
+
+.gitignore:
+	@printf "test2\n\
+		aes_cbc_file\n\
+		detect_block_mode\n\
+		make_admin_profile\n\
+		one_byte_ecb\n\
+		cbc_bit_flip\n" > $@
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)
@@ -102,6 +110,7 @@ clean:
 	rm -f detect_block_mode
 	rm -f one_byte_ecb
 	rm -f make_admin_profile
+	rm -f .gitignore
 
 #==============================================================================
 #==============================================================================
