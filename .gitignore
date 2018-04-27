@@ -15,6 +15,18 @@ valout
 *.la
 *.lo
 
+# Data directory
+data/
+
+# Debug files
+*.dSYM
+
+# Binaries
+*.pdf
+
+# Other
+.types.vim
+
 # Executables
 *.pyc
 *.pyo
@@ -35,15 +47,5 @@ aes_cbc_file
 detect_block_mode
 one_byte_ecb
 make_admin_profile
+cbc_bit_flip
 
-# Data directory
-data/
-
-# Debug files
-*.dSYM
-
-# Binaries
-*.pdf
-
-# Other
-.types.vim

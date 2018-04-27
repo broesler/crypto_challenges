@@ -377,6 +377,8 @@ char *strrmchr(const char *src, const char *charset)
     return dest; 
 }
 
+/* TODO combind strescchr and strhtmlesc into one function that takes a "mode"
+ * argument i.e. mode='std' or mode='html'. Only 3 lines differ. */
 /*------------------------------------------------------------------------------
  *        Escape chars in set occuring in string
  *----------------------------------------------------------------------------*/

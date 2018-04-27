@@ -15,8 +15,7 @@ DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6
 
 # Set the compiler options
 CC = gcc-7
-CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
-SANFLAGS = -fsanitize=address -O1 -fno-omit-frame-pointer
+CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
 
 # Look for header files here
 OPT = -I$(INCLDIR) -I$(SSLINCL) -I$(DICTINCL)
@@ -30,20 +29,15 @@ INCL = $(wildcard $(INCLDIR)*.h)
 
 # Define source files
 SRC   = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
-UTIL  = crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c 
+UTIL  = ../set2/crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c 
 UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
 
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
 # Make options
-all: test2 c10 c11 c13 c14 c16 types
-test: test2
-c10: aes_cbc_file
-c11: detect_block_mode
-c13: make_admin_profile
-c14: one_byte_ecb
-c16: cbc_bit_flip
+all: c17 types
+c17: cbc_padding_oracle
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3
 debug: all
@@ -54,22 +48,10 @@ verbose: debug
 # 		Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test2: test_crypto2.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+# test3: test_crypto3.o $(OBJ_UTIL)
+# 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
 
-aes_cbc_file: aes_cbc_file.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
-
-detect_block_mode: detect_block_mode.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
-
-make_admin_profile: make_admin_profile.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
-
-one_byte_ecb: one_byte_ecb.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
-
-cbc_bit_flip: cbc_bit_flip.o $(OBJ_UTIL)
+cbc_padding_oracle: cbc_padding_oracle.o $(OBJ_UTIL)
 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
 
 # Objects depend on source and headers
@@ -87,21 +69,11 @@ types: .types.vim
 .PHONY: depend clean
 clean:
 	rm -f *~
-	rm -f ../set1/*.o
-	rm -f ../set1/*.gch
-	rm -rf ../set1/*.dSYM/
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
-	rm -f $(UTILDIR)*.o
-	rm -f $(UTILDIR)*.gch
-	rm -rf $(UTILDIR)*.dSYM/
-	rm -f test2
-	rm -f aes_cbc_file
-	rm -f cbc_bit_flip
-	rm -f detect_block_mode
-	rm -f one_byte_ecb
-	rm -f make_admin_profile
+	rm -f test3
+	rm -f cbc_padding_oracle
 
 #==============================================================================
 #==============================================================================

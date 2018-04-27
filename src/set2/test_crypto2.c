@@ -208,7 +208,7 @@ int ProfileFor1()
     END_TEST_CASE;
 }
 
-/* Test profile creation */
+/* Test profile creation vs attempted admin hack */
 int ProfileFor2()
 {
     START_TEST_CASE;

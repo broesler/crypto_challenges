@@ -231,10 +231,12 @@ char *kv_parse(const char *str)
         /* if key is "uid", val is int, otherwise val is string */
         if (!strcmp(key, "uid")) {
             sscanf(pair, "%*[^=]=%d", &val_int);  /* ignore key */
-            line_len += snprintf(kv_obj + line_len, kv_obj_len - line_len, "\t%s: %d", key, val_int);
+            line_len += snprintf(kv_obj + line_len, kv_obj_len - line_len,
+                                 "\t%s: %d", key, val_int);
         } else {
             sscanf(pair, fmt_val_str, val);
-            line_len += snprintf(kv_obj + line_len, kv_obj_len - line_len, "\t%s: '%s'", key, val);
+            line_len += snprintf(kv_obj + line_len, kv_obj_len - line_len,
+                                 "\t%s: '%s'", key, val);
         }
 
         /* if we're on last pair, no comma */
