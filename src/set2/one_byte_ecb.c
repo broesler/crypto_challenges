@@ -1,5 +1,5 @@
 /*==============================================================================
- *     File: one_byte_ecb_hard.c
+ *     File: one_byte_ecb.c
  *  Created: 07/28/2017, 21:22
  *   Author: Bernie Roesler
  *
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     BYTE y[1024];
     BYTE *p = y;
 
-    if (argc < 1) {
+    if (argc < 2) {
         printf("Usage: %s [easy|hard]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
