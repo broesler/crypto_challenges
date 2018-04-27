@@ -74,11 +74,11 @@ cbc_bit_flip: cbc_bit_flip.o $(OBJ_UTIL) | .gitignore
 
 .gitignore:
 	@printf "test2\n\
-		aes_cbc_file\n\
-		detect_block_mode\n\
-		make_admin_profile\n\
-		one_byte_ecb\n\
-		cbc_bit_flip\n" > $@
+	aes_cbc_file\n\
+	detect_block_mode\n\
+	make_admin_profile\n\
+	one_byte_ecb\n\
+	cbc_bit_flip\n" > $@
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)

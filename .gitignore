@@ -34,22 +34,7 @@ data/
 *.pyc
 *.pyo
 *.x86_64
-test_crypto
 strtoupper_test
 strassign_test
 test_strtoul
-test_util
-test1
 ruby_test
-breakRepeatingXOR
-findECB
-findSingleByteXOR
-aes_ecb_file
-
-# test2
-# aes_cbc_file
-# detect_block_mode
-# make_admin_profile
-# one_byte_ecb
-# cbc_bit_flip
-

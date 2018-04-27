@@ -39,12 +39,15 @@ debug: all
 # 	Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test_util: $(OBJ)
-	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $(OBJ) $(LDLIBS)
+test_util: $(OBJ) | .gitignore
+	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $^ $(LDLIBS)
 
 # object rules
 %.o: %.c $(INCL)
 	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -c $< -o $@
+
+.gitignore:
+	@printf test_util > $@
 
 # Highlight custom types, unions, and structs!
 types: .types.vim
@@ -61,6 +64,7 @@ clean:
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
 	rm -f test_util
+	rm -f .gitignore
 
 #==============================================================================
 #==============================================================================

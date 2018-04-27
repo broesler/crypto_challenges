@@ -52,20 +52,27 @@ verbose: debug
 # 		Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test1: test_crypto1.o $(OBJ_AES) $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+test1: test_crypto1.o $(OBJ_AES) $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-findSingleByteXOR: findSingleByteXOR.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $?
+findSingleByteXOR: findSingleByteXOR.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^
 
-breakRepeatingXOR: breakRepeatingXOR.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $?
+breakRepeatingXOR: breakRepeatingXOR.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^
 
-aes_ecb_file: aes_ecb_file.o $(OBJ_AES) $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+aes_ecb_file: aes_ecb_file.o $(OBJ_AES) $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-findECB: findECB.o $(OBJ_AES) $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+findECB: findECB.o $(OBJ_AES) $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
+
+.gitignore:
+	@printf "test1\n\
+	findSingleByteXOR\n\
+	breakRepeatingXOR\n\
+	aes_ecb_file\n\
+	findECB\n" > $@
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)
@@ -94,6 +101,7 @@ clean:
 	rm -f aes_ecb_file
 	rm -f findECB
 	rm -f .types.vim
+	rm -f .gitignore
 
 #==============================================================================
 #==============================================================================
