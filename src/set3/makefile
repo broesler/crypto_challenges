@@ -48,12 +48,15 @@ verbose: debug
 # 		Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-# test3: test_crypto3.o $(OBJ_UTIL)
+# test3: test_crypto3.o $(OBJ_UTIL) | .gitignore
 # 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
 
-cbc_padding_oracle: cbc_padding_oracle.o $(OBJ_UTIL)
-	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS) $(DLIBS)
+cbc_padding_oracle: cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
 
+.gitignore:
+	@printf cbc_padding_oracle > $@
+	
 # Objects depend on source and headers
 %.o: %.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
@@ -72,8 +75,9 @@ clean:
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
-	rm -f test3
+	# rm -f test3
 	rm -f cbc_padding_oracle
+	rm -f .gitignore
 
 #==============================================================================
 #==============================================================================
