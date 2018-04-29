@@ -19,6 +19,10 @@
 #include "crypto1.h"
 #include "crypto2.h"
 
+// Global key, iv used in tests
+extern BYTE *global_key;
+extern BYTE *global_iv;
+
 //------------------------------------------------------------------------------ 
 //       Macros and Constnats
 //------------------------------------------------------------------------------

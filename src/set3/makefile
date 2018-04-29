@@ -29,7 +29,7 @@ INCL = $(wildcard $(INCLDIR)*.h)
 
 # Define source files
 SRC   = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
-UTIL  = ../set2/crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c 
+UTIL  = ./cbc_padding_oracle.c ../set2/crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c
 UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
 
 # Object files
@@ -37,7 +37,7 @@ OBJ_UTIL = $(UTIL:%.c=%.o)
 
 # Make options
 all: c17 test_cbc_padding_oracle types
-c17: cbc_padding_oracle
+c17: cbc_padding_oracle_main
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3
 debug: all
@@ -54,11 +54,11 @@ verbose: debug
 test_cbc_padding_oracle: test_cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-cbc_padding_oracle: cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
+cbc_padding_oracle_main: cbc_padding_oracle_main.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 .gitignore:
-	@printf "cbc_padding_oracle\n\
+	@printf "cbc_padding_oracle_main\n\
 	test_cbc_padding_oracle" > $@
 
 # Objects depend on source and headers
@@ -88,7 +88,7 @@ clean:
 	rm -f $(UTILDIR)*.o
 	rm -f $(UTILDIR)*.gch
 	rm -rf $(UTILDIR)*.dSYM/
-	rm -f cbc_padding_oracle
+	rm -f cbc_padding_oracle_main
 	rm -f test_cbc_padding_oracle
 	rm -f .gitignore
 	# rm -f test3

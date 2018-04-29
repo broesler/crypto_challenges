@@ -15,10 +15,13 @@
 #include "crypto2.h"
 #include "cbc_padding_oracle.h"
 
-/* Manually set global key, iv used in tests -- BLOCK_SIZE = 16 */
-static BYTE global_key[] = "BUSINESS CASUAL";
-static BYTE global_iv[] = "\x99\x99\x99\x99\x99\x99\x99\x99\
-                           \x99\x99\x99\x99\x99\x99\x99\x99";
+/* OVERWRITE externs?? */
+/* static BYTE global_key[] = "BUSINESS CASUAL"; */
+/* static BYTE global_iv[]  = "\x99\x99\x99\x99\x99\x99\x99\x99\ */
+/*                             \x99\x99\x99\x99\x99\x99\x99\x99"; */
+BYTE *global_key = (BYTE *)"BUSINESS CASUAL";
+BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99\
+                            \x99\x99\x99\x99\x99\x99\x99\x99";
 
 /*------------------------------------------------------------------------------
  *        Define test functions
@@ -32,32 +35,62 @@ int PORACLE1()
     BYTE *y = NULL;
     size_t y_len = 0;
     SHOULD_BE(aes_128_cbc_encrypt(&y, &y_len, x, x_len, global_key, global_iv) == 0);
+#ifdef LOGSTATUS
     printf("y  = \"");
     print_blocks(y, y_len, BLOCK_SIZE, 0);
     printf("\"\n");
-    /* Choose a correct padding for FIRST of 2 blocks */
-    int n_pad = 1;
-    for (size_t i = 0; i < n_pad; i++) {
-        y[BLOCK_SIZE - n_pad + i] ^= n_pad;
-    }
+#endif
+    /* Choose random byte for last position of first block. */
+    BYTE yk = 0x44; /* 0x44 == 'E' ^ 1 == i in last_byte */
+    y[BLOCK_SIZE-1] ^= yk;
+#ifdef LOGSTATUS
     printf("y  = \"");
     print_blocks(y, y_len, BLOCK_SIZE, 0);
     printf("\"\n");
+#endif
     /* Decrypt and test value */
     BYTE *xp = NULL;
     size_t xp_len = 0;
-    SHOULD_BE(aes_128_cbc_decrypt(&xp, &xp_len, y, y_len, global_key, global_iv) == 0);
+    SHOULD_BE(aes_128_cbc_decrypt(&xp, &xp_len, y, y_len, global_key, global_iv) == 1);
+#ifdef LOGSTATUS
     printf("xp = \"");
     print_blocks(xp, xp_len, BLOCK_SIZE, 1);
     printf("\"\n");
-    for (size_t i = 0; i < n_pad; i++) {
-        xp[2*BLOCK_SIZE - n_pad + i] ^= n_pad;
-    }
-    printf("xp = \"");
-    print_blocks(xp, xp_len, BLOCK_SIZE, 1);
-    printf("\"\n");
+#endif
+    SHOULD_BE(*(xp + 2*BLOCK_SIZE-1) == 0x01);  /* last byte of xp is \x01 */
+    SHOULD_BE(xp_len == y_len-1); /* valid padding of \x01 gets stripped. */
+    /* Last block should be equal, first block is garbage */
+    SHOULD_BE(!memcmp(xp + BLOCK_SIZE, x + BLOCK_SIZE, xp_len - BLOCK_SIZE));
+    free(y);
+    free(xp);
     END_TEST_CASE;
 }
+
+/* Test last_byte algorithm */
+int PORACLE2()
+{
+    START_TEST_CASE;
+    BYTE x[] = "FIRETRUCK RACES!YELLOW SUBMARINE"; /* 2 blocks */
+    size_t x_len = strlen((char *)x);
+    BYTE *y = NULL;
+    size_t y_len = 0;
+    SHOULD_BE(aes_128_cbc_encrypt(&y, &y_len, x, x_len, global_key, global_iv) == 0);
+    BYTE *xb = NULL;
+    size_t xb_len = 0;
+    SHOULD_BE(last_byte(&xb, &xb_len, y) == 0);
+    SHOULD_BE(xb_len == 1);
+    SHOULD_BE(!memcmp(xb, "E", xb_len));
+    printf("y  = \"");
+    print_blocks(y, y_len, BLOCK_SIZE, 0);
+    printf("\"\n");
+    printf("xb = \"");
+    printall(xb, xb_len);
+    printf("\"\n");
+    free(y);
+    free(xb);
+    END_TEST_CASE;
+}
+
 
 
 /*------------------------------------------------------------------------------
@@ -70,6 +103,7 @@ int main(void)
 
     /* Run OpenSSL lines here for speed */
     RUN_TEST(PORACLE1, "padding_oracle() 1 ");
+    RUN_TEST(PORACLE2, "padding_oracle() 2 ");
 
     /* Count errors */
     if (!fails) {
