@@ -112,7 +112,7 @@ int aes_128_cbc_decrypt(BYTE **x, size_t *x_len, BYTE *y, size_t y_len, BYTE *ke
     }
 
     *x_len -= n_pad;
-    return 0;
+    return n_pad;
 }
 
 /*------------------------------------------------------------------------------

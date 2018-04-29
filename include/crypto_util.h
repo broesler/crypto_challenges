@@ -60,7 +60,9 @@ int ispchar(const char c);
 
 // Print all bytes from array 
 void printall(const BYTE *s, size_t nbyte);
-void print_blocks(const BYTE *s, size_t nbyte, size_t block_size);
+
+// Print block separators
+void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar);
 
 // Initialize string (char array)
 char *init_str(const size_t len);

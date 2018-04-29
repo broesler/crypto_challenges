@@ -36,7 +36,7 @@ UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
 # Make options
-all: c17 types
+all: c17 test_cbc_padding_oracle types
 c17: cbc_padding_oracle
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3
@@ -49,13 +49,17 @@ verbose: debug
 #------------------------------------------------------------------------------
 # Main executable:
 # test3: test_crypto3.o $(OBJ_UTIL) | .gitignore
-# 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+# 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
+
+test_cbc_padding_oracle: test_cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 cbc_padding_oracle: cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
 
 .gitignore:
-	@printf cbc_padding_oracle > $@
+	@printf "cbc_padding_oracle\n\
+	test_cbc_padding_oracle" > $@
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)
@@ -85,6 +89,7 @@ clean:
 	rm -f $(UTILDIR)*.gch
 	rm -rf $(UTILDIR)*.dSYM/
 	rm -f cbc_padding_oracle
+	rm -f test_cbc_padding_oracle
 	rm -f .gitignore
 	# rm -f test3
 

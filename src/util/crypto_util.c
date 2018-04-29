@@ -188,11 +188,12 @@ void printall(const BYTE *s, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Print all bytes from array in blocks
  *----------------------------------------------------------------------------*/
-void print_blocks(const BYTE *s, size_t nbyte, size_t block_size)
+void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar)
 {
     /* *s : pointer to byte array for printing
      * nbyte : number of bytes in *s
      * block_size : number of bytes per block
+     * pchar : if true, print 'printable' chars instead of hex codes
      */
 
     /* Number of blocks needed */
@@ -204,7 +205,11 @@ void print_blocks(const BYTE *s, size_t nbyte, size_t block_size)
                idx = n*block_size;
         do {
             char c = *(s + idx);
-            printf("\\x%.2X", c);
+            if (pchar && isprint(c)) {
+                printf("  %c ", c); /* keep same spaceing as \x01, i.e. */
+            } else {
+                printf("\\x%.2X", c);
+            }
             i++;
             idx++;
         } while ((i < block_size) && (idx < nbyte));
