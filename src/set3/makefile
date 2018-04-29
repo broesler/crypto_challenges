@@ -56,7 +56,7 @@ cbc_padding_oracle: cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
 
 .gitignore:
 	@printf cbc_padding_oracle > $@
-	
+
 # Objects depend on source and headers
 %.o: %.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
@@ -72,12 +72,21 @@ types: .types.vim
 .PHONY: depend clean
 clean:
 	rm -f *~
+	rm -f ../set1/*.o
+	rm -f ../set1/*.gch
+	rm -rf ../set1/*.dSYM/
+	rm -f ../set2/*.o
+	rm -f ../set2/*.gch
+	rm -rf ../set2/*.dSYM/
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
-	# rm -f test3
+	rm -f $(UTILDIR)*.o
+	rm -f $(UTILDIR)*.gch
+	rm -rf $(UTILDIR)*.dSYM/
 	rm -f cbc_padding_oracle
 	rm -f .gitignore
+	# rm -f test3
 
 #==============================================================================
 #==============================================================================

@@ -186,6 +186,36 @@ void printall(const BYTE *s, size_t nbyte)
 }
 
 /*------------------------------------------------------------------------------
+ *         Print all bytes from array in blocks
+ *----------------------------------------------------------------------------*/
+void print_blocks(const BYTE *s, size_t nbyte, size_t block_size)
+{
+    /* *s : pointer to byte array for printing
+     * nbyte : number of bytes in *s
+     * block_size : number of bytes per block
+     */
+
+    /* Number of blocks needed */
+    size_t n_blocks = nbyte / block_size;
+    if (nbyte % block_size) { n_blocks++; }
+
+    for (size_t n = 0; n < n_blocks; n++) {
+        size_t i = 0,
+               idx = n*block_size;
+        do {
+            char c = *(s + idx);
+            printf("\\x%.2X", c);
+            i++;
+            idx++;
+        } while ((i < block_size) && (idx < nbyte));
+
+        if (idx < nbyte) {
+            printf(" | ");
+        }
+    }
+}
+
+/*------------------------------------------------------------------------------
  *         Allocate memory for string
  *----------------------------------------------------------------------------*/
 char *init_str(size_t len)
