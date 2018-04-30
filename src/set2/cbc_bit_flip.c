@@ -153,7 +153,7 @@ int decrypt_and_checkadmin(BYTE *y, size_t y_len)
     size_t x_len = 0;
     
     /* Check if padding is valid */
-    if (0 != aes_128_cbc_decrypt(&x, &x_len, y, y_len, global_key, global_iv)) {
+    if (0 > aes_128_cbc_decrypt(&x, &x_len, y, y_len, global_key, global_iv)) {
         return -1;
     }
 

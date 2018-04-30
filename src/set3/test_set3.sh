@@ -28,37 +28,14 @@ printf "done.\n"
 printf "Running tests...\n"
 
 # Test utilities
-./test2
-pass_check "$?" "Set 2 Utilities"
+# ./test3
+./test_cbc_padding_oracle
+pass_check "$?" "Set 3 Utilities"
 
-# Test challenge 10
-diff <(./aes_cbc_file "${DATA_PATH}/10.txt") \
-    "${DATA_PATH}play_that_funky_music.txt"
-pass_check "$?" "Challenge 10"
 
-# Test challenge 11
-isecb=$(./detect_block_mode)
-[[ "$isecb" -eq "ECB" ]]
-pass_check "$?" "Challenge 11"
-
-# Test challenge 12
-diff <(./one_byte_ecb easy "${DATA_PATH}/12.txt") \
-    "${DATA_PATH}rollin.txt"
-pass_check "$?" "Challenge 12"
-
-# Test challenge 13
-diff <(./make_admin_profile) \
-    <(printf "{\n\temail: 'bernie@me.com',\n\tuid: 56,\n\trole: 'admin'\n}")
-pass_check "$?" "Challenge 13"
-
-# Test challenge 12
-diff <(./one_byte_ecb hard "${DATA_PATH}/12.txt") \
-    "${DATA_PATH}rollin.txt"
-pass_check "$?" "Challenge 14"
-
-# Test challenge 16
-./cbc_bit_flip
-pass_check "$?" "Challenge 16"
+# Test challenge 17
+diff <(./cbc_padding_oracle_main) "${DATA_PATH}/17.txt"
+pass_check "$?" "Challenge 17"
 
 printf "done.\n"
 exit 0

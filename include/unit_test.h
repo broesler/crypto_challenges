@@ -14,7 +14,7 @@
 // check a condition and if false print the test condition failed
 // e.g., SHOULD_BE(dict->start == NULL)
 #define SHOULD_BE(x) if (!(x))  {rs=rs+1; \
-    printf("\033[0;31mLine %d fails!\033[0m\n", __LINE__); \
+    printf("\033[0;31m[%s:%d] Test fails!\033[0m\n", __FILE__, __LINE__); \
 }
 
 // return the result count at the end of a test
