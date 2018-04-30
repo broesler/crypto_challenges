@@ -103,8 +103,6 @@ int PKCS75()
 
 int CBCencrypt1()
 {
-    /* NOTE Memory leak occurs out output string (ctext) for BOTH of these
-     * cases... so it doesn't have to do with padding removal. */
     START_TEST_CASE;
     BYTE ptext1[] = "I was a terror since the public school era.";
     rs += CBCencrypt_test(ptext1);

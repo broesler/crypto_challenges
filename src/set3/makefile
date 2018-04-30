@@ -29,15 +29,15 @@ INCL = $(wildcard $(INCLDIR)*.h)
 
 # Define source files
 SRC   = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
-UTIL  = ../set2/crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c 
+UTIL  = ./cbc_padding_oracle.c ../set2/crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c
 UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
 
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
 # Make options
-all: c17 types
-c17: cbc_padding_oracle
+all: c17 test_cbc_padding_oracle types
+c17: cbc_padding_oracle_main
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3
 debug: all
@@ -49,14 +49,18 @@ verbose: debug
 #------------------------------------------------------------------------------
 # Main executable:
 # test3: test_crypto3.o $(OBJ_UTIL) | .gitignore
-# 	$(CC) $(CFLAGS) $(OPT) -o $@ $? $(LDLIBS)
+# 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-cbc_padding_oracle: cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
+test_cbc_padding_oracle: test_cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
+
+cbc_padding_oracle_main: cbc_padding_oracle_main.o $(OBJ_UTIL) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 .gitignore:
-	@printf cbc_padding_oracle > $@
-	
+	@printf "cbc_padding_oracle_main\n\
+	test_cbc_padding_oracle" > $@
+
 # Objects depend on source and headers
 %.o: %.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
@@ -72,12 +76,22 @@ types: .types.vim
 .PHONY: depend clean
 clean:
 	rm -f *~
+	rm -f ../set1/*.o
+	rm -f ../set1/*.gch
+	rm -rf ../set1/*.dSYM/
+	rm -f ../set2/*.o
+	rm -f ../set2/*.gch
+	rm -rf ../set2/*.dSYM/
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
-	# rm -f test3
-	rm -f cbc_padding_oracle
+	rm -f $(UTILDIR)*.o
+	rm -f $(UTILDIR)*.gch
+	rm -rf $(UTILDIR)*.dSYM/
+	rm -f cbc_padding_oracle_main
+	rm -f test_cbc_padding_oracle
 	rm -f .gitignore
+	# rm -f test3
 
 #==============================================================================
 #==============================================================================

@@ -1,90 +1,137 @@
 /*==============================================================================
  *     File: cbc_padding_oracle.c
- *  Created: 08/01/2017, 22:51
+ *  Created: 04/29/2018, 17:39
  *   Author: Bernie Roesler
  *
- *  Description: Challenge 17: CBC decryption with padding oracle
+ *  Description: Utility functions for CBC padding oracle.
  *
  *============================================================================*/
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
 
-#include "header.h"
-#include "aes_openssl.h"
-#include "crypto_util.h"
-#include "crypto1.h"
-#include "crypto2.h"
-
-#define SRAND_INIT 56
-
-/* Global key used in encryption_oracle */
-static BYTE *global_key = NULL;
-static BYTE *global_iv  = NULL;
-
-/* String to be encrypted */
-static const char * const POSSIBLE_X[10] = 
-{ 
-    "MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=", 
-    "MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=", 
-    "MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==", 
-    "MDAwMDAzQ29va2luZyBNQydzIGxpa2UgYSBwb3VuZCBvZiBiYWNvbg==", 
-    "MDAwMDA0QnVybmluZyAnZW0sIGlmIHlvdSBhaW4ndCBxdWljayBhbmQgbmltYmxl", 
-    "MDAwMDA1SSBnbyBjcmF6eSB3aGVuIEkgaGVhciBhIGN5bWJhbA==", 
-    "MDAwMDA2QW5kIGEgaGlnaCBoYXQgd2l0aCBhIHNvdXBlZCB1cCB0ZW1wbw==", 
-    "MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=", 
-    "MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=", 
-    "MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93" 
-};
-
-/* Encrypt randomly one of the above strings, return ciphertext and set IV */
-int encryption_oracle(BYTE **y, size_t *y_len);
-
-/* Decrypt ciphertext and return 0 for valid padding or -1 for invalid */
-int decrypt_and_checkpad(BYTE *y, size_t y_len);
+#include "cbc_padding_oracle.h"
 
 /*------------------------------------------------------------------------------
- *         Main function
+ *         Decrypt a block of CBC-encrypted ciphertext 
  *----------------------------------------------------------------------------*/
-int main(int argc, char **argv)
+int block_decrypt(BYTE **x, BYTE *y) {
+    /* NOTE this function assumes x,y are size BLOCK_SIZE
+     *   x : address of output block
+     *   y : pointer to input block
+     *   returns : 0 upon success, -1 on failure
+     */
+    size_t b = BLOCK_SIZE;
+    BYTE *xp = NULL;
+    size_t xp_len = 0;
+
+    *x = init_byte(b);
+
+    /* Get last byte[s] of block */
+    last_byte(&xp, &xp_len, y);
+    memcpy(*x + (b - xp_len), xp, xp_len);
+
+    BYTE *rf = rand_byte(b);
+    BYTE *r     = init_byte(b);
+    BYTE *ry    = init_byte(2*b);
+
+    /* for each remaining byte in the block */
+    for (size_t j = b - xp_len; j > 0; j--) {
+
+        /* Set values of r_k */
+        for (size_t k = j; k < b; k++) {
+            rf[k] = (*x)[k] ^ (b - j + 1); 
+        }
+
+        /* Guess (j-1)th byte */
+        for (size_t i = 0; i < 0x100; i++) {
+            /* Reset r to random bytes */
+            memcpy(r, rf, b);
+
+            /* Set choice of byte in chosen ciphertxt */
+            r[j-1] ^= i;
+
+            /* Concatenate string to pass to oracle */
+            BZERO(ry, 2*b);
+            memcpy(ry,   r, b);
+            memcpy(ry+b, y, b);
+
+            /* Check if O(r|y) produces valid padding */
+            /* NOTE oracle returns -1 on invalid padding, 0 on NO padding, or
+             * Npad on valid padding. Need a positive value for valid padding */
+            if (0 < padding_oracle(ry, 2*b)) { 
+                /* Set (j-1)th byte to desired value */
+                (*x)[j-1] = r[j-1] ^ (b - j + 1);
+                break;
+            }
+        }
+    }
+
+    free(rf);
+    free(r);
+    free(ry);
+    free(xp);
+    return 0;
+}
+
+/*------------------------------------------------------------------------------
+ *         Decrypt last byte(s) of ciphertext block
+ *----------------------------------------------------------------------------*/
+int last_byte(BYTE **xp, size_t *xp_len, BYTE *y) 
 {
-    BYTE *y = NULL;
-    size_t y_len = 0;
+    size_t b = BLOCK_SIZE;
+    size_t i = 0;
 
-    /* initialize PRNG */
-    srand(SRAND_INIT); /* init for deterministic result */
-    /* srand(time(NULL)); */
+    /* Fixed random input ciphertext */
+    BYTE *rf = rand_byte(b);
+    BYTE *r  = init_byte(b);
+    BYTE *ry = init_byte(2*b);
 
-    /* Encrypt random string */
-    encryption_oracle(&y, &y_len);
+    /* Copy rf values into temp array for loop */
+    memcpy(r, rf, b);
 
-    /* Create copy of ciphertext */
-    BYTE *yp = init_byte(y_len);
-    memcpy(yp, y, y_len);
-    /* Let last byte yp be 0x01 */
-    BYTE pad_byte = 0x01;
-    yp[y_len-1] = pad_byte;
+    /* Guess last byte to give correct padding */
+    for (i = 0; i < 0x100; i++) { 
+        r[b-1] = rf[b-1] ^ i;
 
-    BYTE *pad_arr = init_byte(y_len);
-    pad_arr[y_len-1] = pad_byte;
+        /* Concatenate string to pass to oracle */
+        BZERO(ry, 2*b);
+        memcpy(ry,   r, b);
+        memcpy(ry+b, y, b);
 
-    int test = decrypt_and_checkpad(yp, y_len);
+        int n_pad = padding_oracle(ry, 2*b);
 
-    if (!test) {
-       /* Last byte of x is yp ^ pad_byte */
-        BYTE *x_blocks = fixedXOR(yp, pad_arr, y_len);
-    } /* else { */
+        /* Check if O(r|y) is true */
+        if (0 < n_pad) { 
+            break;
+        }
+    }
+
+    /* TODO Test this code: */
+    /* Check if valid padding is NOT 1 */
+    /* for (size_t n = b-1; n > 0; n--) { */
+    /*     #<{(| Reset random block |)}># */
+    /*     memcpy(r, rf, b); */
+    /*  */
+    /*     #<{(| XOR given byte |)}># */
+    /*     r[b-n] ^= 1; */
+    /*  */
+    /*     #<{(| Concatenate string to pass to oracle |)}># */
+    /*     BZERO(ry, 2*b); */
+    /*     memcpy(ry,   r, b); */
+    /*     memcpy(ry+b, y, b); */
+    /*  */
+    /*     if (0 < padding_oracle(ry, 2*b)) {  */
+    /*         memcpy(*xp, r[b-n], n); */
+    /*         return 0; */
+    /*     } */
     /* } */
 
-#ifdef LOGSTATUS
-    /* test == -1 for invalid padding */
-    char *status = (test == 0) ? "valid" : "invalid";
-    printf("Padding %s!\n", status);
-#endif
+    /* Valid padding is 1 */
+    *xp_len = 1;
+    *xp = init_byte(*xp_len);
+    **xp = r[b-1] ^ 1;
 
-    free(y);
-    free(global_key);
-    free(global_iv);
+    free(rf);
+    free(r);
+    free(ry);
     return 0;
 }
 
@@ -119,11 +166,10 @@ int encryption_oracle(BYTE **y, size_t *y_len)
     return 0;
 }
 
-
 /*------------------------------------------------------------------------------
  *          Decrypt and Check Padding
  *----------------------------------------------------------------------------*/
-int decrypt_and_checkpad(BYTE *y, size_t y_len)
+int padding_oracle(BYTE *y, size_t y_len)
 {
     /* Decrypt y report if padding is valid or not, but do not return x */
     BYTE *x = NULL;

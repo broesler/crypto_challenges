@@ -110,8 +110,7 @@ int pkcs7_rmpad(const BYTE *byte, size_t nbyte, size_t block_size)
             }
         }
 
-        /* Otherwise we've reached the end of the bytes, mark end with NULL */
-        /* byte[nbyte-n_pad] = '\0'; */
+        /* Otherwise we've reached the end of the bytes */
         return n_pad;
     }
 
