@@ -54,7 +54,7 @@ int encryption_oracle(BYTE **y, size_t *y_len);
 int padding_oracle(BYTE *y, size_t y_len);
 
 // Decrypt last word of single block 
-int last_byte(BYTE **xb, size_t *xb_len, BYTE *y);
+int last_byte(BYTE **xp, size_t *xp_len, BYTE *y);
 
 // Decrypt entire block 
 int block_decrypt(BYTE **x, BYTE *y);

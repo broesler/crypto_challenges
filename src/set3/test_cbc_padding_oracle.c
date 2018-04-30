@@ -49,8 +49,6 @@ int PORACLE1()
     /* Decrypt and test value */
     BYTE *xp = NULL;
     size_t xp_len = 0;
-    SHOULD_BE(padding_oracle(y, y_len) == 1); /* decrypt and just return n_pad */
-    /* Also calculate xp for inspection */
     SHOULD_BE(aes_128_cbc_decrypt(&xp, &xp_len, y, y_len, global_key, global_iv) == 1);
 #ifdef LOGSTATUS
     printf("xp = \"");
@@ -59,7 +57,7 @@ int PORACLE1()
 #endif
     SHOULD_BE(*(xp + 2*BLOCK_SIZE-1) == 0x01);  /* last byte of xp is \x01 */
     SHOULD_BE(xp_len == y_len-1); /* valid padding of \x01 gets stripped. */
-    /* Last block should be equal, first block is garbage */
+    /* Last blocks should be equal, first block of xp is garbage */
     SHOULD_BE(!memcmp(xp + BLOCK_SIZE, x + BLOCK_SIZE, xp_len - BLOCK_SIZE));
     free(y);
     free(xp);
@@ -76,19 +74,20 @@ int PORACLE2()
     size_t y_len = 0;
     SHOULD_BE(aes_128_cbc_encrypt(&y, &y_len, x, x_len, global_key, global_iv) == 0);
     /* Encryption intercepted! Get last byte */
-    BYTE *xb = NULL;
-    size_t xb_len = 0;
+    BYTE *xp = NULL;
+    size_t xp_len = 0;
     /* Want last byte of 2nd block */
-    SHOULD_BE(last_byte(&xb, &xb_len, y+BLOCK_SIZE) == 0);
-    SHOULD_BE(xb_len == 1);
-    SHOULD_BE(!memcmp(xb, "E", xb_len));
+    SHOULD_BE(last_byte(&xp, &xp_len, y+BLOCK_SIZE) == 0);
+    SHOULD_BE(xp_len == 1);
+    BYTE xg = xp[0] ^ y[BLOCK_SIZE-1];
+    SHOULD_BE(xg == 'E');
 #ifdef LOGSTATUS
-    printf("xb = \"");
-    printall(xb, xb_len);
-    printf("\" == \\x%.2X\n", *xb);
+    printf("xp = \"");
+    printall(xp, xp_len);
+    printf("\" == \\x%.2X\n", *xp);
 #endif
     free(y);
-    free(xb);
+    free(xp);
     END_TEST_CASE;
 }
 
