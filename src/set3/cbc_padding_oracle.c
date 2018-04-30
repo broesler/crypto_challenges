@@ -80,8 +80,12 @@ int block_decrypt(BYTE **x, BYTE *y) {
 int last_byte(BYTE **xb, size_t *xb_len, BYTE *y) 
 {
     size_t b = BLOCK_SIZE;
+    size_t i = 0;
 
-    BYTE *r_fix = rand_byte(b);
+    /* BYTE *r_fix = rand_byte(b); */
+    /* for test, encrypted bytes from x1 = "FIRETRUCK RACES!" */
+    BYTE *r_fix = (BYTE *) "\x70\x69\xAF\x3F\x83\xEE\x46\xF1" \
+                           "\xBD\x18\x2C\x5B\x81\x30\xC2\x7D";
     BYTE *r     = init_byte(b);
     BYTE *ry    = init_byte(2*b);
 
@@ -89,8 +93,8 @@ int last_byte(BYTE **xb, size_t *xb_len, BYTE *y)
     memcpy(r, r_fix, b);
 
     /* Guess last byte to give correct padding */
-    for (size_t i = 0; i < 0x100; i++) { 
-    /* for (size_t i = 0x44; i < 0x45; i++) {  */
+    for (i = 0; i < 0x100; i++) { 
+    /* for (i = 0x44; i < 0x45; i++) {  */
         r[b-1] = r_fix[b-1] ^ i;
 
         /* Concatenate string to pass to oracle */
@@ -102,8 +106,9 @@ int last_byte(BYTE **xb, size_t *xb_len, BYTE *y)
 
         /* Check if O(r|y) is true */
         if (0 < n_pad) { 
-#ifdef LOGSTATUS
             printf("\\x%.2lX : valid! n_pad = %2d\n", i, n_pad);
+#ifdef LOGSTATUS
+            LOG("data:");
             printf("r_fix = \""); 
             print_blocks(r_fix, b, b, 0);
             printf("\"\nr     = \"");
@@ -111,12 +116,10 @@ int last_byte(BYTE **xb, size_t *xb_len, BYTE *y)
             printf("\"\nr[b-1] ^ 1 = \\x%.2X\n", r[b-1] ^ 1);
 #endif
             break;
-/* #ifdef LOGSTATUS */
-/*         } else if (0 == n_pad) { */
-/*             printf("\\x%.2lX : no padding\n", i); */
-/*         } else { */
-/*             printf("\\x%.2lX : invalid\n", i); */
-/* #endif */
+        /* } else if (0 == n_pad) { */
+        /*     printf("\\x%.2lX : no padding\n", i); */
+        /* } else { */
+        /*     printf("\\x%.2lX : invalid\n", i); */
         }
     }
 
@@ -143,8 +146,9 @@ int last_byte(BYTE **xb, size_t *xb_len, BYTE *y)
     *xb_len = 1;
     *xb = init_byte(*xb_len);
     (*xb)[0] = r[b-1] ^ 1;
+    /* (*xb)[0] = i ^ 1; */
 
-    free(r_fix);
+    /* free(r_fix); */
     free(r);
     free(ry);
     return 0;

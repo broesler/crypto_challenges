@@ -16,12 +16,9 @@
 #include "cbc_padding_oracle.h"
 
 /* OVERWRITE externs?? */
-/* static BYTE global_key[] = "BUSINESS CASUAL"; */
-/* static BYTE global_iv[]  = "\x99\x99\x99\x99\x99\x99\x99\x99\ */
-/*                             \x99\x99\x99\x99\x99\x99\x99\x99"; */
 BYTE *global_key = (BYTE *)"BUSINESS CASUAL";
-BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99\
-                            \x99\x99\x99\x99\x99\x99\x99\x99";
+BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99" \
+                           "\x99\x99\x99\x99\x99\x99\x99\x99";
 
 /*------------------------------------------------------------------------------
  *        Define test functions
@@ -41,8 +38,9 @@ int PORACLE1()
     printf("\"\n");
 #endif
     /* Choose random byte for last position of first block. */
-    BYTE yk = 0x44; /* 0x44 == 'E' ^ 1 == i in last_byte */
-    y[BLOCK_SIZE-1] ^= yk;
+    BYTE i = 0x44; /* 0x44 == 'E' ^ 1 == i in last_byte */
+    SHOULD_BE(x[2*BLOCK_SIZE-1] == (i ^ 1)); /* by definition */
+    y[BLOCK_SIZE-1] ^= i;
 #ifdef LOGSTATUS
     printf("y  = \"");
     print_blocks(y, y_len, BLOCK_SIZE, 0);
@@ -51,10 +49,12 @@ int PORACLE1()
     /* Decrypt and test value */
     BYTE *xp = NULL;
     size_t xp_len = 0;
+    SHOULD_BE(padding_oracle(y, y_len) == 1); /* decrypt and just return n_pad */
+    /* Also calculate xp for inspection */
     SHOULD_BE(aes_128_cbc_decrypt(&xp, &xp_len, y, y_len, global_key, global_iv) == 1);
 #ifdef LOGSTATUS
     printf("xp = \"");
-    print_blocks(xp, xp_len, BLOCK_SIZE, 1);
+    print_blocks(xp, 2*BLOCK_SIZE, BLOCK_SIZE, 1); /* inclue padding */
     printf("\"\n");
 #endif
     SHOULD_BE(*(xp + 2*BLOCK_SIZE-1) == 0x01);  /* last byte of xp is \x01 */
@@ -75,22 +75,22 @@ int PORACLE2()
     BYTE *y = NULL;
     size_t y_len = 0;
     SHOULD_BE(aes_128_cbc_encrypt(&y, &y_len, x, x_len, global_key, global_iv) == 0);
+    /* Encryption intercepted! Get last byte */
     BYTE *xb = NULL;
     size_t xb_len = 0;
-    SHOULD_BE(last_byte(&xb, &xb_len, y) == 0);
+    /* Want last byte of 2nd block */
+    SHOULD_BE(last_byte(&xb, &xb_len, y+BLOCK_SIZE) == 0);
     SHOULD_BE(xb_len == 1);
     SHOULD_BE(!memcmp(xb, "E", xb_len));
-    printf("y  = \"");
-    print_blocks(y, y_len, BLOCK_SIZE, 0);
-    printf("\"\n");
+#ifdef LOGSTATUS
     printf("xb = \"");
     printall(xb, xb_len);
-    printf("\"\n");
+    printf("\" == \\x%.2X\n", *xb);
+#endif
     free(y);
     free(xb);
     END_TEST_CASE;
 }
-
 
 
 /*------------------------------------------------------------------------------
