@@ -185,7 +185,6 @@ size_t b642byte(BYTE **byte, const char *b64)
 BYTE *fixedXOR(const BYTE *a, const BYTE *b, size_t nbyte)
 {
     BYTE *xor = init_byte(nbyte);
-
     /* XOR each byte in the input array */
     for (int i = 0; i < nbyte; i++) {
        *(xor+i) = *(a+i) ^ *(b+i);

@@ -25,7 +25,6 @@ int block_decrypt(BYTE **x, BYTE *y) {
     *x = init_byte(b);
 
     /* Get last byte[s] of block */
-    /* if xp_len > 1, got multiple bytes already! */
     last_byte(&xp, &xp_len, y);
     memcpy(*x + (b - xp_len), xp, xp_len);
 
@@ -40,8 +39,6 @@ int block_decrypt(BYTE **x, BYTE *y) {
         for (size_t k = j; k < b; k++) {
             rf[k] = (*x)[k] ^ (b - j + 1); 
         }
-        print_blocks(r, b, b, 0);
-        printf("\n");
 
         /* Guess (j-1)th byte */
         for (size_t i = 0; i < 0x100; i++) {
@@ -81,22 +78,17 @@ int last_byte(BYTE **xp, size_t *xp_len, BYTE *y)
 {
     size_t b = BLOCK_SIZE;
     size_t i = 0;
-    int n_pad = 0;
 
     /* Fixed random input ciphertext */
     BYTE *rf = rand_byte(b);
-    /* for test, encrypted bytes from x1 = "FIRETRUCK RACES!" */
-    /* BYTE *rf = (BYTE *) "\x70\x69\xAF\x3F\x83\xEE\x46\xF1" \ */
-    /*                     "\xBD\x18\x2C\x5B\x81\x30\xC2\x7D"; */
-    BYTE *r     = init_byte(b);
-    BYTE *ry    = init_byte(2*b);
+    BYTE *r  = init_byte(b);
+    BYTE *ry = init_byte(2*b);
 
     /* Copy rf values into temp array for loop */
     memcpy(r, rf, b);
 
     /* Guess last byte to give correct padding */
-    /* for (i = 0; i < 0x100; i++) {  */
-    for (i = 0x7E; i < 0x7F; i++) { 
+    for (i = 0; i < 0x100; i++) { 
         r[b-1] = rf[b-1] ^ i;
 
         /* Concatenate string to pass to oracle */
@@ -104,7 +96,7 @@ int last_byte(BYTE **xp, size_t *xp_len, BYTE *y)
         memcpy(ry,   r, b);
         memcpy(ry+b, y, b);
 
-        n_pad = padding_oracle(ry, 2*b);
+        int n_pad = padding_oracle(ry, 2*b);
 
         /* Check if O(r|y) is true */
         if (0 < n_pad) { 
@@ -112,18 +104,8 @@ int last_byte(BYTE **xp, size_t *xp_len, BYTE *y)
         }
     }
 
-#ifdef LOGSTATUS
-    printf("\\x%.2lX : n_pad = %2d\n", i, n_pad);
-    LOG("data:");
-    printf("rf = \""); 
-    print_blocks(rf, b, b, 0);
-    printf("\"\nry = \"");
-    print_blocks(ry, 2*b, b, 0);
-    printf("\"\n");
-    printf("r[b-1] ^ 1 = \\x%.2X\n", r[b-1] ^ 1);
-#endif
-
-    /* #<{(| Check if valid padding is NOT 1 |)}># */
+    /* TODO Test this code: */
+    /* Check if valid padding is NOT 1 */
     /* for (size_t n = b-1; n > 0; n--) { */
     /*     #<{(| Reset random block |)}># */
     /*     memcpy(r, rf, b); */
@@ -147,7 +129,7 @@ int last_byte(BYTE **xp, size_t *xp_len, BYTE *y)
     *xp = init_byte(*xp_len);
     **xp = r[b-1] ^ 1;
 
-    /* free(rf); */
+    free(rf);
     free(r);
     free(ry);
     return 0;

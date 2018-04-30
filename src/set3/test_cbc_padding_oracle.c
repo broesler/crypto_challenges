@@ -91,6 +91,30 @@ int PORACLE2()
     END_TEST_CASE;
 }
 
+/* Test block_decrypt algorithm */
+int PORACLE3()
+{
+    START_TEST_CASE;
+    BYTE x[] = "FIRETRUCK RACES!YELLOW SUBMARINE"; /* 2 blocks */
+    size_t x_len = strlen((char *)x);
+    BYTE *y = NULL;
+    size_t y_len = 0;
+    SHOULD_BE(aes_128_cbc_encrypt(&y, &y_len, x, x_len, global_key, global_iv) == 0);
+    BYTE *xp = NULL;
+    SHOULD_BE(block_decrypt(&xp, y+BLOCK_SIZE) == 0);
+    BYTE *xg = fixedXOR(xp, y, BLOCK_SIZE);
+    SHOULD_BE(!memcmp(xg, x + BLOCK_SIZE, BLOCK_SIZE));
+#ifdef LOGSTATUS
+    printf("xg = \"");
+    print_blocks(xg, 2*BLOCK_SIZE, BLOCK_SIZE, 1);
+    printf("\"\n");
+#endif
+    free(y);
+    free(xp);
+    END_TEST_CASE;
+}
+
+
 
 /*------------------------------------------------------------------------------
  *        Run tests
@@ -101,8 +125,9 @@ int main(void)
     int total = 0;
 
     /* Run OpenSSL lines here for speed */
-    RUN_TEST(PORACLE1, "padding_oracle() 1 ");
-    RUN_TEST(PORACLE2, "padding_oracle() 2 ");
+    RUN_TEST(PORACLE1, "padding_oracle() ");
+    RUN_TEST(PORACLE2, "last_byte()      ");
+    RUN_TEST(PORACLE3, "block_decrypt()  ");
 
     /* Count errors */
     if (!fails) {
