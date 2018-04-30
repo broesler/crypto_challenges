@@ -138,12 +138,20 @@ int last_byte(BYTE **xp, size_t *xp_len, BYTE *y)
 /*------------------------------------------------------------------------------
  *          Encryption oracle
  *----------------------------------------------------------------------------*/
-int encryption_oracle(BYTE **y, size_t *y_len)
+int encryption_oracle(BYTE **y, size_t *y_len, int choice)
 {
     /* Randomly select one of possible inputs */
-    int choice = RAND_RANGE(0, 9);
-    const char *x = POSSIBLE_X[choice];
-    size_t x_len = strlen(x);
+    /* int choice = RAND_RANGE(0, 9); */
+    const char *x_b64 = POSSIBLE_X[choice];
+
+#ifdef LOGSTATUS
+    LOG("Chose string:");
+    printf("    %d: %s\n", choice, x_b64);
+#endif
+
+    /* Convert to byte array */
+    BYTE *x = NULL;
+    size_t x_len = b642byte(&x, x_b64);
 
     *y_len = 0;
 
@@ -157,12 +165,9 @@ int encryption_oracle(BYTE **y, size_t *y_len)
         global_iv = rand_byte(BLOCK_SIZE);
     }
 
-#ifdef LOGSTATUS
-    printf("Chose string %d: %s\n", choice, x);
-#endif
-
     /* Encrypt using CBC mode */
-    aes_128_cbc_encrypt(y, y_len, (BYTE *)x, x_len, global_key, global_iv);
+    aes_128_cbc_encrypt(y, y_len, x, x_len, global_key, global_iv);
+    free(x);
     return 0;
 }
 

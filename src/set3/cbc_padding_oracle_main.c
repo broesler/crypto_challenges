@@ -17,39 +17,43 @@ int main(int argc, char **argv)
 {
     BYTE *y = NULL;
     size_t y_len = 0;
+    int n_pad = 0;
 
     /* initialize PRNG */
-    /* srand(SRAND_INIT); */
-    srand(time(NULL));
+    srand(SRAND_INIT);
+    /* srand(time(NULL)); */
 
-    /* Encrypt random string */
-    encryption_oracle(&y, &y_len);
+    for (size_t j = 0; j < 10; j++) {
+        /* Encrypt each string */
+        encryption_oracle(&y, &y_len, j);
 
-    size_t Nb = y_len / BLOCK_SIZE;
-    BYTE *x = init_byte(y_len);
+        size_t Nb = y_len / BLOCK_SIZE;
+        BYTE *x = init_byte(y_len);
 
-    /* start at 1 because we don't have IV */
-    for (size_t i = 1; i < Nb; i++) {
-    /* for (size_t i = 1; i < 2; i++) { */
-        size_t idx = i*BLOCK_SIZE,
-               im1 = (i-1)*BLOCK_SIZE;
-        /* Decrypt block to get D(y) */
-        BYTE *xp = NULL;
-        block_decrypt(&xp, y+idx);
-        /* x = D(y) ^ y_{n-1} */
-        BYTE *xg = fixedXOR(xp, y+im1, BLOCK_SIZE);
-        /* Store in output array */
-        memcpy(x+idx, xg, BLOCK_SIZE);
-        free(xp);
-        free(xg);
+        /* start at 1 because we don't have IV */
+        for (size_t i = 0; i < Nb; i++) {
+            size_t idx = i*BLOCK_SIZE,
+                   im1 = (i-1)*BLOCK_SIZE;
+            /* Decrypt block to get D(y) */
+            BYTE *xp = NULL;
+            block_decrypt(&xp, y + idx);
+            /* IV assumed known */
+            BYTE *yim1 = (i == 0) ? global_iv : (y + im1);
+            /* x = D(y) ^ y_{n-1} */
+            BYTE *xg = fixedXOR(xp, yim1, BLOCK_SIZE);
+            n_pad = pkcs7_rmpad(xg, BLOCK_SIZE, BLOCK_SIZE);
+            /* Store in output array */
+            memcpy(x + idx, xg, BLOCK_SIZE);
+            free(xp);
+            free(xg);
+        }
+
+        /* print result */
+        printall(x, y_len - n_pad);
+        printf("\n");
+        free(x);
     }
 
-    /* print result */
-    printf("\nx = \"");
-    print_blocks(x, y_len, BLOCK_SIZE, 1);
-    printf("\"\n");
-
-    free(x);
     free(y);
     free(global_key);
     free(global_iv);

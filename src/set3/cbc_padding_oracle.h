@@ -48,7 +48,7 @@ static const char * const POSSIBLE_X[10] =
 //       Function Definitions
 //------------------------------------------------------------------------------
 // Encrypt randomly one of the above strings, return ciphertext and set IV 
-int encryption_oracle(BYTE **y, size_t *y_len);
+int encryption_oracle(BYTE **y, size_t *y_len, int choice);
 
 // Decrypt ciphertext and return 0 for valid padding or -1 for invalid 
 int padding_oracle(BYTE *y, size_t y_len);

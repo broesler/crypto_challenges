@@ -29,10 +29,12 @@ printf "Running tests...\n"
 
 # Test utilities
 # ./test3
-# pass_check "$?" "Set 3 Utilities"
+./test_cbc_padding_oracle
+pass_check "$?" "Set 3 Utilities"
+
 
 # Test challenge 17
-./cbc_padding_oracle
+diff <(./cbc_padding_oracle_main) "${DATA_PATH}/17.txt"
 pass_check "$?" "Challenge 17"
 
 printf "done.\n"
