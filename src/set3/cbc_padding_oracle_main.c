@@ -30,21 +30,25 @@ int main(int argc, char **argv)
         size_t Nb = y_len / BLOCK_SIZE;
         BYTE *x = init_byte(y_len);
 
-        /* start at 1 because we don't have IV */
+        /* Decrypt all blocks */
         for (size_t i = 0; i < Nb; i++) {
             size_t idx = i*BLOCK_SIZE,
                    im1 = (i-1)*BLOCK_SIZE;
+
             /* Decrypt block to get D(y) */
-            BYTE *xp = NULL;
-            block_decrypt(&xp, y + idx);
+            BYTE *Dy = NULL;
+            block_decrypt(&Dy, y + idx);
+
             /* IV assumed known */
             BYTE *yim1 = (i == 0) ? global_iv : (y + im1);
+
             /* x = D(y) ^ y_{n-1} */
-            BYTE *xg = fixedXOR(xp, yim1, BLOCK_SIZE);
+            BYTE *xg = fixedXOR(Dy, yim1, BLOCK_SIZE);
             n_pad = pkcs7_rmpad(xg, BLOCK_SIZE, BLOCK_SIZE);
+
             /* Store in output array */
             memcpy(x + idx, xg, BLOCK_SIZE);
-            free(xp);
+            free(Dy);
             free(xg);
         }
 

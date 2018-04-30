@@ -196,6 +196,16 @@ void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar)
      * pchar : if true, print 'printable' chars instead of hex codes
      */
 
+    int all_pchar = 1;
+    for (size_t i = 0; i < nbyte; i++) {
+        if (!isprint(*(s+i))) {
+            all_pchar = 0;
+            break;
+        }
+    }
+    /* If all are printable, no need to space out to matching hex blocks */
+    char *cfmt = (all_pchar == 1) ? "%c" : "  %c ";
+
     /* Number of blocks needed */
     size_t n_blocks = nbyte / block_size;
     if (nbyte % block_size) { n_blocks++; }
@@ -206,7 +216,7 @@ void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar)
         do {
             char c = *(s + idx);
             if (pchar && isprint(c)) {
-                printf("  %c ", c); /* keep same spaceing as \x01, i.e. */
+                printf(cfmt, c); /* keep same spaceing as \x01, i.e. */
             } else {
                 printf("\\x%.2X", c);
             }
@@ -215,7 +225,7 @@ void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar)
         } while ((i < block_size) && (idx < nbyte));
 
         if (idx < nbyte) {
-            printf(" | ");
+            printf("||");
         }
     }
 }
