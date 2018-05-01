@@ -35,7 +35,7 @@ int block_decrypt(BYTE **Dy, BYTE *y) {
     /* for each remaining byte in the block */
     for (size_t j = b - xn_len; j > 0; j--) {
 
-        /* Set values of r_k */
+        /* Set values of r_k to produce correct padding */
         for (size_t k = j; k < b; k++) {
             rf[k] = (*Dy)[k] ^ (b - j + 1); 
         }
@@ -54,8 +54,11 @@ int block_decrypt(BYTE **Dy, BYTE *y) {
             memcpy(ry+b, y, b);
 
             /* Check if O(r|y) produces valid padding */
-            /* NOTE oracle returns -1 on invalid padding, 0 on NO padding, or
-             * Npad on valid padding. Need a positive value for valid padding */
+            /* NOTE oracle returns:
+             *   n_pad : valid padding
+             *     0   : no padding
+             *    -1   : invalid padding
+             */
             if (0 < padding_oracle(ry, 2*b)) { 
                 /* Set (j-1)th byte to desired value */
                 (*Dy)[j-1] = r[j-1] ^ (b - j + 1);
@@ -82,7 +85,7 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
      * y      : single ciphertext block
      */
     size_t b = BLOCK_SIZE;
-    size_t i = 0;
+    size_t i_found = 0;
 
     BYTE *rf = rand_byte(b);    /* fixed random input ciphertext */
     BYTE *r  = init_byte(b);    /* temp  random input ciphertext */
@@ -91,7 +94,7 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
     BYTE *ry = init_byte(2*b);  /* composite (r||y) for pass to oracle */
 
     /* Guess last byte to give correct padding */
-    for (i = 0; i < 0x100; i++) { 
+    for (size_t i = 0; i < 0x100; i++) { 
         r[b-1] = rf[b-1] ^ i;
 
         /* Concatenate string to pass to oracle */

@@ -76,7 +76,7 @@ int LASTBYTE1()
     /* Encryption intercepted! Get last byte */
     BYTE *Dy = NULL;
     size_t xp_len = 0;
-    /* Want last byte of 2nd block */
+    /* Get last byte of 2nd block */
     SHOULD_BE(last_byte(&Dy, &xp_len, y+BLOCK_SIZE) == 0);
     SHOULD_BE(xp_len == 1);
     BYTE xg = Dy[0] ^ y[BLOCK_SIZE-1];
@@ -139,9 +139,10 @@ int BLOCKDECR1()
     SHOULD_BE(!memcmp(xg, x + BLOCK_SIZE, BLOCK_SIZE));
 #ifdef LOGSTATUS
     printf("xg = \"");
-    print_blocks(xg, 2*BLOCK_SIZE, BLOCK_SIZE, 1);
+    print_blocks(xg, BLOCK_SIZE, BLOCK_SIZE, 1);
     printf("\"\n");
 #endif
+    free(xg);
     free(y);
     free(Dy);
     END_TEST_CASE;
@@ -165,12 +166,10 @@ int BLOCKDECR2()
     SHOULD_BE(aes_128_cbc_encrypt(&y, &y_len, x, x_len, global_key, global_iv) == 0);
     /* Encryption intercepted! Get 2nd block */
     BYTE *Dy = NULL;
-    /* NOTE 2nd block of cbc*main, when j == 7 causes issues. Does NOT cause
-     * issues with the test herein. */
     int i = 1; /* decrypt ith block */
     SHOULD_BE(block_decrypt(&Dy, y + i*BLOCK_SIZE) == 0);
     BYTE *xg = fixedXOR(Dy, y + (i-1)*BLOCK_SIZE, BLOCK_SIZE); /* XOR with first block */
-    SHOULD_BE(!memcmp(xg, "oll, it's time t", BLOCK_SIZE));
+    SHOULD_BE(!memcmp(xg, "oll, it's time t", BLOCK_SIZE)); /* 7 */
 #ifdef LOGSTATUS
     printf("xg = \"");
     print_blocks(xg, BLOCK_SIZE, BLOCK_SIZE, 1);
@@ -190,6 +189,9 @@ int main(void)
 {
     int fails = 0;
     int total = 0;
+
+    /* Initialize PRNG for last_byte and block_decrypt random bytes */
+    srand(SRAND_INIT);
 
     /* Run OpenSSL lines here for speed */
     RUN_TEST(PORACLE1,   "padding_oracle()  ");
