@@ -9,9 +9,12 @@
 
 #include "cbc_padding_oracle.h"
 
-// Global key, iv used in tests
-BYTE *global_key = NULL;
-BYTE *global_iv  = NULL;
+/* Global key, iv used in tests */
+/* BYTE *global_key = NULL; */
+/* BYTE *global_iv  = NULL; */
+BYTE *global_key = (BYTE *)"BUSINESS CASUAL";
+BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99" \
+                           "\x99\x99\x99\x99\x99\x99\x99\x99";
 
 int main(int argc, char **argv)
 {
@@ -23,7 +26,7 @@ int main(int argc, char **argv)
     srand(SRAND_INIT);
     /* srand(time(NULL)); */
 
-    for (size_t j = 0; j < 10; j++) {
+    for (size_t j = 5; j < 10; j++) {
         /* Encrypt each string */
         encryption_oracle(&y, &y_len, j);
 
@@ -56,11 +59,11 @@ int main(int argc, char **argv)
         printall(x, y_len - n_pad);
         printf("\n");
         free(x);
+        free(y);
     }
 
-    free(y);
-    free(global_key);
-    free(global_iv);
+    /* free(global_key); */
+    /* free(global_iv); */
     return 0;
 }
 
