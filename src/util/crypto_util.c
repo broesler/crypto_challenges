@@ -190,10 +190,10 @@ void printall(const BYTE *s, size_t nbyte)
  *----------------------------------------------------------------------------*/
 void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar)
 {
-    /* *s : pointer to byte array for printing
-     * nbyte : number of bytes in *s
+    /* *s         : pointer to byte array for printing
+     * nbyte      : number of bytes in *s
      * block_size : number of bytes per block
-     * pchar : if true, print 'printable' chars instead of hex codes
+     * pchar      : if true, print 'printable' chars instead of hex codes
      */
 
     int all_pchar = 1;
@@ -237,6 +237,7 @@ char *init_str(size_t len)
 {
     char *buffer = calloc(len+1, sizeof(char));
     MALLOC_CHECK(buffer);
+    BZERO(buffer, len+1);
     return buffer;
 }
 
@@ -273,6 +274,7 @@ BYTE *init_byte(size_t len)
 {
     BYTE *buffer = calloc(len, sizeof(BYTE));
     MALLOC_CHECK(buffer);
+    BZERO(buffer, len);
     return buffer;
 }
 
@@ -283,6 +285,7 @@ int *init_int(size_t len)
 {
     int *buffer = calloc(len, sizeof(int));
     MALLOC_CHECK(buffer);
+    BZERO(buffer, len);
     return buffer;
 }
 
