@@ -104,47 +104,56 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
 
         /* Check if O(r|y) is true */
         if (0 < padding_oracle(ry, 2*b)) { 
+            i_found = i;
             break;
         }
     }
 
     /* TODO Test this code: */
     /* Check if valid padding is NOT 1 */
-    for (size_t n = b; n > 0; n--) {
-        /* n s.t. index of r[b-n] goes from 0..b-1 */
-        /* Reset random block */
-        BZERO(r, b);
-        memcpy(r, rf, b);
-
-        /* XOR last byte with i, because that gives the block with valid
-         * padding, discovered above. */ 
-        r[b-1] ^= 1;
-
-        /* XOR given byte */
-        r[b-n] ^= 1;
-
-        /* Concatenate byte array to pass to oracle */
-        BZERO(ry, 2*b);
-        memcpy(ry,   r, b);
-        memcpy(ry+b, y, b);
-
-        /* If padding is invalid, then we've found the byte where the valid
-         * padding ends, and n is the number of valid padding bytes */
-        if (0 > padding_oracle(ry, 2*b)) { 
-            *Dy_len = n;
-            *Dy = init_byte(*Dy_len);
-            /* XOR last n bytes with n to recover Dy */
-            for (size_t j = b-n; j < b; j++) {
-                (*Dy)[j] = rf[j] ^ n;
-            }
-            return 0;
-        }
-    }
+    /* Strategy: 
+     *   Take block
+     *       [a b ... f \x04 \x04 \x04 \x04],
+     *   and XOR one byte from 0..b-1 with \x01. When we reach the first padding
+     *   byte, we will have block 
+     *       [a b ... f *\x03* \x04 \x04 \x04],
+     *   which produces an invalid padding error from the oracle! 
+     */
+    /* for (size_t n = b; n > 0; n--) { */
+    /*     #<{(| n s.t. index of r[b-n] goes from 0..b-1 |)}># */
+    /*     #<{(| Reset random block |)}># */
+    /*     BZERO(r, b); */
+    /*     memcpy(r, rf, b); */
+    /*  */
+    /*     #<{(| XOR last byte with i, because that gives the block with valid */
+    /*      * padding, discovered above. |)}>#  */
+    /*     r[b-1] ^= 1; */
+    /*  */
+    /*     #<{(| XOR given byte |)}># */
+    /*     r[b-n] ^= 1; */
+    /*  */
+    /*     #<{(| Concatenate byte array to pass to oracle |)}># */
+    /*     BZERO(ry, 2*b); */
+    /*     memcpy(ry,   r, b); */
+    /*     memcpy(ry+b, y, b); */
+    /*  */
+    /*     #<{(| If padding is invalid, then we've found the byte where the valid */
+    /*      * padding ends, and n is the number of valid padding bytes |)}># */
+    /*     if (0 > padding_oracle(ry, 2*b)) {  */
+    /*         *Dy_len = n; */
+    /*         *Dy = init_byte(*Dy_len); */
+    /*         #<{(| XOR last n bytes with n to recover Dy |)}># */
+    /*         for (size_t j = b-n; j < b; j++) { */
+    /*             (*Dy)[j] = rf[j] ^ n; */
+    /*         } */
+    /*         return 0; */
+    /*     } */
+    /* } */
 
     /* Valid padding is 1 */
     *Dy_len = 1;
     *Dy = init_byte(*Dy_len);
-    **Dy = (rf[b-1] ^ i) ^ 1; /* r gets altered in 2nd check */
+    **Dy = (rf[b-1] ^ i_found) ^ 1; /* r gets altered in 2nd check */
 
     free(rf);
     free(r);
