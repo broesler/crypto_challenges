@@ -29,8 +29,8 @@ int block_decrypt(BYTE **Dy, BYTE *y) {
     memcpy(*Dy + (b - xn_len), xn, xn_len);
 
     BYTE *rf = rand_byte(b);
-    BYTE *r     = init_byte(b);
-    BYTE *ry    = init_byte(2*b);
+    BYTE *r  = init_byte(b);
+    BYTE *ry = init_byte(2*b);
 
     /* for each remaining byte in the block */
     for (size_t j = b - xn_len; j > 0; j--) {
@@ -109,7 +109,10 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
         }
     }
 
-    /* TODO Test this code: */
+    /* FIXME this check breaks on the 7th string, 2nd block when running through
+     * all tests. May be related to same Dy memory issue as in cbc_pad_bug.
+     * All tests pass when running without this block, or when calling this
+     * function, or block_decrypt() in isolation. */
     /* Check if valid padding is NOT 1 */
     /* Strategy: 
      *   Take block
