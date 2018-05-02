@@ -23,6 +23,7 @@
 //      Type Definitions
 //------------------------------------------------------------------------------
 // Use raw bytes as the key
+// WARNING BYTE arrays are NOT guaranteed to be NULL terminated like C-strings!!
 #ifndef byte_DEFINED
     #define byte_DEFINED
     typedef unsigned char BYTE;

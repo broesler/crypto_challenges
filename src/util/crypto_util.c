@@ -237,7 +237,6 @@ char *init_str(size_t len)
 {
     char *buffer = calloc(len+1, sizeof(char));
     MALLOC_CHECK(buffer);
-    BZERO(buffer, len+1);
     return buffer;
 }
 
@@ -248,7 +247,6 @@ char **init_str_arr(size_t nstr, size_t len)
 {
     char **str_arr = malloc(nstr*sizeof(char *));
     MALLOC_CHECK(str_arr);
-    BZERO(str_arr, nstr*sizeof(char *));
 
     for (size_t i = 0; i < nstr; i++) {
         *(str_arr+i) = init_str(len);
@@ -272,9 +270,8 @@ void free_str_arr(char **str_arr, size_t nstr)
  *----------------------------------------------------------------------------*/
 BYTE *init_byte(size_t len)
 {
-    BYTE *buffer = calloc(len, sizeof(BYTE));
+    BYTE *buffer = calloc(len+1, sizeof(BYTE));
     MALLOC_CHECK(buffer);
-    BZERO(buffer, len);
     return buffer;
 }
 
@@ -285,7 +282,6 @@ int *init_int(size_t len)
 {
     int *buffer = calloc(len, sizeof(int));
     MALLOC_CHECK(buffer);
-    BZERO(buffer, len);
     return buffer;
 }
 
