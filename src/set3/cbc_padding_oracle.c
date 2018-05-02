@@ -28,16 +28,17 @@ int block_decrypt(BYTE **Dy, BYTE *y) {
     last_byte(&xn, &xn_len, y);
     memcpy(*Dy + (b - xn_len), xn, xn_len);
 
-    BYTE *rf = rand_byte(b);
-    BYTE *r     = init_byte(b);
-    BYTE *ry    = init_byte(2*b);
+    BYTE *rf = init_byte(b);
+    memcpy(rf, (BYTE *)"THREE WORD CHANT", BLOCK_SIZE);
+    BYTE *r  = init_byte(b);
+    BYTE *ry = init_byte(2*b);
 
     /* for each remaining byte in the block */
     for (size_t j = b - xn_len; j > 0; j--) {
 
         /* Set values of r_k to produce correct padding */
         for (size_t k = j; k < b; k++) {
-            rf[k] = (*Dy)[k] ^ (b - j + 1); 
+            rf[k] = *(*Dy+k) ^ (b - j + 1); 
         }
 
         /* Guess (j-1)th byte */
@@ -87,7 +88,7 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
     size_t b = BLOCK_SIZE;
     size_t i_found = 0;
 
-    BYTE *rf = rand_byte(b);    /* fixed random input ciphertext */
+    BYTE *rf = (BYTE *)"THREE WORD CHANT";    /* fixed random input ciphertext */
     BYTE *r  = init_byte(b);    /* temp  random input ciphertext */
     memcpy(r, rf, b);           /* copy rf values into r */
 
@@ -154,7 +155,6 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
     *Dy = init_byte(*Dy_len);
     **Dy = (rf[b-1] ^ i_found) ^ 1; /* r gets altered in 2nd check */
 
-    free(rf);
     free(r);
     free(ry);
     return 0;
