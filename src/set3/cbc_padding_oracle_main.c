@@ -5,13 +5,16 @@
  *
  *  Description: Challenge 17: CBC decryption with padding oracle
  *
+ *      NOTE this code is purposefully set up to reproduce an odd bug that
+ *      occurs when j = [5,10) ONLY. Seems to have something to do with how Dy
+ *      is calculated or initialized within block_decrypt()? We get the
+ *      initialization vector for the first block of the 8th string decrypted...
+ *
  *============================================================================*/
 
 #include "cbc_padding_oracle.h"
 
 /* Global key, iv used in tests */
-/* BYTE *global_key = NULL; */
-/* BYTE *global_iv  = NULL; */
 BYTE *global_key = (BYTE *)"BUSINESS CASUAL";
 BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99" \
                            "\x99\x99\x99\x99\x99\x99\x99\x99";
@@ -24,7 +27,6 @@ int main(int argc, char **argv)
 
     /* initialize PRNG */
     srand(SRAND_INIT);
-    /* srand(time(NULL)); */
 
     for (size_t j = 5; j < 10; j++) {
         /* Encrypt each string */
@@ -62,8 +64,6 @@ int main(int argc, char **argv)
         free(y);
     }
 
-    /* free(global_key); */
-    /* free(global_iv); */
     return 0;
 }
 
