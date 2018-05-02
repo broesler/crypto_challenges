@@ -56,9 +56,9 @@ int main(int argc, char **argv)
         printall(x, y_len - n_pad);
         printf("\n");
         free(x);
+        free(y);
     }
 
-    free(y);
     free(global_key);
     free(global_iv);
     return 0;

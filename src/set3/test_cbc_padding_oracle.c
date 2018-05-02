@@ -15,7 +15,6 @@
 #include "crypto2.h"
 #include "cbc_padding_oracle.h"
 
-/* OVERWRITE externs?? */
 BYTE *global_key = (BYTE *)"BUSINESS CASUAL";
 BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99" \
                            "\x99\x99\x99\x99\x99\x99\x99\x99";
