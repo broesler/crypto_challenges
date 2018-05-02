@@ -45,7 +45,7 @@ c13: make_admin_profile
 c14: one_byte_ecb
 c16: cbc_bit_flip
 
-debug: CFLAGS += -DLOGSTATUS -ggdb3
+debug: CFLAGS += -DLOGSTATUS -ggdb3 -fno-inline
 debug: all
 verbose: CFLAGS += -DVERBOSE
 verbose: debug

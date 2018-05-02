@@ -117,13 +117,13 @@ int HexConvert1()
     START_TEST_CASE;
     BYTE byte1[] = "Man";
     char *hex = byte2hex(byte1, 3);
-    SHOULD_BE(!strcasecmp(hex,"4d616e"));
+    SHOULD_BE(!strcasecmp(hex, "4d616e"));
     BYTE *byte2 = NULL;
     size_t nbyte = hex2byte(&byte2, hex);
     SHOULD_BE(nbyte == 3);
-    SHOULD_BE(!memcmp(byte2,byte1,nbyte));
+    SHOULD_BE(!memcmp(byte2, byte1, nbyte));
 #ifdef LOGSTATUS
-    printf("Got:    %s\nExpect: %s\n", byte2, byte1);
+    printf("Got:    %.*s\nExpect: %.*s\n", (int)nbyte, byte2, (int)nbyte, byte1);
 #endif
     free(hex);
     free(byte2);
@@ -140,7 +140,7 @@ int Strnrepeat1()
     SHOULD_BE(!memcmp(key_arr, expect, 8));
 #ifdef LOGSTATUS
     char *ascii = byte2str(key_arr, 8);
-    printf("Got:    %s\nExpect: %s\n", ascii, expect);
+    printf("Got:    %s\nExpect: %.*s\n", ascii, 8, expect);
     free(ascii);
 #endif
     free(key_arr);
