@@ -128,11 +128,10 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
     /*     BZERO(r, b); */
     /*     memcpy(r, rf, b); */
     /*  */
-    /*     #<{(| XOR last byte with i, because that gives the block with valid */
-    /*      * padding, discovered above. |)}>#  */
+    /*     #<{(| XOR last byte with i, giving the block with valid padding |)}>#  */
     /*     r[b-1] ^= 1; */
     /*  */
-    /*     #<{(| XOR given byte |)}># */
+    /*     #<{(| XOR test byte |)}># */
     /*     r[b-n] ^= 1; */
     /*  */
     /*     #<{(| Concatenate byte array to pass to oracle |)}># */
@@ -145,7 +144,7 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
     /*     if (0 > padding_oracle(ry, 2*b)) {  */
     /*         *Dy_len = n; */
     /*         *Dy = init_byte(*Dy_len); */
-    /*         #<{(| XOR last n bytes with n to recover Dy |)}># */
+    /*         #<{(| XOR last n bytes with n to recover D(y) |)}># */
     /*         for (size_t j = b-n; j < b; j++) { */
     /*             (*Dy)[j] = rf[j] ^ n; */
     /*         } */
