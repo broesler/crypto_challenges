@@ -127,7 +127,6 @@ char *byte2b64(const BYTE *byte, size_t nbyte)
 size_t b642byte(BYTE **byte, const char *b64)
 {
     size_t nchar,
-           i,
            nbyte;
 
     /* Input checking */
@@ -148,12 +147,16 @@ size_t b642byte(BYTE **byte, const char *b64)
         nbyte = nchar*3/4 - (s ? (nchar - (s - b64)) : 0);
     }
 
+    /* Check that we actually have bytes to convert */
+    if (nbyte == 0) { return 0; }
+
     /* Initialize output */
     *byte = init_byte(nbyte);
     BYTE *p = *byte;
 
+    size_t n = 0;
     /* Operate in chunks of 4 bytes in ==> 3 bytes out */
-    for (i = 0; i < nchar; i+=4) {
+    for (size_t i = 0; i < nchar; i+=4) {
         /* Get 4 bytes of input */
         int b64_int[4];
 
@@ -161,7 +164,7 @@ size_t b642byte(BYTE **byte, const char *b64)
             /* Lookup table of b64 indices */
             int b = (int)indexof(B64_LUT, b64[i+j]);
 
-            if (b < 65 && b >= 0) {
+            if (0 <= b && b < 65) {
                 b64_int[j] = b;
             } else {
                 printf("got index %d\n", b);
@@ -169,10 +172,14 @@ size_t b642byte(BYTE **byte, const char *b64)
             }
         }
 
-        /* NOTE mask off MSBs for left-shifts so we don't keep large #s 
-         * (same as casting to char, but probably faster) */
+        /* Assign bytes to array -- always */
         *p++ = ((b64_int[0] << 2) & 0xFF) | (b64_int[1] >> 4); /* 1st byte */
+        n++;
+
+        if (n++ >= nbyte) { break; }
         *p++ = ((b64_int[1] << 4) & 0xFF) | (b64_int[2] >> 2); /* 2nd byte */
+
+        if (n++ >= nbyte) { break; }
         *p++ = ((b64_int[2] << 6) & 0xFF) |  b64_int[3];       /* 3rd byte */
     }
 
