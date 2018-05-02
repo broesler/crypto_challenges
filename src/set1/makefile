@@ -43,7 +43,7 @@ c6: breakRepeatingXOR
 c7: aes_ecb_file
 c8: findECB
 
-debug: CFLAGS += -DLOGSTATUS -ggdb3
+debug: CFLAGS += -DLOGSTATUS -ggdb3 -fno-inline
 debug: all
 verbose: CFLAGS += -DVERBOSE
 verbose: debug

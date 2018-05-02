@@ -190,11 +190,21 @@ void printall(const BYTE *s, size_t nbyte)
  *----------------------------------------------------------------------------*/
 void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar)
 {
-    /* *s : pointer to byte array for printing
-     * nbyte : number of bytes in *s
+    /* *s         : pointer to byte array for printing
+     * nbyte      : number of bytes in *s
      * block_size : number of bytes per block
-     * pchar : if true, print 'printable' chars instead of hex codes
+     * pchar      : if true, print 'printable' chars instead of hex codes
      */
+
+    int all_pchar = 1;
+    for (size_t i = 0; i < nbyte; i++) {
+        if (!isprint(*(s+i))) {
+            all_pchar = 0;
+            break;
+        }
+    }
+    /* If all are printable, no need to space out to matching hex blocks */
+    char *cfmt = (all_pchar == 1) ? "%c" : "  %c ";
 
     /* Number of blocks needed */
     size_t n_blocks = nbyte / block_size;
@@ -206,7 +216,7 @@ void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar)
         do {
             char c = *(s + idx);
             if (pchar && isprint(c)) {
-                printf("  %c ", c); /* keep same spaceing as \x01, i.e. */
+                printf(cfmt, c); /* keep same spaceing as \x01, i.e. */
             } else {
                 printf("\\x%.2X", c);
             }
@@ -215,7 +225,7 @@ void print_blocks(const BYTE *s, size_t nbyte, size_t block_size, int pchar)
         } while ((i < block_size) && (idx < nbyte));
 
         if (idx < nbyte) {
-            printf(" | ");
+            printf("||");
         }
     }
 }
@@ -237,7 +247,6 @@ char **init_str_arr(size_t nstr, size_t len)
 {
     char **str_arr = malloc(nstr*sizeof(char *));
     MALLOC_CHECK(str_arr);
-    BZERO(str_arr, nstr*sizeof(char *));
 
     for (size_t i = 0; i < nstr; i++) {
         *(str_arr+i) = init_str(len);
@@ -261,9 +270,21 @@ void free_str_arr(char **str_arr, size_t nstr)
  *----------------------------------------------------------------------------*/
 BYTE *init_byte(size_t len)
 {
-    BYTE *buffer = calloc(len, sizeof(BYTE));
+    BYTE *buffer = calloc(len+1, sizeof(BYTE));
     MALLOC_CHECK(buffer);
     return buffer;
+}
+
+/*------------------------------------------------------------------------------
+ *         Generate random sequence of bytes (i.e. AES key) 
+ *----------------------------------------------------------------------------*/
+BYTE *rand_byte(size_t len)
+{
+    BYTE *key = init_byte(len);
+    for (size_t i = 0; i < len; i++) {
+        key[i] = rand() % 0x100;     /* generate random byte [0x00,0xFF] */ 
+    }
+    return key;
 }
 
 /*------------------------------------------------------------------------------

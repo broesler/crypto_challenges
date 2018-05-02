@@ -116,18 +116,6 @@ int aes_128_cbc_decrypt(BYTE **x, size_t *x_len, BYTE *y, size_t y_len, BYTE *ke
 }
 
 /*------------------------------------------------------------------------------
- *         Generate random sequence of bytes (i.e. AES key) 
- *----------------------------------------------------------------------------*/
-BYTE *rand_byte(size_t len)
-{
-    BYTE *key = init_byte(len);
-    for (size_t i = 0; i < len; i++) {
-        key[i] = rand() % 0x100;     /* generate random byte [0x00,0xFF] */ 
-    }
-    return key;
-}
-
-/*------------------------------------------------------------------------------
  *          Test if we're encrypting in ECB mode or not
  *----------------------------------------------------------------------------*/
 /* Accepts function pointer to encryption oracle and block size */
