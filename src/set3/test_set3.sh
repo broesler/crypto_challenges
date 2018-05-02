@@ -32,7 +32,6 @@ printf "Running tests...\n"
 ./test_cbc_padding_oracle
 pass_check "$?" "Set 3 Utilities"
 
-
 # Test challenge 17
 diff <(./cbc_padding_oracle_main) "${DATA_PATH}/17.txt"
 pass_check "$?" "Challenge 17"

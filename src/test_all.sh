@@ -20,16 +20,9 @@ cd ./util
 cd .. # change back to src
 
 # cd into each set and run their tests
-
-# Set 1
-cd set1
-./test_set1.sh
-cd ..
-
-# Set 2
-cd set2
-./test_set2.sh
-cd ..
+for i in {1..3}; do
+    test_set $i
+done
 
 exit 0
 #===============================================================================
