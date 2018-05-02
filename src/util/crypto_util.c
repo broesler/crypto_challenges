@@ -276,6 +276,18 @@ BYTE *init_byte(size_t len)
 }
 
 /*------------------------------------------------------------------------------
+ *         Generate random sequence of bytes (i.e. AES key) 
+ *----------------------------------------------------------------------------*/
+BYTE *rand_byte(size_t len)
+{
+    BYTE *key = init_byte(len);
+    for (size_t i = 0; i < len; i++) {
+        key[i] = rand() % 0x100;     /* generate random byte [0x00,0xFF] */ 
+    }
+    return key;
+}
+
+/*------------------------------------------------------------------------------
  *         Allocate memory for int
  *----------------------------------------------------------------------------*/
 int *init_int(size_t len)

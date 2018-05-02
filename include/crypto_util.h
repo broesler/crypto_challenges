@@ -14,10 +14,14 @@
 #include <string.h>
 
 //------------------------------------------------------------------------------
-//      Constants
+//      Constants and Macros
 //------------------------------------------------------------------------------
 #define MAX_STR_LEN 4096
 #define NUM_LETTERS 27      // include space!!
+
+// Random number in range (inclusive)
+// Good enough for government work... or is it? not truly "uniform"
+#define RAND_RANGE(A,B) ((rand() % ((B) - (A) + 1)) + (A))
 
 //------------------------------------------------------------------------------
 //      Type Definitions
@@ -76,6 +80,9 @@ void free_str_arr(char **str_arr, size_t nstr);
 
 // Initialize byte array (same as init_str, but don't include extra NULL byte)
 BYTE *init_byte(size_t len);
+
+// Generate random sequence of bytes
+BYTE *rand_byte(size_t len);
 
 // Initialize integer array
 int *init_int(const size_t len);

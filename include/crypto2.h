@@ -19,10 +19,6 @@
 // maximum bytes to feed into getBlockSize
 #define IMAX 48
 
-// Random number in range (inclusive)
-// Good enough for government work... or is it? not truly "uniform"
-#define RAND_RANGE(A,B) ((rand() % ((B) - (A) + 1)) + (A))
-
 //------------------------------------------------------------------------------
 //      Function Definitions
 //------------------------------------------------------------------------------
@@ -31,9 +27,6 @@ int aes_128_cbc_encrypt(BYTE **y, size_t *y_len, BYTE *x, size_t x_len, BYTE *ke
 
 // Decrypt using AES 128-bit CBC mode
 int aes_128_cbc_decrypt(BYTE **x, size_t *x_len, BYTE *y, size_t y_len, BYTE *key, BYTE *iv);
-
-// Generate random AES key 
-BYTE *rand_byte(size_t len);
 
 // Get block size given function pointer
 size_t getBlockSize(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t *count, size_t *n);

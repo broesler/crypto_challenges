@@ -11,7 +11,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 #include "header.h"
 #include "crypto_util.h"
