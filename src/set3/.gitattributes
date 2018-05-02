@@ -1,3 +1,0 @@
-cbc_padding_oracle.c merge=ours
-cbc_padding_oracle_main.c merge=ours
-test_cbc_padding_oracle.c merge=ours
