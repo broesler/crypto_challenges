@@ -15,6 +15,7 @@
 #include "crypto2.h"
 #include "cbc_padding_oracle.h"
 
+/* OVERWRITE externs?? */
 BYTE *global_key = (BYTE *)"BUSINESS CASUAL";
 BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99" \
                            "\x99\x99\x99\x99\x99\x99\x99\x99";
@@ -151,8 +152,15 @@ int BLOCKDECR1()
 int BLOCKDECR2()
 {
     START_TEST_CASE;
-    /* Gives trouble when checking for valid padding that is NOT \x01 */
-    char x_b64[] = "MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=";  /* 7 */
+    /* FIXME This string (j == 7) gives trouble when checking for valid padding
+     * that is NOT \x01, but ONLY in cbc_padding_oracle_main.c!! 
+     * NOTE update! Issue only occurs when looping over multiple input strings!
+     * Works: without 2nd pad check for j = [0,1-10) 
+     * Works: without 2nd pad check for j = [0-4,10) 
+     * Breaks: without 2nd pad check for j = [5,10)
+     * Works: without 2nd pad check for j = [6,10) ... and [7-9,10)
+     */
+    char x_b64[] = "MDAwMDA3SSdtIG9uIGEgcm9sbCwgaXQncyB0aW1lIHRvIGdvIHNvbG8=";     /* 7 */
     BYTE *x = NULL;
     size_t x_len = b642byte(&x, x_b64);
 #ifdef LOGSTATUS
