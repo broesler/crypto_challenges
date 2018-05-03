@@ -89,8 +89,8 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
     size_t i_found = 0;
 
     BYTE *rf = (BYTE *)"THREE WORD CHANT";  /* fixed random input ciphertext */
-    BYTE *r  = init_byte(b);                /* temp  random input ciphertext */
-    memcpy(r, rf, b);                       /* copy rf values into r */
+    BYTE *r  = init_byte(b); /* temp  random input ciphertext */
+    memcpy(r, rf, b);        /* copy rf values into r */
 
     BYTE *ry = init_byte(2*b);  /* composite (r||y) for pass to oracle */
 
@@ -145,6 +145,8 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
             for (size_t j = b-n; j < b; j++) {
                 (*Dy)[j] = rf[j] ^ n;
             }
+            free(r);
+            free(ry);
             return 0;
         }
     }
@@ -177,11 +179,17 @@ int encryption_oracle(BYTE **y, size_t *y_len, int choice)
     /* Generate a random key ONCE */
     if (!global_key) {
         global_key = rand_byte(BLOCK_SIZE);
+        printf("global_key set to: ");
+        print_blocks(global_key, BLOCK_SIZE, BLOCK_SIZE, 0);
+        printf("\n");
     }
 
     /* Generate a random IV ONCE */
     if (!global_iv) {
         global_iv = rand_byte(BLOCK_SIZE);
+        printf("global_iv  set to: ");
+        print_blocks(global_iv, BLOCK_SIZE, BLOCK_SIZE, 0);
+        printf("\n");
     }
 
     /* Encrypt using CBC mode */
