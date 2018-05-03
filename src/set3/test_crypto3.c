@@ -47,7 +47,50 @@ int FMEM1()
     END_TEST_CASE;
 }
 
-int CTRENC1()
+/* Test incle() little endian incrementer */
+int INCLE1()
+{
+    START_TEST_CASE;
+    BYTE *counter = init_byte(BLOCK_SIZE/2);
+    incle(counter);
+    SHOULD_BE(counter[0] == 0x01);
+#ifdef LOGSTATUS
+    printf("counter = ");
+    print_blocks(counter, BLOCK_SIZE/2, BLOCK_SIZE, 0);
+    printf("\n");
+#endif
+    free(counter);
+    END_TEST_CASE;
+}
+
+/* Test incle() little endian incrementer for overflow error */
+int INCLE2()
+{
+    START_TEST_CASE;
+    BYTE *counter = bytenrepeat((BYTE *)"\xFF", 1, BLOCK_SIZE/2);
+    counter[0] = '\xFE';
+    SHOULD_BE(counter[0] == 0xFE);
+    SHOULD_BE(counter[BLOCK_SIZE/2 - 1] == 0xFF);
+    for (size_t i = 0; i < 3; i++) {
+#ifdef LOGSTATUS
+        printf("counter = ");
+        print_blocks(counter, BLOCK_SIZE/2, BLOCK_SIZE, 0);
+        printf("\n");
+#endif
+        incle(counter); /* should wrap to 0, then to 1 (little endian) */
+    }
+#ifdef LOGSTATUS
+        printf("counter = ");
+        print_blocks(counter, BLOCK_SIZE/2, BLOCK_SIZE, 0);
+        printf("\n");
+#endif
+    SHOULD_BE(counter[0] == 0x01);
+    SHOULD_BE(counter[BLOCK_SIZE/2-1] == 0x00);
+    free(counter);
+    END_TEST_CASE;
+}
+
+int CTRDEC1()
 {
     START_TEST_CASE;
     /* NOTE the function aes_128_ctr() is designed to handle file streams,
@@ -57,19 +100,22 @@ int CTRENC1()
                    "2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==";
     BYTE *x = NULL;
     size_t x_len = b642byte(&x, x_b64);
+#ifdef LOGSTATUS
+        printf("x  = \"%.*s\", %lu bytes\n", (int)x_len, x, x_len);
+#endif
     FILE *xs = fmemopen(x, x_len, "r");
     FILE *ys = tmpfile();
     BYTE *key = (BYTE *)"YELLOW SUBMARINE";
-    BYTE *nonce = bytenrepeat((BYTE *)"\x00", 1, BLOCK_SIZE/2);
+    BYTE *nonce = init_byte(BLOCK_SIZE/2); /* leave at 0's */
     SHOULD_BE(aes_128_ctr(ys, xs, key, nonce) == 0);
     BYTE *yb = init_byte(x_len);
-    if (fread(yb, 1, x_len, ys)) {
+    SHOULD_BE(fread(yb, 1, x_len, ys) > 0);
+    SHOULD_BE(!memcmp(yb, "Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby ", x_len));
 #ifdef LOGSTATUS
-        printf("ys = \"%s\"\n", yb);
+    printf("ys = \"%s\"\n", yb);
 #endif
-    }
-    /* SHOULD_BE(!memcmp(yb, xs, x_len)); */
     free(x);
+    free(yb);
     fclose(xs);
     fclose(ys);
     END_TEST_CASE;
@@ -85,7 +131,9 @@ int main(void)
 
     /* Run OpenSSL lines here for speed */
     RUN_TEST(FMEM1,   "fmemopen()      ");
-    RUN_TEST(CTRENC1, "aes_128_ctr() 1 ");
+    RUN_TEST(INCLE1,  "incle() 1       ");
+    RUN_TEST(INCLE2,  "incle() 2       ");
+    RUN_TEST(CTRDEC1, "aes_128_ctr() 1 ");
 
     /* Count errors */
     if (!fails) {
