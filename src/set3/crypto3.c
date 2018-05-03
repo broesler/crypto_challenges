@@ -39,11 +39,12 @@ int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce)
 
         /* Increment counter for next block */
         incle(counter);
-
+        free(keystream);
     } while (!feof(x));
 
     /* Rewind output stream before returning */
     REWIND_CHECK(y);
+    free(counter);
     return 0;
 }
 
@@ -67,6 +68,7 @@ BYTE *get_keystream_block(BYTE *key, BYTE *nonce, BYTE *counter)
         ERROR("Encryption failed!");
     }
 
+    free(nc);
     return keystream;
 }
 

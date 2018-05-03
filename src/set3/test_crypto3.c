@@ -42,6 +42,7 @@ int FMEM1()
 #endif
     }
     SHOULD_BE(!memcmp(yb, x, x_len));
+    free(yb);
     fclose(xs);
     fclose(ys);
     END_TEST_CASE;
@@ -115,11 +116,36 @@ int CTRDEC1()
     printf("ys = \"%s\"\n", yb);
 #endif
     free(x);
+    free(nonce);
     free(yb);
     fclose(xs);
     fclose(ys);
     END_TEST_CASE;
 }
+
+/* #<{(| Encryption identical to decryption |)}># */
+/* int CTRENC1() */
+/* { */
+/*     START_TEST_CASE; */
+/*     BYTE *x = (BYTE *)"Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby "; */
+/*     size_t x_len = strlen((char *)x); */
+/*     FILE *xs = fmemopen(x, x_len, "r"); */
+/*     FILE *ys = tmpfile(); */
+/*     BYTE *key = (BYTE *)"YELLOW SUBMARINE"; */
+/*     BYTE *nonce = init_byte(BLOCK_SIZE/2); #<{(| leave at 0's |)}># */
+/*     SHOULD_BE(aes_128_ctr(ys, xs, key, nonce) == 0); */
+/*     BYTE *yb = init_byte(x_len); */
+/*     SHOULD_BE(fread(yb, 1, x_len, ys) > 0); */
+/*     SHOULD_BE(!memcmp(yb, "/k¯wz3M[?_8O12T.E", x_len)); */
+/* #ifdef LOGSTATUS */
+/*     printf("ys = \"%.*s\"\n", (int)x_len, yb); */
+/* #endif */
+/*     free(yb); */
+/*     free(nonce); */
+/*     fclose(xs); */
+/*     fclose(ys); */
+/*     END_TEST_CASE; */
+/* } */
 
 /*------------------------------------------------------------------------------
  *        Run tests
@@ -134,6 +160,7 @@ int main(void)
     RUN_TEST(INCLE1,  "incle() 1       ");
     RUN_TEST(INCLE2,  "incle() 2       ");
     RUN_TEST(CTRDEC1, "aes_128_ctr() 1 ");
+    /* RUN_TEST(CTRENC1, "aes_128_ctr() 2 "); */
 
     /* Count errors */
     if (!fails) {
