@@ -35,7 +35,6 @@ int block_decrypt(BYTE **Dy, BYTE *y) {
 
         /* Set values of r_k to produce correct padding */
         for (size_t k = j; k < b; k++) {
-            /* rf[k] = *(*Dy+k) ^ (b - j + 1);  */
             rf[k] = (*Dy)[k] ^ (b - j + 1); 
         }
 
@@ -89,7 +88,8 @@ int last_byte(BYTE **Dy, size_t *n_found, BYTE *y)
     /* Initialize output array */
     *Dy = init_byte(b);
 
-    BYTE *rf = (BYTE *)"THREE WORD CHANT";  /* fixed random input ciphertext */
+    BYTE *rf = init_byte(b);  /* fixed random input ciphertext */
+    memcpy(rf, (BYTE *)"THREE WORD CHANT", BLOCK_SIZE);
     BYTE *r  = init_byte(b); /* temp  random input ciphertext */
     memcpy(r, rf, b);        /* copy rf values into r */
 
@@ -106,7 +106,9 @@ int last_byte(BYTE **Dy, size_t *n_found, BYTE *y)
 
         /* Check if O(r|y) is true */
         if (0 < padding_oracle(ry, 2*b)) { 
+            /* Store found values */
             i_found = i;
+            rf[b-1] ^= i_found;
             break;
         }
     }
@@ -126,9 +128,6 @@ int last_byte(BYTE **Dy, size_t *n_found, BYTE *y)
         /* Reset random block */
         BZERO(r, b);
         memcpy(r, rf, b);
-
-        /* XOR last byte with i_found, giving the block with valid padding */ 
-        r[b-1] ^= i_found;
 
         /* XOR test byte */
         r[b-n] ^= 1;
@@ -154,7 +153,7 @@ int last_byte(BYTE **Dy, size_t *n_found, BYTE *y)
 
     /* Valid padding is 1 */
     *n_found = 1;
-    (*Dy)[b-1] = (rf[b-1] ^ i_found) ^ 1;
+    (*Dy)[b-1] = rf[b-1] ^ 1;
 
     free(r);
     free(ry);

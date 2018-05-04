@@ -37,16 +37,16 @@ BYTE *global_iv  = (BYTE *)"\x53\x35\xF6\x4C\x1F\x7D\x2B\xA0"\
 /* Output:
  * global_key set to: \x43\x4F\x84\xFD\x14\x36\xD1\x2F\x83\x3B\xF1\xE0\xF1\xF6\xFB\x68
  * global_iv  set to: \x53\x35\xF6\x4C\x1F\x7D\x2B\xA0\x7C\x91\x7D\x27\x5B\x0A\x80\xCA
- * 000000Now that the party is jumping
- * 000001With the bass kicked in and the Vega's are pumpin'
- * 000002Quick to the point, to the point, no faking
- * 000003Cooking MC's like a pound of bacon
- * 000004Burning 'em, if you ain't quick and nimble
- * 000005I go crazy when I hear a cymbal
- * 000006And a high0\x87\xFA'\xBD\x1D\xBF\xB8\xEF;l\xBC\xF9\x86uTed up tempo
- * 000007I'm on a roll, it's time to go solo
- * 000008ollin' in my five point oh
- * 000009ith my rag-top down so my hair can blow
+ * 000000Now that t||he party is jump||ing
+ * 000001With the b||ass kicked in an||d the Vega's are pumpin'
+ * 000002Quick to t||he point, to the|| point, no faking
+ * 000003Cooking MC||'s like a pound ||of bacon
+ * 000004Burning 'e||m, if you ain't ||quick and nimble
+ * 000005I go crazy|| when I hear a c||ymbal
+ * 000006And a high||0\x87\xFA'\xBD\x1D\xBF\xB8\xEF;l\xBC\xF9\x86uT||ed up tempo
+ * 000007I'm on a r||oll, it's time t||o go solo
+ * 000008ollin' in ||my five point oh||
+ * 000009ith my rag||-top down so my ||hair can blow
  */
 
 int main(int argc, char **argv)
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     /* srand(SRAND_INIT); */
     srand(time(NULL));
 
-    for (size_t j = 0; j < 10; j++) {
+    for (size_t j = 6; j < 7; j++) {
         /* Encrypt each string */
         encryption_oracle(&y, &y_len, j); /* maybe reset y to NULL here?? */
 
