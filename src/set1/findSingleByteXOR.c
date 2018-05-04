@@ -49,9 +49,9 @@ XOR_NODE *findSingleByteXOR(const char *filename)
     XOR_NODE *out = NULL;
     FILE *fp = NULL;
     char buffer[MAX_WORD_LEN];
-    char message[2*MAX_PAGE_NUM];
+    char message[2*MAX_LINE_LEN];
     BZERO(buffer, MAX_WORD_LEN);
-    BZERO(message, 2*MAX_PAGE_NUM);
+    BZERO(message, 2*MAX_LINE_LEN);
 
     /* initialize output */
     out = init_xor_node();
@@ -59,7 +59,7 @@ XOR_NODE *findSingleByteXOR(const char *filename)
     /* open file stream */
     fp = fopen(filename, "r");
     if (fp == NULL) {
-        snprintf(message, 2*MAX_PAGE_NUM, "File %s could not be read!", filename);
+        snprintf(message, 2*MAX_LINE_LEN, "File %s could not be read!", filename);
         ERROR(message);
     }
 

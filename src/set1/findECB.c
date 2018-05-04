@@ -43,9 +43,9 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
     int file_line = -1;
     FILE *fp = NULL;
     char buffer[MAX_WORD_LEN];
-    char message[2*MAX_PAGE_NUM];
+    char message[2*MAX_LINE_LEN];
     BZERO(buffer, MAX_WORD_LEN);
-    BZERO(message, 2*MAX_PAGE_NUM);
+    BZERO(message, 2*MAX_LINE_LEN);
 
     /* open file stream */
     fp = fopen(hex_filename, "r");

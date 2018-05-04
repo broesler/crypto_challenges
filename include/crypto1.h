@@ -17,7 +17,7 @@
 //------------------------------------------------------------------------------
 #define NUM_LETTERS 27      // include space!!
 #define MAX_KEY_LEN 128     // All powers of 2
-#define MAX_PAGE_NUM 1024
+#define MAX_LINE_LEN 1024
 #define MAX_WORD_LEN 16384
 
 // Take minimum, but don't bother with type checking
