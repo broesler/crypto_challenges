@@ -26,11 +26,28 @@
 /* BYTE *global_key = (BYTE *)"BUSINESS CASUAL"; */
 /* BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99" \ */
 /*                            "\x99\x99\x99\x99\x99\x99\x99\x99"; */
-/* Pseudo-random bytes spit out by RNG when using srand(SRAND_INIT); */
-BYTE *global_key = (BYTE *)"\x88\xBF\xA2\x49\x8D\xCC\x42\xB6"\
-                           "\xCE\x0C\x55\xB5\xCE\x71\x2A\xA5";
-BYTE *global_iv  = (BYTE *)"\x2D\xB8\x55\x63\x5F\xDE\xF8\x4C"\
-                           "\x6F\xB5\x6D\xF4\xD7\xAF\xAA\x1A";
+/* Try these "random" values that gave the following results */
+BYTE *global_key = (BYTE *)"\x43\x4F\x84\xFD\x14\x36\xD1\x2F"\
+                           "\x83\x3B\xF1\xE0\xF1\xF6\xFB\x68";
+BYTE *global_iv  = (BYTE *)"\x53\x35\xF6\x4C\x1F\x7D\x2B\xA0"\
+                           "\x7C\x91\x7D\x27\x5B\x0A\x80\xCA";
+
+/* In the following case, the 2nd block of string 6 finds a "valid" padding of
+ * \x02, so we find 2 bytes of Dy */
+/* Output:
+ * global_key set to: \x43\x4F\x84\xFD\x14\x36\xD1\x2F\x83\x3B\xF1\xE0\xF1\xF6\xFB\x68
+ * global_iv  set to: \x53\x35\xF6\x4C\x1F\x7D\x2B\xA0\x7C\x91\x7D\x27\x5B\x0A\x80\xCA
+ * 000000Now that the party is jumping
+ * 000001With the bass kicked in and the Vega's are pumpin'
+ * 000002Quick to the point, to the point, no faking
+ * 000003Cooking MC's like a pound of bacon
+ * 000004Burning 'em, if you ain't quick and nimble
+ * 000005I go crazy when I hear a cymbal
+ * 000006And a high0\x87\xFA'\xBD\x1D\xBF\xB8\xEF;l\xBC\xF9\x86uTed up tempo
+ * 000007I'm on a roll, it's time to go solo
+ * 000008ollin' in my five point oh
+ * 000009ith my rag-top down so my hair can blow
+ */
 
 int main(int argc, char **argv)
 {
@@ -38,11 +55,9 @@ int main(int argc, char **argv)
     size_t y_len = 0;
     int n_pad = 0;
 
-    /* FUCK MY DREAMS this bug has to do with the random bytes used in either
-     * the global_(key|iv), or the rfs use in block_decrypt() or last_byte(). */
     /* initialize PRNG */
-    srand(SRAND_INIT);
-    /* srand(time(NULL)); */
+    /* srand(SRAND_INIT); */
+    srand(time(NULL));
 
     for (size_t j = 0; j < 10; j++) {
         /* Encrypt each string */
@@ -77,7 +92,6 @@ int main(int argc, char **argv)
         /* NOTE valgrind gives "4,096 bytes in 1 block still reachable" for this
          * printall() statement when using random global_(key|iv) */
         printall(x, y_len - n_pad);
-        /* print_blocks(x, y_len - n_pad, BLOCK_SIZE, 1); */
         printf("\n");
         free(x);
         free(y);
