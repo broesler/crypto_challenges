@@ -79,7 +79,7 @@ int LASTBYTE1()
     /* Get last byte of 2nd block */
     SHOULD_BE(last_byte(&Dy, &xp_len, y+BLOCK_SIZE) == 0);
     SHOULD_BE(xp_len == 1);
-    BYTE xg = Dy[0] ^ y[BLOCK_SIZE-1];
+    BYTE xg = Dy[BLOCK_SIZE-1] ^ y[BLOCK_SIZE-1];
     SHOULD_BE(xg == 'E');
 #ifdef LOGSTATUS
     printf("Dy = \"");
@@ -113,7 +113,7 @@ int LASTBYTE2()
     /* Want last byte of 2nd block */
     SHOULD_BE(last_byte(&Dy, &xp_len, y+BLOCK_SIZE) == 0);
     SHOULD_BE(xp_len == 1);
-    BYTE xg = Dy[0] ^ y[BLOCK_SIZE-1];
+    BYTE xg = Dy[BLOCK_SIZE-1] ^ y[BLOCK_SIZE-1];
     SHOULD_BE(xg == 't');
 #ifdef LOGSTATUS
     printf("xg = \\x%.2X = '%c'\n", xg, xg);

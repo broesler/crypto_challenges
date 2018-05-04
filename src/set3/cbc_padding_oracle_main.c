@@ -5,11 +5,6 @@
  *
  *  Description: Challenge 17: CBC decryption with padding oracle
  *
- *      NOTE this code is purposefully set up to reproduce an odd bug that
- *      occurs when j = [5,10) ONLY. Seems to have something to do with how Dy
- *      is calculated or initialized within block_decrypt()? We get the
- *      initialization vector for the first block of the 8th string decrypted...
- *
  *============================================================================*/
 
 #include <time.h>
@@ -17,15 +12,8 @@
 #include "cbc_padding_oracle.h"
 
 /* Global key, iv used in tests */
-/* NOTE Uncomment to allow encryption_oracle() to set these values randomly. Doing so
- * will MOST LIKELY produce a bug in decryption... but sometimes it will produce
- * the correct result. Need to experiment further to see which random values
- * produce the bug and why. My guess is NULLs somewhere... but not sure. */
-/* BYTE *global_key = NULL; */
-/* BYTE *global_iv  = NULL; */
-BYTE *global_key = (BYTE *)"BUSINESS CASUAL";
-BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99" \
-                           "\x99\x99\x99\x99\x99\x99\x99\x99";
+BYTE *global_key = NULL;
+BYTE *global_iv  = NULL;
 
 int main(int argc, char **argv)
 {
@@ -33,15 +21,13 @@ int main(int argc, char **argv)
     size_t y_len = 0;
     int n_pad = 0;
 
-    /* FUCK MY DREAMS this bug has to do with the random bytes used in either
-     * the global_(key|iv), or the rfs use in block_decrypt() or last_byte(). */
     /* initialize PRNG */
     /* srand(SRAND_INIT); */
     srand(time(NULL));
 
     for (size_t j = 0; j < 10; j++) {
         /* Encrypt each string */
-        encryption_oracle(&y, &y_len, j);
+        encryption_oracle(&y, &y_len, j); /* maybe reset y to NULL here?? */
 
         size_t Nb = y_len / BLOCK_SIZE;
         BYTE *x = init_byte(y_len);
@@ -69,14 +55,16 @@ int main(int argc, char **argv)
         }
 
         /* print result */
+        /* NOTE valgrind gives "4,096 bytes in 1 block still reachable" for this
+         * printall() statement when using random global_(key|iv) */
         printall(x, y_len - n_pad);
         printf("\n");
         free(x);
         free(y);
     }
 
-    /* free(global_key); */
-    /* free(global_iv); */
+    free(global_key);
+    free(global_iv);
     return 0;
 }
 

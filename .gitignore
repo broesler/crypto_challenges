@@ -38,3 +38,6 @@ strtoupper_test
 strassign_test
 test_strtoul
 ruby_test
+strtok_test
+gdb_macros
+aes_demo
