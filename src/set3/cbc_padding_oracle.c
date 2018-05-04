@@ -20,30 +20,27 @@ int block_decrypt(BYTE **Dy, BYTE *y) {
      *   returns : 0 upon success, -1 on failure
      */
     size_t b = BLOCK_SIZE;
-    *Dy = init_byte(b);
 
     /* Get last byte[s] of block */
-    BYTE *xn = NULL;
-    size_t xn_len = 0;
-    last_byte(&xn, &xn_len, y);
-    memcpy(*Dy + (b - xn_len), xn, xn_len);
+    size_t n_found = 0;
+    last_byte(Dy, &n_found, y);
 
-    BYTE *rf = init_byte(b);
-    memcpy(rf, (BYTE *)"THREE WORD CHANT", BLOCK_SIZE);
+    BYTE *rf = rand_byte(b);  /* fixed random input ciphertext */
     BYTE *r  = init_byte(b);
     BYTE *ry = init_byte(2*b);
 
     /* for each remaining byte in the block */
-    for (size_t j = b - xn_len; j > 0; j--) {
+    for (size_t j = b - n_found; j > 0; j--) {
 
         /* Set values of r_k to produce correct padding */
         for (size_t k = j; k < b; k++) {
-            rf[k] = *(*Dy+k) ^ (b - j + 1); 
+            rf[k] = (*Dy)[k] ^ (b - j + 1); 
         }
 
         /* Guess (j-1)th byte */
         for (size_t i = 0; i < 0x100; i++) {
             /* Reset r to random bytes */
+            BZERO(r, b);
             memcpy(r, rf, b);
 
             /* Set choice of byte in chosen ciphertxt */
@@ -71,26 +68,28 @@ int block_decrypt(BYTE **Dy, BYTE *y) {
     free(rf);
     free(r);
     free(ry);
-    free(xn);
     return 0;
 }
 
 /*------------------------------------------------------------------------------
  *         Decrypt last byte(s) of ciphertext block
  *----------------------------------------------------------------------------*/
-int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y) 
+int last_byte(BYTE **Dy, size_t *n_found, BYTE *y) 
 {
     /* NOTE output needs to be XOR'd with y_{i-1} to get x!
      * Dy     : decrypted last byte(s) of ciphertext
-     * Dy_len : number of bytes decrypted
+     * n_found : number of bytes decrypted
      * y      : single ciphertext block
      */
     size_t b = BLOCK_SIZE;
     size_t i_found = 0;
 
-    BYTE *rf = (BYTE *)"THREE WORD CHANT";  /* fixed random input ciphertext */
-    BYTE *r  = init_byte(b);                /* temp  random input ciphertext */
-    memcpy(r, rf, b);                       /* copy rf values into r */
+    /* Initialize output array */
+    *Dy = init_byte(b);
+
+    BYTE *rf = rand_byte(b);  /* fixed random input ciphertext */
+    BYTE *r  = init_byte(b); /* temp  random input ciphertext */
+    memcpy(r, rf, b);        /* copy rf values into r */
 
     BYTE *ry = init_byte(2*b);  /* composite (r||y) for pass to oracle */
 
@@ -105,7 +104,9 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
 
         /* Check if O(r|y) is true */
         if (0 < padding_oracle(ry, 2*b)) { 
+            /* Store found values */
             i_found = i;
+            rf[b-1] ^= i_found;
             break;
         }
     }
@@ -113,20 +114,18 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
     /* Check if valid padding is NOT 1 */
     /* Strategy: 
      *   Take block
-     *       [a b ... f \x04 \x04 \x04 \x04],
-     *   and XOR one byte from 0..b-1 with \x01. When we reach the first padding
-     *   byte, we will have block 
-     *       [a b ... f *\x03* \x04 \x04 \x04],
+     *       [a b c ... p  \x04  \x04 \x04 \x04],
+     *   and XOR one byte from 0..b-1 with \x01, starting with the first and
+     *   moving towards the last. When we reach the first padding byte, we will
+     *   have block
+     *       [a b c ... p *\x03* \x04 \x04 \x04],
      *   which produces an invalid padding error from the oracle! 
      */
-    for (size_t n = b; n > 0; n--) {
+    for (size_t n = b; n > 1; n--) {
         /* n s.t. index of r[b-n] goes from 0..b-1 */
         /* Reset random block */
         BZERO(r, b);
         memcpy(r, rf, b);
-
-        /* XOR last byte with i, giving the block with valid padding */ 
-        r[b-1] ^= 1;
 
         /* XOR test byte */
         r[b-n] ^= 1;
@@ -139,21 +138,23 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
         /* If padding is invalid, then we've found the byte where the valid
          * padding ends, and n is the number of valid padding bytes */
         if (0 > padding_oracle(ry, 2*b)) { 
-            *Dy_len = n;
-            *Dy = init_byte(*Dy_len);
+            *n_found = n;
             /* XOR last n bytes with n to recover D(y) */
             for (size_t j = b-n; j < b; j++) {
                 (*Dy)[j] = rf[j] ^ n;
             }
+            free(rf);
+            free(r);
+            free(ry);
             return 0;
         }
     }
 
     /* Valid padding is 1 */
-    *Dy_len = 1;
-    *Dy = init_byte(*Dy_len);
-    **Dy = (rf[b-1] ^ i_found) ^ 1; /* r gets altered in 2nd check */
+    *n_found = 1;
+    (*Dy)[b-1] = rf[b-1] ^ 1;
 
+    free(rf);
     free(r);
     free(ry);
     return 0;
