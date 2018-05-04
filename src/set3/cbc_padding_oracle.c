@@ -25,8 +25,7 @@ int block_decrypt(BYTE **Dy, BYTE *y) {
     size_t n_found = 0;
     last_byte(Dy, &n_found, y);
 
-    BYTE *rf = init_byte(b);
-    memcpy(rf, (BYTE *)"THREE WORD CHANT", BLOCK_SIZE);
+    BYTE *rf = rand_byte(b);  /* fixed random input ciphertext */
     BYTE *r  = init_byte(b);
     BYTE *ry = init_byte(2*b);
 
@@ -88,8 +87,7 @@ int last_byte(BYTE **Dy, size_t *n_found, BYTE *y)
     /* Initialize output array */
     *Dy = init_byte(b);
 
-    BYTE *rf = init_byte(b);  /* fixed random input ciphertext */
-    memcpy(rf, (BYTE *)"THREE WORD CHANT", BLOCK_SIZE);
+    BYTE *rf = rand_byte(b);  /* fixed random input ciphertext */
     BYTE *r  = init_byte(b); /* temp  random input ciphertext */
     memcpy(r, rf, b);        /* copy rf values into r */
 
@@ -145,6 +143,7 @@ int last_byte(BYTE **Dy, size_t *n_found, BYTE *y)
             for (size_t j = b-n; j < b; j++) {
                 (*Dy)[j] = rf[j] ^ n;
             }
+            free(rf);
             free(r);
             free(ry);
             return 0;
@@ -155,6 +154,7 @@ int last_byte(BYTE **Dy, size_t *n_found, BYTE *y)
     *n_found = 1;
     (*Dy)[b-1] = rf[b-1] ^ 1;
 
+    free(rf);
     free(r);
     free(ry);
     return 0;
@@ -178,17 +178,11 @@ int encryption_oracle(BYTE **y, size_t *y_len, int choice)
     /* Generate a random key ONCE */
     if (!global_key) {
         global_key = rand_byte(BLOCK_SIZE);
-        printf("global_key set to: ");
-        print_blocks(global_key, BLOCK_SIZE, BLOCK_SIZE, 0);
-        printf("\n");
     }
 
     /* Generate a random IV ONCE */
     if (!global_iv) {
         global_iv = rand_byte(BLOCK_SIZE);
-        printf("global_iv  set to: ");
-        print_blocks(global_iv, BLOCK_SIZE, BLOCK_SIZE, 0);
-        printf("\n");
     }
 
     /* Encrypt using CBC mode */
