@@ -300,7 +300,6 @@ XOR_NODE *singleByteXORDecode(const BYTE *byte, size_t nbyte)
         /* Make sure string does not contain NULL chars, and is printable */
         /* strlen(ptext) could break. BYTE not guaranteed null-terminated */
         if (isprintable(ptext, nbyte)) {
-        /* if ((strlen(ptext) == nbyte) && (isprintable(ptext))) { */
             /* calculate string score */
             cfreq_score = charFreqScore(ptext, nbyte);
 

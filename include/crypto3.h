@@ -26,7 +26,7 @@ int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce);
 BYTE *get_keystream_block(BYTE *key, BYTE *nonce, BYTE *counter);
 
 // Increment little endian counter
-int incle(BYTE *counter);
+int inc64le(BYTE *counter);
 
 #endif
 //==============================================================================
