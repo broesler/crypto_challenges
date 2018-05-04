@@ -39,8 +39,9 @@ UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c $(UTILDIR)fmemopen.c
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
 # Make options
-all: test3 c17 test_cbc_padding_oracle types
+all: test3 c17 c19 test_cbc_padding_oracle types
 c17: cbc_padding_oracle_main
+c19: break_CTR_subs
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3 -fno-inline
 # debug: CFLAGS += $(SANFLAGS)
@@ -61,8 +62,12 @@ test_cbc_padding_oracle: test_cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
 cbc_padding_oracle_main: cbc_padding_oracle_main.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
+break_CTR_subs: break_CTR_subs.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
+
 .gitignore:
 	@printf "cbc_padding_oracle_main\n\
+	break_CTR_subs\n\
 	test_cbc_padding_oracle\n\
 	test3" > $@
 
@@ -94,6 +99,7 @@ clean:
 	rm -f $(UTILDIR)*.gch
 	rm -rf $(UTILDIR)*.dSYM/
 	rm -f cbc_padding_oracle_main
+	rm -f break_CTR_subs
 	rm -f test_cbc_padding_oracle
 	rm -f test3
 	rm -f .gitignore

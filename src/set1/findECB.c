@@ -50,8 +50,7 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
     /* open file stream */
     fp = fopen(hex_filename, "r");
     if (fp == NULL) {
-        snprintf(message, sizeof(message), "File %s could not be read!", hex_filename);
-        ERROR(message);
+        ERROR("File %s could not be read!", hex_filename);
     }
 
     int fl = 1; /* count file lines */

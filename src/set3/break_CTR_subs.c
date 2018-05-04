@@ -33,18 +33,42 @@ int main(int argc, char **argv)
      */
     FILE *fp = fopen(b64_file, "r");
     if (!fp) {
-        snprintf(message, 2*MAX_STR_LEN, "File %s could not be read!", b64_file);
-        LOG(message);
-        exit(-1);
+        ERROR("File %s could not be read!", b64_file);
     }
+    
+    /* Count lines in file */
+    /* size_t Nl = lines_in_file(fp); */
+    size_t Nl = 40;
 
-    /* char *b64 = init_str(MAX_WORD_LEN); */
-    /* while (fgets(b64,  */
-    /* char *b64_clean = strrmchr(b64, "\n");  #<{(| strip newlines |)}># */
-    /*  */
-    /* #<{(| Convert to byte array for decryption |)}># */
-    /* BYTE *byte = NULL; */
-    /* size_t nbyte = b642byte(&byte, b64_clean); */
+    BYTE **byte_arr = malloc(Nl*sizeof(char *));
+    MALLOC_CHECK(byte_arr);
+    int *byte_num = init_int(Nl);
+
+#ifdef LOGSTATUS
+        LOG("Reading from file %s...", b64_file);
+#endif
+    char *line = init_str(MAX_LINE_LEN);
+    while (fgets(line, MAX_LINE_LEN, fp)) {
+#ifdef LOGSTATUS
+        LOG("Reading from file %s...", b64_file);
+#endif
+        char *b64_clean = strrmchr(line, "\n");  /* strip newlines */
+
+        /* Convert to byte array for decryption */
+        BYTE *byte = NULL;
+        size_t nbyte = b642byte(&byte, b64_clean);
+
+        /* Store in array */
+        *byte_arr++ = byte;
+        *byte_num++ = nbyte;
+    }
+    fclose(fp);
+
+    for (size_t i = 0; i < Nl; i++) {
+        printf("byte_arr[%lu] = ", i);
+        printall(*(byte_arr+i), *(byte_num+i));
+        printf("\n");
+    }
 
     return 0;
 }

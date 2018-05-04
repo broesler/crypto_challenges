@@ -138,8 +138,7 @@ size_t b642byte(BYTE **byte, const char *b64)
 
     /* Require padding by '=' signs */
     if (nchar % 4) {
-        printf("nchar = %zu\n", nchar);
-        ERROR("Input string is not a valid b64 string!");
+        ERROR("Input string is not a valid b64 string! nchar = %zu\n", nchar);
     } else {
         /* 4 b64 chars * 6 bits/char == 24 bits / 8 bits/byte == 3 bytes */
         /* check for "=" padding in b64 string -- will have 0, 1, or 2 */
@@ -167,8 +166,7 @@ size_t b642byte(BYTE **byte, const char *b64)
             if (0 <= b && b < 65) {
                 b64_int[j] = b;
             } else {
-                printf("got index %d\n", b);
-                ERROR("Input string is not a valid b64 string!");
+                ERROR("Input string is not a valid b64 string! got index %d\n", b);
             }
         }
 

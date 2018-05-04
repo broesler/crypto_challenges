@@ -60,8 +60,7 @@ BYTE getHexByte(const char *hex)
         else if (p >= 'a' && p <= 'f') { c = p - 'a' + 10; } 
         else if (p >= 'A' && p <= 'F') { c = p - 'A' + 10; } 
         else { 
-            printf("Got char: \\x%d.\n", p);
-            ERROR("Invalid hex character!"); 
+            ERROR("Invalid hex character! Got char: \\x%d.\n", p); 
         } 
 
         u <<= 4;
@@ -367,15 +366,13 @@ unsigned long fileToString(char **buffer, const char *filename)
 {
     FILE *fp = NULL;
     int result = 0;
-    char message[2*MAX_STR_LEN];
+    /* char message[2*MAX_STR_LEN]; */
     unsigned long file_length = -1;
 
     /* Determine length of temp file */
     fp = fopen(filename, "r");
     if (!fp) {
-        snprintf(message, 2*MAX_STR_LEN, "File %s could not be read!", filename);
-        LOG(message);
-        exit(-1);
+        ERROR("File %s could not be read!", filename);
     }
 
     fseek(fp, 0, SEEK_END);   /* move pointer to end of file */

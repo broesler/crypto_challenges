@@ -27,18 +27,27 @@
 #define min(x,y)   ((x)>(y))?(y):(x)
 
 // Print  s together with the source file name and the current line number.
-#define LOG(s)  printf("\033[0;34m[%s@%s:%d]\033[0m %s\n", \
-        __func__, __FILE__, __LINE__, s)
+#define LOG(...)  do {\
+    char s[1024];\
+    snprintf(s, 1024, __VA_ARGS__);\
+    printf("\033[0;34m[%s@%s:%d]\033[0m %s\n", __func__, __FILE__, __LINE__, s);\
+} while(0)
 
 // Print  s together with the source file name and the current line number.
-#define ERROR(s) do { \
+#define ERROR(...) do { \
+    char s[1024];\
+    snprintf(s, 1024, __VA_ARGS__);\
     fprintf(stderr,"\033[0;31mERROR: [%s:%d]\033[0m %s\n", \
             __FILE__, __LINE__, s); \
     exit(EXIT_FAILURE); \
 } while(0)
 
-#define WARNING(s) fprintf(stderr,"\033[0;33mWARNING: [%s@%s:%d]\033[0m %s\n", \
-        __func__, __FILE__, __LINE__, s)
+#define WARNING(...) do {\
+    char s[1024];\
+    snprintf(s, 1024, __VA_ARGS__);\
+    fprintf(stderr,"\033[0;33mWARNING: [%s@%s:%d]\033[0m %s\n", \
+        __func__, __FILE__, __LINE__, s);\
+} while(0)
 
 // malloc a new data structure t
 #define NEW(t) malloc(sizeof(t))
