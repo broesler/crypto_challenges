@@ -44,9 +44,9 @@ int main(int argc, char **argv)
     srand(SRAND_INIT);
     /* srand(time(NULL)); */
 
-    for (size_t j = 0; j < 1; j++) {
+    for (size_t j = 0; j < 10; j++) {
         /* Encrypt each string */
-        encryption_oracle(&y, &y_len, j);
+        encryption_oracle(&y, &y_len, j); /* maybe reset y to NULL here?? */
 
         size_t Nb = y_len / BLOCK_SIZE;
         BYTE *x = init_byte(y_len);
@@ -77,6 +77,7 @@ int main(int argc, char **argv)
         /* NOTE valgrind gives "4,096 bytes in 1 block still reachable" for this
          * printall() statement when using random global_(key|iv) */
         printall(x, y_len - n_pad);
+        /* print_blocks(x, y_len - n_pad, BLOCK_SIZE, 1); */
         printf("\n");
         free(x);
         free(y);

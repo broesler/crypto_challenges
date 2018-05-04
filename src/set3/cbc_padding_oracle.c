@@ -125,8 +125,8 @@ int last_byte(BYTE **Dy, size_t *Dy_len, BYTE *y)
         BZERO(r, b);
         memcpy(r, rf, b);
 
-        /* XOR last byte with i, giving the block with valid padding */ 
-        r[b-1] ^= 1;
+        /* XOR last byte with i_found, giving the block with valid padding */ 
+        r[b-1] ^= i_found;
 
         /* XOR test byte */
         r[b-n] ^= 1;
