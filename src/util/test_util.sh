@@ -11,11 +11,8 @@
 # Include test functions
 source "../test_funcs.sh"
 
-# Log file header
-printf "##### TEST LOG: $(date) #####\n"
-
 # Make all executables
-printf "Building executables...\n"
+printf "Building utility executables...\n"
 make clean > /dev/null &&\
 make > /dev/null
 

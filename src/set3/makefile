@@ -33,7 +33,8 @@ INCL = $(wildcard $(INCLDIR)*.h)
 SRC   = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
 UTIL  = ./crypto3.c ./cbc_padding_oracle.c 
 UTIL += ../set2/crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c
-UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c $(UTILDIR)fmemopen.c
+UTIL += $(UTILDIR)aes_openssl.c $(wildcard $(UTILDIR)util_*.c) 
+UTIL += $(UTILDIR)fmemopen.c
 
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)

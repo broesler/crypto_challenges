@@ -14,7 +14,7 @@ source "../test_funcs.sh"
 DATA_PATH="../../data/"
 
 # Log file header
-printf "##### TEST LOG: $(date) #####\n"
+printf "##### SET 3 TEST LOG: $(date) #####\n"
 
 # Make all executables
 printf "Building executables...\n"

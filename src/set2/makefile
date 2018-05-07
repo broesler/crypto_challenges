@@ -31,7 +31,7 @@ INCL = $(wildcard $(INCLDIR)*.h)
 # Define source files
 SRC   = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
 UTIL  = crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c 
-UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
+UTIL += $(UTILDIR)aes_openssl.c $(wildcard $(UTILDIR)util_*.c)
 
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)
