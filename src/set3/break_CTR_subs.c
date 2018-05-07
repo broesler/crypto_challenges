@@ -38,7 +38,7 @@ int main(int argc, char **argv)
         ERROR("File %s could not be read!", b64_file);
     }
     
-    size_t Nl = lines_in_file(fp);
+    size_t Nl = lines_in_file(b64_file);
     BYTE **y_lines = malloc(Nl*sizeof(char *));
     MALLOC_CHECK(y_lines);
     int *y_nums = init_int(Nl);

@@ -398,12 +398,18 @@ unsigned long fileToString(char **buffer, const char *filename)
 /*------------------------------------------------------------------------------
  *          Count lines in file
  *----------------------------------------------------------------------------*/
-size_t lines_in_file(FILE *fp)
+size_t lines_in_file(const char *filename)
 {
     char buffer[1024];
-    char last = 'X';
+    char last = 'X';    /* arbitrary non-newline character */
     size_t nchr = 0;
     size_t lines = 0;
+
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        ERROR("File %s could not be read!", filename);
+    }
+
     /* Read in fixed chunks to avoid internal memory copying of fgets() */
     while ((nchr = fread(buffer, 1, sizeof(buffer)-1, fp))) {
         last = buffer[nchr-1];
@@ -414,7 +420,15 @@ size_t lines_in_file(FILE *fp)
             } 
         }
     }
+
     if (last != '\n') { lines++; } /* count last line even if no newline */
+
+    if (ferror(fp)) {
+        fclose(fp);
+        ERROR("File %s failed to read properly", filename);
+    }
+
+    fclose(fp);
     return lines;
 }
 
