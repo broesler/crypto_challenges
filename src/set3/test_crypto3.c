@@ -33,7 +33,6 @@ int FMEM1()
         fputc(c, ys);
     }
     /* Rewind output stream */
-    /* if (fseek(ys, 0L, SEEK_SET)) { ERROR("Rewind failed!"); } */
     REWIND_CHECK(ys);
     BYTE *yb = init_byte(x_len);
     if (fread(yb, 1, x_len, ys)) {

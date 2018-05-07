@@ -37,6 +37,8 @@ int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce)
             fputc(c ^ keystream[n++], y);
         }
 
+        if (ferror(x)) { ERROR("Read error in input stream!"); }
+
         /* Increment counter for next block */
         inc64le(counter);
         free(keystream);
@@ -57,7 +59,7 @@ BYTE *get_keystream_block(BYTE *key, BYTE *nonce, BYTE *counter)
      *
      * returns : pointer to keystream
      */
-    BYTE *keystream = init_byte(BLOCK_SIZE);
+    BYTE *keystream = NULL;
     BYTE *nc = init_byte(BLOCK_SIZE);
     size_t len = 0;
 
