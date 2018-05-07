@@ -214,6 +214,19 @@ int StrHTMLesc1()
     END_TEST_CASE;
 }
 
+/* Test lines_in_file() */
+int LineInFile1()
+{
+    START_TEST_CASE;
+    char filename[] = "../../data/19.txt";
+    FILE *fp = fopen(filename, "r");
+    if (!fp) { ERROR("File open failed!"); }
+    size_t Nl = lines_in_file(fp);
+    SHOULD_BE(Nl == 40);
+    fclose(fp);
+    END_TEST_CASE;
+}
+
 /* Test AES in ECB mode decryption for single block */
 int AESDecrypt1()
 {
@@ -274,6 +287,7 @@ int main(void)
     RUN_TEST(Strescchr1,     "strescchr()         ");
     RUN_TEST(StrHTMLesc1,    "strhtmlesc()        ");
     RUN_TEST(CntChr1,        "cntchr()            ");
+    RUN_TEST(LineInFile1,    "lines_in_file()     ");
     RUN_TEST(AESDecrypt1,    "aes_128_ecb_block() ");
 
     /* Count errors */

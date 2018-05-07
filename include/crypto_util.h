@@ -102,6 +102,9 @@ size_t hamming_weight(const BYTE *byte, size_t nbyte);
 // Read file as single string 
 unsigned long fileToString(char **buffer, const char *filename);
 
+// Count lines in file
+size_t lines_in_file(FILE *fp);
+
 // Remove chars in set from string
 char *strrmchr(const char *src, const char *charset);
 

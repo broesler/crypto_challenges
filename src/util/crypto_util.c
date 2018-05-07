@@ -360,7 +360,7 @@ size_t hamming_weight(const BYTE *byte, size_t nbyte)
 }
 
 /*------------------------------------------------------------------------------
- *         Read file as single string 
+ *          Read file as single string 
  *----------------------------------------------------------------------------*/
 unsigned long fileToString(char **buffer, const char *filename)
 {
@@ -394,6 +394,30 @@ unsigned long fileToString(char **buffer, const char *filename)
     fclose(fp);
     return file_length;
 }
+
+/*------------------------------------------------------------------------------
+ *          Count lines in file
+ *----------------------------------------------------------------------------*/
+size_t lines_in_file(FILE *fp)
+{
+    char buffer[1024];
+    char last = 'X';
+    size_t nchr = 0;
+    size_t lines = 0;
+    /* Read in fixed chunks to avoid internal memory copying of fgets() */
+    while ((nchr = fread(buffer, 1, sizeof(buffer)-1, fp))) {
+        last = buffer[nchr-1];
+        /* Count the newlines in the buffer */
+        for (size_t i = 0; i < nchr; i++) {
+            if (buffer[i] == '\n') {
+                lines++; 
+            } 
+        }
+    }
+    if (last != '\n') { lines++; } /* count last line even if no newline */
+    return lines;
+}
+
 
 /*------------------------------------------------------------------------------
  *        Remove chars in set from string
