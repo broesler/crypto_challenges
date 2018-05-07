@@ -27,33 +27,38 @@ int main(int argc, char **argv)
         b64_file = argv[1];
     }
 
-    /* For each line in file
-     *  Read base64 line
-     *  Convert to byte array
-     *  Encrypt byte array with fixed-nonce CTR
-     *  Store encrypted text in file_lines array
+    /* For each line in file:
+     * - Read base64 line
+     * - Convert to byte array
+     * - Encrypt byte array with fixed-nonce CTR
+     * - Store encrypted text in file_lines array
      */
     FILE *fp = fopen(b64_file, "r");
     if (!fp) {
         ERROR("File %s could not be read!", b64_file);
     }
     
+    /* Allocate array to store encrypted byte arrays */
     size_t Nl = lines_in_file(b64_file);
-    BYTE **y_lines = malloc(Nl*sizeof(char *));
+    BYTE **y_lines = calloc(Nl, sizeof(BYTE *));
     MALLOC_CHECK(y_lines);
-    int *y_nums = init_int(Nl);
+    int *y_nums = init_int(Nl);     /* array of nbytes per line */
 
     /* Fixed key and nonce */
     BYTE *key = (BYTE *)"YELLOW SUBMARINE";
     BYTE *nonce = init_byte(BLOCK_SIZE/2);
 
+    /* Pointers to arrays */
     BYTE **yl = y_lines;
     int *yn = y_nums;
+
+    /* Buffer for each file line */
     char *line = init_str(MAX_LINE_LEN);
 
 #ifdef LOGSTATUS
         LOG("Reading from file '%s'...", b64_file);
 #endif
+
     while (fgets(line, MAX_LINE_LEN, fp)) {
         char *b64_clean = strrmchr(line, "\n");  /* strip newlines */
 
@@ -65,17 +70,17 @@ int main(int argc, char **argv)
         FILE *ys = tmpfile();
 
         /* Encrypt using CTR with fixed nonce and key */
-        if (aes_128_ctr(xs, ys, key, nonce)) {
+        if (aes_128_ctr(ys, xs, key, nonce)) {
             ERROR("Encryption failed!\n    line = '%s'", b64_clean);
         }
 
         /* Store in array */
-        BYTE *y = init_byte(nbyte);
-        if (!fread(y, 1, nbyte, ys)) {
+        BYTE *yb = init_byte(nbyte);
+        if (!fread(yb, 1, nbyte, ys)) {
             ERROR("File read error!\n    line = '%s'", b64_clean);
         }
 
-        *yl++ = y;
+        *yl++ = yb;
         *yn++ = nbyte;
 
         free(byte);
@@ -83,18 +88,24 @@ int main(int argc, char **argv)
         fclose(xs);
         fclose(ys);
     }
-    fclose(fp);
 
-    for (size_t i = 0; i < Nl; i++) {
-        printf("y_lines[%2lu] = ", i);
-        printall(*(y_lines+i), *(y_nums+i));
-        printf("\n");
-    }
+/*     #<{(| Print encrypted bytes |)}># */
+/* #ifdef LOGSTATUS */
+/*     LOG("y_lines:"); */
+/*     for (size_t i = 0; i < Nl; i++) { */
+/*         printf("[%2lu]: \"", i); */
+/*         print_blocks(*(y_lines+i), *(y_nums+i), BLOCK_SIZE, 0); */
+/*         printf("\"\n"); */
+/*     } */
+/* #endif */
 
-    /* free_str_arr((char **)y_lines, Nl); */
+    /* Decrypt results */
+
+    free_str_arr((char **)y_lines, Nl);
     free(line);
     free(nonce);
     free(y_nums);
+    fclose(fp);
     return 0;
 }
 

@@ -19,7 +19,8 @@ CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 OPT = -I$(INCLDIR) -I$(SSLINCL) 
 
 # Define source files, utility files (function files)
-SRC = test_util.c crypto_util.c aes_openssl.c 
+# SRC = test_util.c crypto_util.c aes_openssl.c 
+SRC = $(wildcard $(SRCDIR)*.c)
 
 # Define object files
 OBJ = $(SRC:%.c=%.o)

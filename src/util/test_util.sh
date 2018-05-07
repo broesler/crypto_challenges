@@ -11,11 +11,21 @@
 # Include test functions
 source "../test_funcs.sh"
 
-make clean > /dev/null && make > /dev/null
+# Log file header
+printf "##### TEST LOG: $(date) #####\n"
+
+# Make all executables
+printf "Building executables...\n"
+make clean > /dev/null &&\
+make > /dev/null
+
 if [ "$?" -ne 0 ]; then
     printf "[$0: $LINENO]: Error! make failed to execute properly.\n"
     exit 2
 fi
+printf "done.\n"
+
+printf "Running tests...\n"
 
 ./test_util
 pass_check "$?" "Utilities"

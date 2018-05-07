@@ -219,11 +219,8 @@ int LineInFile1()
 {
     START_TEST_CASE;
     char filename[] = "../../data/19.txt";
-    FILE *fp = fopen(filename, "r");
-    if (!fp) { ERROR("File open failed!"); }
-    size_t Nl = lines_in_file(fp);
+    size_t Nl = lines_in_file(filename);
     SHOULD_BE(Nl == 40);
-    fclose(fp);
     END_TEST_CASE;
 }
 
