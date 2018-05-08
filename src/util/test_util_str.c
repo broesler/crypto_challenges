@@ -79,7 +79,7 @@ int Strescchr1()
 {
     START_TEST_CASE;
     char str[] = "Hello, World!";
-    char *dest = strescchr(str, "l!");
+    char *dest = strescchr(str, "l!", 0);
     char expect[] = "He\\l\\lo, Wor\\ld\\!";
     SHOULD_BE(!strcmp(dest,expect));
 #ifdef LOGSTATUS
@@ -94,7 +94,7 @@ int StrHTMLesc1()
 {
     START_TEST_CASE;
     char str[] = "Hello, World!";
-    char *dest = strhtmlesc(str, "l!");
+    char *dest = strescchr(str, "l!", 1);
     char expect[] = "He%6C%6Co, Wor%6Cd%21";
     SHOULD_BE(!strcmp(dest,expect));
 #ifdef LOGSTATUS
@@ -124,11 +124,11 @@ int main(void)
     int total = 0;
 
     RUN_TEST(IndexOf1,       "indexof()      ");
-    RUN_TEST(FindFreq1,      "count_chars()   ");
+    RUN_TEST(FindFreq1,      "count_chars()  ");
     RUN_TEST(HammingWeight1, "hamming_dist() ");
     RUN_TEST(Strrmchr1,      "strrmchr()     ");
-    RUN_TEST(Strescchr1,     "strescchr()    ");
-    RUN_TEST(StrHTMLesc1,    "strhtmlesc()   ");
+    RUN_TEST(Strescchr1,     "strescchr() 1  ");
+    RUN_TEST(StrHTMLesc1,    "strescchr() 2  ");
     RUN_TEST(CntChr1,        "cntchr()       ");
 
     /* Count errors */

@@ -26,10 +26,7 @@ size_t hamming_weight(const BYTE *byte, size_t nbyte);
 char *strrmchr(const char *src, const char *charset);
 
 // Escape chars in set
-char *strescchr(const char *src, const char *charset);
-
-// HTML %-escape chars
-char *strhtmlesc(const char *src, const char *charset);
+char *strescchr(const char *src, const char *charset, const int html_flag);
 
 // Count occurrences of character in string
 size_t cntchr(const char *str, const char c);

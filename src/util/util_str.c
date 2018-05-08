@@ -93,12 +93,10 @@ char *strrmchr(const char *src, const char *charset)
     return dest; 
 }
 
-/* TODO combind strescchr and strhtmlesc into one function that takes a "mode"
- * argument i.e. mode='std' or mode='html'. Only 3 lines differ. */
 /*------------------------------------------------------------------------------
  *        Escape chars in set occuring in string
  *----------------------------------------------------------------------------*/
-char *strescchr(const char *src, const char *charset)
+char *strescchr(const char *src, const char *charset, const int html_flag)
 {
     const char *s = src;
     const char *c = charset;
@@ -114,51 +112,20 @@ char *strescchr(const char *src, const char *charset)
     }
 
     /* malloc double the length in case we have to escape all chars in string */
-    char *dest = init_str(2*strlen(src));
+    char *dest = html_flag ? init_str(3*strlen(src)) : init_str(2*strlen(src));
     char *d = dest;
 
     /* Step through string and copy characters not in charset to dest */
     while (*s) {
         if (escchar[(size_t)*s]) {
-            *d++ = '\\';
-            *d++ = *s;
-        } else {
-            *d++ = *s;
-        }
-        s++;
-    }
-
-    return dest; 
-}
-
-/*------------------------------------------------------------------------------
- *        HTML escape chars in set occuring in string
- *----------------------------------------------------------------------------*/
-char *strhtmlesc(const char *src, const char *charset)
-{
-    const char *s = src;
-    const char *c = charset;
-
-    /* boolean of which chars in charset are in src */
-    static const int totchars = 256;
-    int escchar[totchars];
-    for (size_t i = 0; i < totchars; i++) { escchar[i] = 0; }
-
-    /* Step through charset and mark which chars are there */
-    while (*c) {
-        escchar[(size_t)*c++] = 1; 
-    }
-
-    /* For HTML escape, use '%' with hex value of character */
-    char *dest = init_str(3*strlen(src));
-    char *d = dest;
-
-    /* Step through string and copy characters not in charset to dest */
-    while (*s) {
-        if (escchar[(size_t)*s]) {
-            *d++ = '%';   /* html escape character */
-            snprintf(d, 3, "%.2X", (unsigned int)*s);  /* hex value */
-            d += 2;
+            if (html_flag) {
+                *d++ = '%';   /* html escape character */
+                snprintf(d, 3, "%.2X", (unsigned int)*s);  /* hex value */
+                d += 2;
+            } else {
+                *d++ = '\\';
+                *d++ = *s;
+            }
         } else {
             *d++ = *s;
         }
