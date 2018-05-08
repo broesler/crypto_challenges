@@ -142,7 +142,7 @@ size_t isECB(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t block_size)
  *          Get block size of cipher 
  *----------------------------------------------------------------------------*/
 /* Accepts function pointer to encryption oracle */
-size_t getBlockSize(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t *count, size_t *n)
+size_t get_block_size(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t *count, size_t *n)
 {
     BYTE *y = NULL;
     *count = 0;
