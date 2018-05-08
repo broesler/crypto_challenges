@@ -23,7 +23,9 @@ OPT = -I$(INCLDIR) -I$(SSLINCL)
 SRC = $(wildcard $(SRCDIR)*.c)
 
 # Define object files
-OBJ = $(SRC:%.c=%.o)
+OBJ = $(SRC:.c=.o)
+
+TSRC = $(wildcard test_*.c)
 
 # Define header files
 INCL = $(wildcard $(INCLDIR)*.h)
@@ -32,15 +34,18 @@ INCL = $(wildcard $(INCLDIR)*.h)
 LDLIBS = -lcrypto -lssl 
 
 # Make options
-all: test_util types
-debug: DEBUG = -DLOGSTATUS -Og -ggdb3
-debug: all
+# all: test_util_aes types
+# debug: DEBUG = -DLOGSTATUS -Og -ggdb3
+# debug: all
 
 #------------------------------------------------------------------------------
 # 	Compile and link steps 
 #------------------------------------------------------------------------------
 # Main executable:
-test_util: $(OBJ) | .gitignore
+# test_util: $(OBJ) | .gitignore
+# 	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $^ $(LDLIBS)
+
+test_% : $(TSRC:.c=.o) $(subst test_,,$(TSRC:.c=.o)) | .gitignore
 	$(CC) $(CFLAGS) $(DEBUG) $(OPT) -o $@ $^ $(LDLIBS)
 
 # object rules
@@ -57,15 +62,19 @@ types: .types.vim
 		awk 'BEGIN{printf("syntax keyword Type\t")}\
 			{printf("%s ", $$1)}END{print ""}' > $@
 
+print-%:
+	@echo '$*=$($*)'
+
 # clean up (do not do anything with file named clean)
 .PHONY: depend clean
 clean:
 	rm -f *~
-	rm -f $(SRCDIR)*.o
+	rm -f $(OBJ)
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
 	rm -f test_util
 	rm -f .gitignore
+	rm -f .types.vim
 
 #==============================================================================
 #==============================================================================
