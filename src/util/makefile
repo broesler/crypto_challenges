@@ -20,7 +20,7 @@ OPT = -I$(INCLDIR) -I$(SSLINCL)
 
 # Define source files
 SRC  = $(wildcard test_*.c)
-UTIL = $(wildcard util_*.c) aes_openssl.c
+UTIL = $(wildcard util_*.c) aes_openssl.c fmemopen.c
 
 # Define object files
 OBJ = $(UTIL:.c=.o)
@@ -65,7 +65,7 @@ types: .types.vim
 .PHONY: clean
 clean:
 	rm -f *~
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(SRC:.c=.o)
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
 	rm -f $(TARGETS)

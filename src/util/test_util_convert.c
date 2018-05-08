@@ -73,9 +73,9 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(StrToUpper1,    "strtoupper()        ");
-    RUN_TEST(GetHexByte1,    "get_hex_byte()        ");
-    RUN_TEST(HexConvert1,    "atoh(),htoa()       ");
+    RUN_TEST(StrToUpper1,    "strtoupper()   ");
+    RUN_TEST(GetHexByte1,    "get_hex_byte() ");
+    RUN_TEST(HexConvert1,    "atoh(),htoa()  ");
 
     /* Count errors */
     if (!fails) {

@@ -374,19 +374,19 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(HexConvert2,       "Challenge  1: hex2b64() 1            ");
-    RUN_TEST(HexConvert3,       "              hex2b64() 2            ");
-    RUN_TEST(HexConvert4,       "              hex2b64() 3            ");
-    RUN_TEST(B64Convert1,       "              b642hex() 1            ");
-    RUN_TEST(B64Convert2,       "              b642hex() 2            ");
-    RUN_TEST(FixedXOR1,         "Challenge  2: fixed_xor()             ");
+    RUN_TEST(HexConvert2,       "Challenge  1: hex2b64() 1              ");
+    RUN_TEST(HexConvert3,       "              hex2b64() 2              ");
+    RUN_TEST(HexConvert4,       "              hex2b64() 3              ");
+    RUN_TEST(B64Convert1,       "              b642hex() 1              ");
+    RUN_TEST(B64Convert2,       "              b642hex() 2              ");
+    RUN_TEST(FixedXOR1,         "Challenge  2: fixed_xor()              ");
     RUN_TEST(CharFreqScore1,    "Challenge  3: char_freq_score()        ");
-    RUN_TEST(SingleByte1,       "              single_byte_xor_decode()  ");
+    RUN_TEST(SingleByte1,       "              single_byte_xor_decode() ");
     RUN_TEST(RepeatingKeyXOR1,  "Challenge  5: repeating_key_xor()      ");
-    RUN_TEST(HammingDist1,      "Challenge  6: hamming_dist()         ");
+    RUN_TEST(HammingDist1,      "Challenge  6: hamming_dist()           ");
     RUN_TEST(BreakRepeatingXOR1,"              break_repeating_xor()    ");
-    RUN_TEST(AESDecrypt1,       "Challenge  7: aes_128_ecb_cipher()   ");
-    RUN_TEST(ECBDetect1,        "Challenge  8: find_AES_ECB() 1       ");
+    RUN_TEST(AESDecrypt1,       "Challenge  7: aes_128_ecb_cipher()     ");
+    RUN_TEST(ECBDetect1,        "Challenge  8: find_AES_ECB() 1         ");
 
     /* Count errors */
     if (!fails) {

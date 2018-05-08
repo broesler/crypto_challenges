@@ -12,7 +12,7 @@
 source "./test_funcs.sh"
 
 # Log file header
-printf "\n##### TEST LOG: $(date) #####\n"
+printf "##### TEST LOG: $(date) #####\n"
 
 # Change into util directory and test those
 cd ./util

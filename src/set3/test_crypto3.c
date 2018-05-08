@@ -20,33 +20,6 @@
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
-/* Test fmemopen stream function */
-int FMEM1()
-{
-    START_TEST_CASE;
-    char *x = (char *)"Hello, friends!";
-    size_t x_len = strlen(x);
-    FILE *xs = fmemopen(x, x_len, "r");  /* create stream from byte array */
-    FILE *ys = tmpfile();
-    int c;
-    while ((c = fgetc(xs)) != EOF) {
-        fputc(c, ys);
-    }
-    /* Rewind output stream */
-    REWIND_CHECK(ys);
-    BYTE *yb = init_byte(x_len);
-    if (fread(yb, 1, x_len, ys)) {
-#ifdef LOGSTATUS
-        printf("ys = \"%s\"\n", yb);
-#endif
-    }
-    SHOULD_BE(!memcmp(yb, x, x_len));
-    free(yb);
-    fclose(xs);
-    fclose(ys);
-    END_TEST_CASE;
-}
-
 /* Test inc64le() little endian incrementer */
 int INCLE1()
 {
@@ -156,9 +129,8 @@ int main(void)
     int total = 0;
 
     /* Run OpenSSL lines here for speed */
-    RUN_TEST(FMEM1,   "fmemopen()      ");
-    RUN_TEST(INCLE1,  "inc64le() 1       ");
-    RUN_TEST(INCLE2,  "inc64le() 2       ");
+    RUN_TEST(INCLE1,  "inc64le() 1     ");
+    RUN_TEST(INCLE2,  "inc64le() 2     ");
     RUN_TEST(CTRDEC1, "aes_128_ctr() 1 ");
     RUN_TEST(CTRENC1, "aes_128_ctr() 2 ");
 
