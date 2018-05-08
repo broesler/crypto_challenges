@@ -24,7 +24,10 @@ printf "done.\n"
 
 printf "Running tests...\n"
 
-./test_util
+shopt -s extglob
+for f in test_util_!(*.c|*.o|*.dSYM); do 
+    ./"$f"
+done
 pass_check "$?" "Utilities"
 
 #===============================================================================
