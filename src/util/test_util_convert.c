@@ -30,18 +30,18 @@ int StrToUpper1()
     END_TEST_CASE;
 }
 
-/* Test getHexByte function */
+/* Test get_hex_byte function */
 int GetHexByte1()
 {
     START_TEST_CASE;
     char hex1[] = "A";
-    BYTE hex_int = getHexByte(hex1);
+    BYTE hex_int = get_hex_byte(hex1);
     SHOULD_BE(hex_int == 10);
     char hex2[] = "4D";
-    hex_int = getHexByte(hex2);
+    hex_int = get_hex_byte(hex2);
     SHOULD_BE(hex_int == 77);
     char hex3[] = "4d616e";
-    hex_int = getHexByte(hex3);
+    hex_int = get_hex_byte(hex3);
     SHOULD_BE(hex_int == 77);
     END_TEST_CASE;
 }
@@ -74,7 +74,7 @@ int main(void)
     int total = 0;
 
     RUN_TEST(StrToUpper1,    "strtoupper()        ");
-    RUN_TEST(GetHexByte1,    "getHexByte()        ");
+    RUN_TEST(GetHexByte1,    "get_hex_byte()        ");
     RUN_TEST(HexConvert1,    "atoh(),htoa()       ");
 
     /* Count errors */

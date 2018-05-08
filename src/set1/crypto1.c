@@ -224,7 +224,7 @@ float charFreqScore(const BYTE *byte, size_t nbyte)
           tol = 1e-16;
 
     /* Count frequency of each letter in string */
-    int *cf = countChars(byte, nbyte);
+    int *cf = count_chars(byte, nbyte);
 
     /* Calculate score via chi-squared test */
     N = (float)nbyte; /* all chars in array */

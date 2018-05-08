@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
     /* Read file into memory */
     char *b64 = NULL;
-    (void)fileToString(&b64, b64_file);
+    (void)file2str(&b64, b64_file);
     char *b64_clean = strrmchr(b64, "\n");  /* strip newlines */
 
     /* Convert to byte array for decryption */

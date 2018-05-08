@@ -21,7 +21,7 @@ size_t indexof(const char *str, char c)
 /*------------------------------------------------------------------------------
  *         Find character frequency in byte array
  *----------------------------------------------------------------------------*/
-int *countChars(const BYTE *s, size_t nbyte)
+int *count_chars(const BYTE *s, size_t nbyte)
 {
     int *cf = init_int(NUM_LETTERS);
 

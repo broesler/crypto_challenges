@@ -16,14 +16,26 @@
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
-/* TODO test indexof */
+/* Test indexof function */
+int IndexOf1()
+{
+    START_TEST_CASE;
+    BYTE str[] = "I was a terror since the public school era.";
+    size_t idx = indexof((char *)str, 'p');
+    size_t expect = 25;
+    SHOULD_BE(idx == expect);
+#ifdef LOGSTATUS
+    printf("Got:    %zu\nExpect: %zu\n", idx, expect);
+#endif
+    END_TEST_CASE;
+}
 
 /* This function tests the function to find character frequency in a string */
 int FindFreq1()
 {
     START_TEST_CASE;
     BYTE str1[] = "HelLo, World!";
-    int *cf = countChars(str1, strlen((char *)str1));
+    int *cf = count_chars(str1, strlen((char *)str1));
     SHOULD_BE(cf['H'-'A'] == 1);
     SHOULD_BE(cf['e'-'a'] == 1);
     SHOULD_BE(cf['L'-'A'] == 3);
@@ -111,12 +123,13 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(FindFreq1,      "countChars()        ");
-    RUN_TEST(HammingWeight1, "hamming_dist()      ");
-    RUN_TEST(Strrmchr1,      "strrmchr()          ");
-    RUN_TEST(Strescchr1,     "strescchr()         ");
-    RUN_TEST(StrHTMLesc1,    "strhtmlesc()        ");
-    RUN_TEST(CntChr1,        "cntchr()            ");
+    RUN_TEST(IndexOf1,       "indexof()      ");
+    RUN_TEST(FindFreq1,      "count_chars()   ");
+    RUN_TEST(HammingWeight1, "hamming_dist() ");
+    RUN_TEST(Strrmchr1,      "strrmchr()     ");
+    RUN_TEST(Strescchr1,     "strescchr()    ");
+    RUN_TEST(StrHTMLesc1,    "strhtmlesc()   ");
+    RUN_TEST(CntChr1,        "cntchr()       ");
 
     /* Count errors */
     if (!fails) {

@@ -21,7 +21,7 @@ char *strtoupper(char *s);
 char *strtolower(char *s);
 
 // Get single hex byte from a string
-BYTE getHexByte(const char *hex);
+BYTE get_hex_byte(const char *hex);
 
 // Print byte array as hexadecimal string
 char *byte2hex(const BYTE *byte, size_t nbyte);

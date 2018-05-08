@@ -17,7 +17,7 @@
 size_t indexof(const char *str, char c);
 
 // Character frequency list
-int *countChars(const BYTE *s, size_t nbyte);
+int *count_chars(const BYTE *s, size_t nbyte);
 
 // Hamming weight of hex string 
 size_t hamming_weight(const BYTE *byte, size_t nbyte);
