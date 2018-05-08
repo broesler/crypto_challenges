@@ -16,7 +16,7 @@
 #include "unit_test.h"
 
 /*------------------------------------------------------------------------------
- *        Define test functions
+ *        Test util_convert.c functions
  *----------------------------------------------------------------------------*/
 int StrToUpper1()
 {
@@ -30,68 +30,6 @@ int StrToUpper1()
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", strtolower(str1), "test!");
 #endif
-    END_TEST_CASE;
-}
-
-int StrArray1()
-{
-    START_TEST_CASE;
-    size_t nstr = 3;
-    size_t len = 30;
-    char **str_arr = init_str_arr(nstr, len);
-    strncpy(*(str_arr)  , "Hello, ",   len);
-    strncpy(*(str_arr+1), "World!",    len);
-    strncpy(*(str_arr+2), " Goodbye.", len);
-#ifdef LOGSTATUS
-    for (size_t i = 0; i < nstr; i++) {
-        printf("%s", *(str_arr+i));
-    }
-    printf("\n");
-#endif
-    SHOULD_BE(!strncmp(*(str_arr)  , "Hello, ",  len));
-    SHOULD_BE(!strncmp(*(str_arr+1), "World!",   len));
-    SHOULD_BE(!strncmp(*(str_arr+2), " Goodbye.", len));
-    free_str_arr(str_arr, nstr);
-    END_TEST_CASE;
-}
-
-/* This function tests the validity of printable characters */
-int IsPrintable1()
-{
-    START_TEST_CASE;
-    /* everything prints */
-    char str1[] = "Anything less than the best is a felony.";
-    int test = isprintable((BYTE *)str1, strlen(str1));
-    int expect = 1;
-    SHOULD_BE(test == expect); 
-#ifdef LOGSTATUS
-    printf("Got:    %d\nExpect: %d\n", test, expect);
-#endif
-    /* include non-printing char */
-    char str2[] = "Anything \u1801less than the best is a felony.";
-    test = isprintable((BYTE *)str2, strlen(str2));
-    expect = 0;
-    SHOULD_BE(test == expect); 
-#ifdef LOGSTATUS
-    printf("Got:    %d\nExpect: %d\n", test, expect);
-#endif
-    END_TEST_CASE;
-}
-
-/* This function tests the function to find character frequency in a string */
-int FindFreq1()
-{
-    START_TEST_CASE;
-    BYTE str1[] = "HelLo, World!";
-    int *cf = countChars(str1, strlen((char *)str1));
-    SHOULD_BE(cf['H'-'A'] == 1);
-    SHOULD_BE(cf['e'-'a'] == 1);
-    SHOULD_BE(cf['L'-'A'] == 3);
-    SHOULD_BE(cf['o'-'a'] == 2);
-    SHOULD_BE(cf['W'-'A'] == 1);
-    SHOULD_BE(cf['r'-'a'] == 1);
-    SHOULD_BE(cf['d'-'a'] == 1);
-    free(cf);
     END_TEST_CASE;
 }
 
@@ -130,6 +68,57 @@ int HexConvert1()
     END_TEST_CASE;
 }
 
+/*------------------------------------------------------------------------------
+ *         Test util_print.c functions 
+ *----------------------------------------------------------------------------*/
+/* This function tests the validity of printable characters */
+int IsPrintable1()
+{
+    START_TEST_CASE;
+    /* everything prints */
+    char str1[] = "Anything less than the best is a felony.";
+    int test = isprintable((BYTE *)str1, strlen(str1));
+    int expect = 1;
+    SHOULD_BE(test == expect); 
+#ifdef LOGSTATUS
+    printf("Got:    %d\nExpect: %d\n", test, expect);
+#endif
+    /* include non-printing char */
+    char str2[] = "Anything \u1801less than the best is a felony.";
+    test = isprintable((BYTE *)str2, strlen(str2));
+    expect = 0;
+    SHOULD_BE(test == expect); 
+#ifdef LOGSTATUS
+    printf("Got:    %d\nExpect: %d\n", test, expect);
+#endif
+    END_TEST_CASE;
+}
+
+/*------------------------------------------------------------------------------
+ *         Test util_init.c functions 
+ *----------------------------------------------------------------------------*/
+int StrArray1()
+{
+    START_TEST_CASE;
+    size_t nstr = 3;
+    size_t len = 30;
+    char **str_arr = init_str_arr(nstr, len);
+    strncpy(*(str_arr)  , "Hello, ",   len);
+    strncpy(*(str_arr+1), "World!",    len);
+    strncpy(*(str_arr+2), " Goodbye.", len);
+#ifdef LOGSTATUS
+    for (size_t i = 0; i < nstr; i++) {
+        printf("%s", *(str_arr+i));
+    }
+    printf("\n");
+#endif
+    SHOULD_BE(!strncmp(*(str_arr)  , "Hello, ",  len));
+    SHOULD_BE(!strncmp(*(str_arr+1), "World!",   len));
+    SHOULD_BE(!strncmp(*(str_arr+2), " Goodbye.", len));
+    free_str_arr(str_arr, nstr);
+    END_TEST_CASE;
+}
+
 /* Test the string repeat function */
 int Strnrepeat1()
 {
@@ -144,6 +133,26 @@ int Strnrepeat1()
     free(ascii);
 #endif
     free(key_arr);
+    END_TEST_CASE;
+}
+
+/*------------------------------------------------------------------------------
+ *         Test util_str.c functions
+ *----------------------------------------------------------------------------*/
+/* This function tests the function to find character frequency in a string */
+int FindFreq1()
+{
+    START_TEST_CASE;
+    BYTE str1[] = "HelLo, World!";
+    int *cf = countChars(str1, strlen((char *)str1));
+    SHOULD_BE(cf['H'-'A'] == 1);
+    SHOULD_BE(cf['e'-'a'] == 1);
+    SHOULD_BE(cf['L'-'A'] == 3);
+    SHOULD_BE(cf['o'-'a'] == 2);
+    SHOULD_BE(cf['W'-'A'] == 1);
+    SHOULD_BE(cf['r'-'a'] == 1);
+    SHOULD_BE(cf['d'-'a'] == 1);
+    free(cf);
     END_TEST_CASE;
 }
 
@@ -171,16 +180,6 @@ int Strrmchr1()
     printf("Got:    %s\nExpect: %s\n", dest, "Heo, Word");
 #endif
     free(dest);
-    END_TEST_CASE;
-}
-
-/* Test count chars */
-int CntChr1()
-{
-    START_TEST_CASE;
-    char str[] = "this is a test.";
-    size_t cnt = cntchr(str, 'i');
-    SHOULD_BE(cnt == 2);
     END_TEST_CASE;
 }
 
@@ -214,6 +213,19 @@ int StrHTMLesc1()
     END_TEST_CASE;
 }
 
+/* Test count chars */
+int CntChr1()
+{
+    START_TEST_CASE;
+    char str[] = "this is a test.";
+    size_t cnt = cntchr(str, 'i');
+    SHOULD_BE(cnt == 2);
+    END_TEST_CASE;
+}
+
+/*------------------------------------------------------------------------------
+ *         Test util_file.c functions 
+ *----------------------------------------------------------------------------*/
 /* Test lines_in_file() */
 int LineInFile1()
 {
@@ -224,6 +236,9 @@ int LineInFile1()
     END_TEST_CASE;
 }
 
+/*------------------------------------------------------------------------------
+ *         Test aes_openssl.c functions 
+ *----------------------------------------------------------------------------*/
 /* Test AES in ECB mode decryption for single block */
 int AESDecrypt1()
 {
