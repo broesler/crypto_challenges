@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     srand(SRAND_INIT);
 
     /* Detect block size */
-    block_size = getBlockSize(encryption_oracle, &count, &n);
+    block_size = get_block_size(encryption_oracle, &count, &n);
     size_t n_prepend = n*block_size - unk_len - count;
 
     /* Confirm function is using ECB */

@@ -39,10 +39,10 @@ UTIL += $(UTILDIR)fmemopen.c
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
+TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main
 # Make options
-all: test3 c17 c19 test_cbc_padding_oracle types
-c17: cbc_padding_oracle_main
-c19: break_CTR_subs
+all: test3 $(TARGETS) types
+test: test3
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3 -fno-inline
 # debug: CFLAGS += $(SANFLAGS)
@@ -57,19 +57,15 @@ verbose: debug
 test3: test_crypto3.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-test_cbc_padding_oracle: test_cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
-
-cbc_padding_oracle_main: cbc_padding_oracle_main.o $(OBJ_UTIL) | .gitignore
+$(TARGETS): % : %.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 break_CTR_subs: break_CTR_subs.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 .gitignore:
-	@printf "cbc_padding_oracle_main\n\
-	break_CTR_subs\n\
-	test_cbc_padding_oracle\n\
+	@printf "break_CTR_subs\n\
+	$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')\n\
 	test3" > $@
 
 # Objects depend on source and headers
@@ -87,24 +83,12 @@ types: .types.vim
 .PHONY: depend clean
 clean:
 	rm -f *~
-	rm -f ../set1/*.o
-	rm -f ../set1/*.gch
-	rm -rf ../set1/*.dSYM/
-	rm -f ../set2/*.o
-	rm -f ../set2/*.gch
-	rm -rf ../set2/*.dSYM/
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
-	rm -f $(UTILDIR)*.o
-	rm -f $(UTILDIR)*.gch
-	rm -rf $(UTILDIR)*.dSYM/
-	rm -f cbc_padding_oracle_main
+	rm -f test3 $(TARGETS)
 	rm -f break_CTR_subs
-	rm -f test_cbc_padding_oracle
-	rm -f test3
 	rm -f .gitignore
-	# rm -f test3
 
 #==============================================================================
 #==============================================================================

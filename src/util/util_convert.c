@@ -44,7 +44,7 @@ char *strtolower(char *s)
 /*------------------------------------------------------------------------------
 *         Get an integer from 2 hex characters in a string
 *-----------------------------------------------------------------------------*/
-BYTE getHexByte(const char *hex)
+BYTE get_hex_byte(const char *hex)
 {
     BYTE u = 0;
     int c = 0;
@@ -116,7 +116,7 @@ size_t hex2byte(BYTE **byte, const char *hex)
     /* Take every 2 hex characters and combine bytes to make 1 ASCII char */
     for (size_t i = 0; i < nbyte; i++)
     {
-        *p++ = getHexByte(hex+2*i);
+        *p++ = get_hex_byte(hex+2*i);
     }
 
     return nbyte;

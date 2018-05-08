@@ -1,5 +1,5 @@
 /*==============================================================================
- *     File: findSingleByteXOR.c
+ *     File: find_single_byte_xor.c
  *  Created: 07/28/2017, 13:13
  *   Author: Bernie Roesler
  *
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     }
 
     /* Find and decrypt */
-    XOR_NODE *out = findSingleByteXOR(filename);
+    XOR_NODE *out = find_single_byte_xor(filename);
 
 #ifdef LOGSTATUS
     printf("line  = %3d\n",            out->file_line);
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 /*------------------------------------------------------------------------------
  *         Challenge 4: Find single byte XOR string in a file
  *----------------------------------------------------------------------------*/
-XOR_NODE *findSingleByteXOR(const char *filename)
+XOR_NODE *find_single_byte_xor(const char *filename)
 {
     XOR_NODE *out = NULL;
     FILE *fp = NULL;
@@ -64,7 +64,7 @@ XOR_NODE *findSingleByteXOR(const char *filename)
 
     int file_line = 1;
 
-    /* For each line, run singleByteXORDecode, return {key, string, score} */
+    /* For each line, run single_byte_xor_decode, return {key, string, score} */
     while ( fgets(buffer, sizeof(buffer), fp) ) {
         /* Buffer is hex, so OK to treat as string */
         buffer[strcspn(buffer, "\n")] = '\0';  /* remove trailing '\n' */
@@ -76,7 +76,7 @@ XOR_NODE *findSingleByteXOR(const char *filename)
 #endif
 
         /* Find most likely key for this line */
-        XOR_NODE *temp = singleByteXORDecode(byte, nbyte);
+        XOR_NODE *temp = single_byte_xor_decode(byte, nbyte);
         if (*temp->plaintext) {
             /* Track {key, string, score} by lowest score */
             if (temp->score < out->score) {

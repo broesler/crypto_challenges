@@ -12,7 +12,7 @@
 /*------------------------------------------------------------------------------
  *          Read file as single string 
  *----------------------------------------------------------------------------*/
-unsigned long fileToString(char **buffer, const char *filename)
+unsigned long file2str(char **buffer, const char *filename)
 {
     FILE *fp = NULL;
     int result = 0;
