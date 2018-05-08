@@ -12,7 +12,7 @@
 #include "crypto_util.h"
 
 // Read file as single string 
-unsigned long fileToString(char **buffer, const char *filename);
+unsigned long file2str(char **buffer, const char *filename);
 
 // Count lines in file
 size_t lines_in_file(const char *filename);

@@ -41,7 +41,7 @@ int aes_128_cbc_encrypt(BYTE **y, size_t *y_len, BYTE *x, size_t x_len, BYTE *ke
         yim1 = (i == 0) ? iv : yi; /* chain the last ciphertext into the next */
 
         /* XOR plaintext block with previous ciphertext block */
-        xp = fixedXOR(xi, yim1, BLOCK_SIZE);
+        xp = fixed_xor(xi, yim1, BLOCK_SIZE);
         free(yi); /* a new yi is malloc'd during ECB, so free the old one */
 
         /* Encrypt single block using key and AES cipher */
@@ -96,7 +96,7 @@ int aes_128_cbc_decrypt(BYTE **x, size_t *x_len, BYTE *y, size_t y_len, BYTE *ke
         }
 
         /* XOR decrypted ciphertext block with previous ciphertext block */
-        xi = fixedXOR(yp, yim1, BLOCK_SIZE);
+        xi = fixed_xor(yp, yim1, BLOCK_SIZE);
 
         /* Append decrypted text to output array */
         memcpy(*x + *x_len, xi, len);
@@ -131,7 +131,7 @@ size_t isECB(int (*encrypt)(BYTE**, size_t*, BYTE*, size_t), size_t block_size)
     size_t y_len = 0;
     encrypt(&y, &y_len, x, x_len);
 
-    int test = hasIdenticalBlocks(y, y_len, block_size);
+    int test = has_identical_blocks(y, y_len, block_size);
 
     /* clean up */
     free(y);

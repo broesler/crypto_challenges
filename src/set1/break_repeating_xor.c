@@ -1,5 +1,5 @@
 /*==============================================================================
- *     File: breakRepeatingXOR.c
+ *     File: break_repeating_xor.c
  *  Created: 07/20/2017, 16:43
  *   Author: Bernie Roesler
  *
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     size_t nbyte = b642byte(&byte, b64_clean);
 
     /*---------- Break the code! ----------*/
-    XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
+    XOR_NODE *out = break_repeating_xor(byte, nbyte);
 
     if (v_flag) {
         printf("key = '%s'\n", out->key);

@@ -68,13 +68,13 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
         if (fl == 1) { *out = init_byte(nbyte); }
 
         /* AES ECB encrypted line will have identical blocks of ciphertext */
-        if (hasIdenticalBlocks(byte, nbyte, key_byte)) {
+        if (has_identical_blocks(byte, nbyte, key_byte)) {
             memcpy(*out, byte, nbyte);
             file_line = fl;
         }
 
 /*         #<{(| Get mean Hamming distance between key_byte-size chunks of byte |)}># */
-/*         float mean_dist = normMeanHamming(byte, nbyte, key_byte); */
+/*         float mean_dist = norm_mean_hamming(byte, nbyte, key_byte); */
 /*          */
 /* #ifdef LOGSTATUS */
 /*         printf("%4d\t%8.4f\n", fl, mean_dist); */

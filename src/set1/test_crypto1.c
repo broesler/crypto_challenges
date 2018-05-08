@@ -169,7 +169,7 @@ int FixedXOR1()
     SHOULD_BE(nbyte1 == nbyte2);
     size_t nbyte3 = hex2byte(&expect, hexpect);
     SHOULD_BE(nbyte1 == nbyte3);
-    BYTE *xor = fixedXOR(a, b, nbyte1);
+    BYTE *xor = fixed_xor(a, b, nbyte1);
     char *asciia = byte2str(a, nbyte1);
     char *asciib = byte2str(b, nbyte2);
     char *asciix = byte2str(xor, nbyte3);
@@ -198,7 +198,7 @@ int CharFreqScore1()
 {
     START_TEST_CASE;
     BYTE str1[] = "Anything less than the best is a felony.";
-    float test = charFreqScore(str1, strlen((char *)str1));
+    float test = char_freq_score(str1, strlen((char *)str1));
     float tol = 1e-10;
     float expect = 16.430251917634155; /* new score according to <char_test.m> */
     /* float expect = 15.6190082292009702; // length == all chars */
@@ -221,7 +221,7 @@ int SingleByte1()
     float score_expect = 34.2697034515381986;
     BYTE *byte = NULL;
     size_t nbyte = hex2byte(&byte, hex1);
-    XOR_NODE *out = singleByteXORDecode(byte, nbyte);
+    XOR_NODE *out = single_byte_xor_decode(byte, nbyte);
     SHOULD_BE(*out->key == 0x58);
     SHOULD_BE(!memcmp(out->plaintext, expect, nbyte));
     SHOULD_BE(fabsf(out->score - score_expect) < tol);
@@ -248,7 +248,7 @@ int RepeatingKeyXOR1()
                      "24333a653e2b2027630c692b20283165286326302e27282f";
     BYTE *expect = NULL;
     size_t nbyte = hex2byte(&expect, hexpect);
-    BYTE *xor = repeatingKeyXOR(input, key, strlen((char *)input), strlen((char *)key));
+    BYTE *xor = repeating_key_xor(input, key, strlen((char *)input), strlen((char *)key));
     SHOULD_BE(!memcmp(xor, expect, nbyte));
 #ifdef LOGSTATUS
     char *hexor = byte2hex(xor, nbyte);
@@ -286,7 +286,7 @@ int BreakRepeatingXOR1()
     BYTE key[] = "ICE";
     char expect[] = "Burning 'em, if you ain't quick and nimble\n" \
                     "I go crazy when I hear a cymbal";
-    XOR_NODE *out = breakRepeatingXOR(input_byte, nbyte);
+    XOR_NODE *out = break_repeating_xor(input_byte, nbyte);
     SHOULD_BE(!memcmp(out->key, key, out->key_byte));
     SHOULD_BE(!memcmp(out->plaintext, expect, nbyte));
     SHOULD_BE(out->score == FLT_MAX); /* unchanged */
@@ -362,7 +362,7 @@ int ECBDetect1()
 {
     START_TEST_CASE;
     BYTE byte[] = "YELLOW SUBMARINEthis is a test!!YELLOW SUBMARINE";
-    SHOULD_BE(1 == hasIdenticalBlocks(byte, strlen((char *)byte), 16));
+    SHOULD_BE(1 == has_identical_blocks(byte, strlen((char *)byte), 16));
     END_TEST_CASE;
 }
 
@@ -379,12 +379,12 @@ int main(void)
     RUN_TEST(HexConvert4,       "              hex2b64() 3            ");
     RUN_TEST(B64Convert1,       "              b642hex() 1            ");
     RUN_TEST(B64Convert2,       "              b642hex() 2            ");
-    RUN_TEST(FixedXOR1,         "Challenge  2: fixedXOR()             ");
-    RUN_TEST(CharFreqScore1,    "Challenge  3: charFreqScore()        ");
-    RUN_TEST(SingleByte1,       "              singleByteXORDecode()  ");
-    RUN_TEST(RepeatingKeyXOR1,  "Challenge  5: repeatingKeyXOR()      ");
+    RUN_TEST(FixedXOR1,         "Challenge  2: fixed_xor()             ");
+    RUN_TEST(CharFreqScore1,    "Challenge  3: char_freq_score()        ");
+    RUN_TEST(SingleByte1,       "              single_byte_xor_decode()  ");
+    RUN_TEST(RepeatingKeyXOR1,  "Challenge  5: repeating_key_xor()      ");
     RUN_TEST(HammingDist1,      "Challenge  6: hamming_dist()         ");
-    RUN_TEST(BreakRepeatingXOR1,"              breakRepeatingXOR()    ");
+    RUN_TEST(BreakRepeatingXOR1,"              break_repeating_xor()    ");
     RUN_TEST(AESDecrypt1,       "Challenge  7: aes_128_ecb_cipher()   ");
     RUN_TEST(ECBDetect1,        "Challenge  8: find_AES_ECB() 1       ");
 

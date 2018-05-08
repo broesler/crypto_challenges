@@ -25,7 +25,7 @@ LDLIBS = -lcrypto -lssl
 # Headers
 INCL = $(wildcard $(INCLDIR)*.h)
 
-TARGETS = findSingleByteXOR breakRepeatingXOR aes_ecb_file findECB
+TARGETS = find_single_byte_xor break_repeating_xor aes_ecb_file find_ecb
 
 # Define source files
 SRC      = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
