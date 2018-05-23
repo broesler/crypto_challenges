@@ -14,7 +14,7 @@ SSLINCL  = /usr/local/opt/openssl/include/
 DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
-CC = gcc-7
+CC = gcc-8
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 SANFLAGS = -fsanitize=address -O1 -fno-omit-frame-pointer
 

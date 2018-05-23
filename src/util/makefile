@@ -12,7 +12,7 @@ INCLDIR = ../../include/
 SSLINCL = /usr/local/opt/openssl/include
 
 # Set the compiler options
-CC = gcc-7
+CC = gcc-8
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 
 # Look for header files here -- store all headers in ../include/
