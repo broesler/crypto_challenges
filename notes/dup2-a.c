@@ -17,21 +17,26 @@
 int main(int argc, char **argv)
 {
     int newfd;
-	FILE *fp;	/* new file descriptor */
 
 	if (argc != 2) {
 		fprintf(stderr, "usage: %s output_file\n", argv[0]);
 		exit(1);
 	}
-	/* if ((newfd = open(argv[1], O_CREAT|O_TRUNC|O_WRONLY, 0644)) < 0) { */
-	/* 	perror(argv[1]);	#<{(| open failed |)}># */
-	/* 	exit(1); */
-	/* } */
+	if ((newfd = open(argv[1], O_CREAT|O_TRUNC|O_WRONLY, 0644)) < 0) {
+		perror(argv[1]);	/* open failed */
+		exit(1);
+	}
+
+#if 0
+    /* These lines also get the job done, but with another function call. */
+	FILE *fp;	/* new file descriptor */
     if (!(fp = fopen(argv[1], "w"))) {
         perror(argv[1]); /* open failed */
         exit(1);
     }
     newfd = fileno(fp);
+#endif
+
 	printf("This goes to the standard output.\n");
 	printf("Now the standard output will go to \"%s\", at fd = %d.\n",
             argv[1], newfd);
@@ -50,7 +55,7 @@ int main(int argc, char **argv)
 
 	printf("This goes to the standard output too.\n");
 
-    fclose(fp);
+    /* fclose(fp); */
 	exit(0);
 }
 
