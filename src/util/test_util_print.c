@@ -51,9 +51,11 @@ int IsPrintable2()
 int PrintAll1()
 {
     START_TEST_CASE;
-    char str1[] = "Anything less than the best is a felony.";
-    size_t len1 = strlen(str1);
-    char *buffer = init_str(len1);  /* should be exactly same length */
+    BYTE str1[] = "Anything less than the best is a felony.";
+    BYTE *expect = str1;
+    size_t len1 = strlen((char *)str1);
+    size_t buflen = strlen((char *)expect);
+    char *buffer = init_str(buflen);  /* should be exactly same length */
     int fd = -1,
         saveout = -1;
     if ((fd = open("/dev/null", O_WRONLY)) < 0) {
@@ -67,16 +69,57 @@ int PrintAll1()
         ERROR("dup2 failed.");
     }
     close(fd);
-    setvbuf(stdout, buffer, _IOFBF, len1); /* buffer stdout to our own buffer */
+    setvbuf(stdout, (char *)buffer, _IOFBF, buflen); /* buffer stdout to our own buffer */
     /*----- RUN TEST -----*/
-    printall((BYTE *)str1, len1);
-    SHOULD_BE(!strncmp(str1, buffer, len1));
+    printall(str1, len1);
+    SHOULD_BE(!memcmp(buffer, expect, buflen));
     /*----- END TEST -----*/
     setvbuf(stdout, NULL, _IOLBF, 0); /* reset buffering of stdout */
     dup2(saveout, 1);                 /* redirect stdout back to original */
     close(saveout);
 #ifdef LOGSTATUS
     printf("Got:    %s\nExpect: %s\n", buffer, str1);
+#endif
+    free(buffer);
+    END_TEST_CASE;
+}
+
+/* This function tests the printall function for proper hex codes*/
+int PrintAll2()
+{
+    START_TEST_CASE;
+    BYTE str1[] = "Anything\x01\x02\x03.";
+    BYTE expect[] = "Anything\\x01\\x02\\x03.";
+    size_t len1 = strlen((char *)str1);
+    size_t buflen = strlen((char *)expect);
+    BYTE *buffer = init_byte(buflen); /* room for hex chars */
+    int fd = -1,
+        saveout = -1;
+    if ((fd = open("/dev/null", O_WRONLY)) < 0) {
+        ERROR("Failed to open file!");
+    }
+    if ((saveout = dup(STDOUT_FILENO)) < 0) {
+        ERROR("dup failed.");
+    }
+    fflush(stdout); /* flush stdout before redirecting */
+    if (dup2(fd, STDOUT_FILENO) < 0) {  /* redirect stdout */
+        ERROR("dup2 failed.");
+    }
+    close(fd);
+    setvbuf(stdout, (char *)buffer, _IOFBF, buflen); /* buffer stdout to our own buffer */
+    /*----- RUN TEST -----*/
+    printall(str1, len1);
+    SHOULD_BE(!memcmp(buffer, expect, buflen));
+    /*----- END TEST -----*/
+    setvbuf(stdout, NULL, _IOLBF, 0); /* reset buffering of stdout */
+    dup2(saveout, 1);                 /* redirect stdout back to original */
+    close(saveout);
+#ifdef LOGSTATUS
+    printf("Got:    ");
+    printall(buffer, buflen);
+    printf("\nExpect: ");
+    printall(str1, len1);
+    printf("\n");
 #endif
     free(buffer);
     END_TEST_CASE;
@@ -93,6 +136,7 @@ int main(void)
     RUN_TEST(IsPrintable1,  "isprintable() 1  ");
     RUN_TEST(IsPrintable2,  "isprintable() 2  ");
     RUN_TEST(PrintAll1,     "printall() 1     ");
+    RUN_TEST(PrintAll2,     "printall() 2     ");
 
     /* Count errors */
     if (!fails) {
