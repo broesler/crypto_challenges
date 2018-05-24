@@ -3,7 +3,7 @@
  *  Created: 05/07/2018, 17:20
  *   Author: Bernie Roesler
  *
- *  Description: 
+ *  Description:
  *
  *============================================================================*/
 
@@ -14,6 +14,15 @@
 #include "crypto_util.h"
 #include "unit_test.h"
 
+/* Declare function of no arguments to use in capturing output. */
+#define MAKE_TEST_FUN(postfix, s) \
+static void run_test ## postfix ()\
+{\
+    BYTE str[] = s;\
+    size_t len = strlen((char *)str);\
+    printall(str, len);\
+}
+
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
@@ -22,16 +31,16 @@ int IsPrintable1()
 {
     START_TEST_CASE;
     /* everything prints */
-    char str1[] = "Anything less than the best is a felony.";
-    int test = isprintable((BYTE *)str1, strlen(str1));
+    char str[] = "Anything less than the best is a felony.";
+    int test = isprintable((BYTE *)str, strlen(str));
     int expect = 1;
-    SHOULD_BE(test == expect); 
+    SHOULD_BE(test == expect);
 #ifdef LOGSTATUS
     printf("Got:    %d\nExpect: %d\n", test, expect);
 #endif
     END_TEST_CASE;
 }
-    
+
 int IsPrintable2()
 {
     START_TEST_CASE;
@@ -39,45 +48,80 @@ int IsPrintable2()
     char str2[] = "Anything \u1801less than the best is a felony.";
     int test = isprintable((BYTE *)str2, strlen(str2));
     int expect = 0;
-    SHOULD_BE(test == expect); 
+    SHOULD_BE(test == expect);
 #ifdef LOGSTATUS
     printf("Got:    %d\nExpect: %d\n", test, expect);
 #endif
     END_TEST_CASE;
 }
 
+int capture_printall(void (*run_test)(), BYTE **out, size_t buflen) 
+{
+    BYTE *buffer = init_byte(buflen);
+    int fd = -1,
+        saveout = -1;
+    *out = init_byte(buflen); /* initialize output buffer */
+    if ((fd = open("/dev/null", O_WRONLY)) < 0) {
+        ERROR("Failed to open file!");
+    }
+    if ((saveout = dup(STDOUT_FILENO)) < 0) {
+        ERROR("dup failed.");
+    }
+    fflush(stdout); /* flush stdout before redirecting */
+    if (dup2(fd, STDOUT_FILENO) < 0) {  /* redirect stdout */
+        ERROR("dup2 failed.");
+    }
+    close(fd);
+    setvbuf(stdout, (char *)buffer, _IOFBF, buflen); /* buffer stdout to our own buffer */
+    run_test();
+    memcpy(*out, buffer, buflen);           /* write buffer to output array */
+    setvbuf(stdout, NULL, _IOLBF, 0);       /* reset buffering of stdout */
+    if (dup2(saveout, STDOUT_FILENO) < 0) { /* redirect stdout back to original */
+        ERROR("dup2 failed.");
+    }
+    close(saveout);
+    return 0;
+}
+
+/* create "run_test1()" */
+MAKE_TEST_FUN(1, "Anything less than the best is a felony.")
+
 /* This function tests the printall function for proper hex codes*/
 int PrintAll1()
 {
     START_TEST_CASE;
-    char str1[] = "Anything less than the best is a felony.";
-    size_t len1 = strlen(str1);
-    char *buffer = init_str(len1);  /* should be exactly same length */
-    /* if ((fd = open("/dev/null", O_WRONLY)) < 0) { */
-    FILE *fp = NULL;
-    if (!(fp = fopen("/dev/null", "a"))) {
-        ERROR("Failed to open file!");
-    }
-    int fd = fileno(fp);
-    int saveout;
-    if ((saveout = dup(STDOUT_FILENO)) < 0) { ERROR("dup failed."); }
-    fflush(stdout);
-    /* redirect stdout */
-    if (dup2(fd, STDOUT_FILENO) < 0) { ERROR("dup2 failed."); }
-    close(fd);
-    setbuffer(stdout, buffer, len1); /* buffer stdout to our own buffer */
-    /*----- RUN TEST -----*/
-    printall((BYTE *)str1, len1);
-    fflush(stdout);
-    SHOULD_BE(!strncmp(str1, buffer, len1)); 
-    /* Redirect stdout back to original location for normal output */
-    dup2(saveout, 1);
-    close(saveout);
-    fclose(fp);
+    BYTE expect[] = "Anything less than the best is a felony.";
+    BYTE *test = NULL;
+    size_t buflen = strlen((char *)expect);
+    capture_printall(run_test1, &test, buflen);
+    SHOULD_BE(!memcmp(test, expect, buflen));
 #ifdef LOGSTATUS
-    printf("Got:    %s\nExpect: %s\n", buffer, str1);
+    printf("Got:    %s\nExpect: %s\n", test, expect);
 #endif
-    free(buffer);
+    free(test);
+    END_TEST_CASE;
+}
+
+/* creates "run_test1()" */
+MAKE_TEST_FUN(2, "Anything\x01\x02\x03.")
+
+/* This function tests the printall function for proper hex codes*/
+int PrintAll2()
+{
+    START_TEST_CASE;
+    BYTE expect[] = "Anything\\x01\\x02\\x03.";
+    size_t buflen = strlen((char *)expect);
+    BYTE *test = NULL;
+    capture_printall(run_test2, &test, buflen);
+    SHOULD_BE(!memcmp(test, expect, buflen));
+#ifdef LOGSTATUS
+    printf("Got:    ");
+    printall(test, buflen);
+    printf("\nExpect: ");
+    printall(expect, buflen);
+    printf("\n");
+#endif
+    free(test);
     END_TEST_CASE;
 }
 
@@ -92,10 +136,11 @@ int main(void)
     RUN_TEST(IsPrintable1,  "isprintable() 1  ");
     RUN_TEST(IsPrintable2,  "isprintable() 2  ");
     RUN_TEST(PrintAll1,     "printall() 1     ");
+    RUN_TEST(PrintAll2,     "printall() 2     ");
 
     /* Count errors */
     if (!fails) {
-        printf("\033[0;32mAll %d tests passed!\033[0m\n", total); 
+        printf("\033[0;32mAll %d tests passed!\033[0m\n", total);
         return 0;
     } else {
         printf("\033[0;31m%d/%d tests failed!\033[0m\n", fails, total);
