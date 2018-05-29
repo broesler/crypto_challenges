@@ -80,6 +80,7 @@ int capture_printall(void (*run_test)(), BYTE **out, size_t buflen)
         ERROR("dup2 failed.");
     }
     close(saveout);
+    free(buffer);
     return 0;
 }
 
@@ -102,7 +103,7 @@ int PrintAll1()
     END_TEST_CASE;
 }
 
-/* creates "run_test1()" */
+/* creates "run_test2()" */
 MAKE_TEST_FUN(2, "Anything\x01\x02\x03.")
 
 /* This function tests the printall function for proper hex codes*/
