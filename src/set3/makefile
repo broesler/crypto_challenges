@@ -39,9 +39,9 @@ UTIL += $(UTILDIR)fmemopen.c
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
-TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main
+TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main 
 # Make options
-all: test3 $(TARGETS) types
+all: test3 $(TARGETS) break_CTR_subs types
 test: test3
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3 -fno-inline
@@ -63,10 +63,8 @@ $(TARGETS): % : %.o $(OBJ_UTIL) | .gitignore
 break_CTR_subs: break_CTR_subs.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-.gitignore:
-	@printf "break_CTR_subs\n\
-	$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')\n\
-	test3" > $@
+break_CTR_subs.o: break_CTR_subs.c $(INCL)
+	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)
@@ -78,6 +76,12 @@ types: .types.vim
 	ctags --c-kinds=gstu -o- ../../**/*.[ch] |\
 		awk 'BEGIN{printf("syntax keyword Type\t")}\
 			{printf("%s ", $$1)}END{print ""}' > $@
+
+# Ignore executables
+.gitignore:
+	@printf "break_CTR_subs\n\
+	$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')\n\
+	test3" > $@
 
 # clean up (do not do anything with file named clean)
 .PHONY: depend clean
