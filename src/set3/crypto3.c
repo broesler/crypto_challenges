@@ -16,6 +16,7 @@
 int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce)
 {
     /* Block -> Stream Cipher implementation
+     * NOTE encryption and decryption are the same operation!!
      * y     : output stream
      * x     : input stream
      * key   : 128-bit AES key
@@ -40,7 +41,7 @@ int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce)
         if (ferror(x)) { ERROR("Read error in input stream!"); }
 
         /* Increment counter for next block */
-        inc64le(counter);
+        assert(inc64le(counter) == 0);
         free(keystream);
     } while (!feof(x));
 

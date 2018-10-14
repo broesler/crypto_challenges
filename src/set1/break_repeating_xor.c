@@ -21,8 +21,7 @@ int main(int argc, char **argv)
 
     /* Get flags */
     while ((c = getopt(argc, argv, "v")) != -1) {
-        switch (c)
-        {
+        switch (c) {
             case 'v':
                 v_flag = 1;
                 break;

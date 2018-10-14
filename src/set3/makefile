@@ -16,8 +16,9 @@ DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6
 # Set the compiler options
 CC = gcc-8
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
-SANFLAGS = -fsanitize=address -fsanitize-recover=address -O1 -fno-omit-frame-pointer
-SANFLAGS += -fsanitize-address-use-after-scope
+# SANFLAGS = -fsanitize=address -fsanitize-recover=address -O1 -fno-omit-frame-pointer
+# SANFLAGS += -fsanitize-address-use-after-scope
+DEBUGFLAGS = -DLOGSTATUS -ggdb3 -fno-inline
 
 # Look for header files here
 OPT = -I$(INCLDIR) -I$(SSLINCL) -I$(DICTINCL)
@@ -41,10 +42,10 @@ OBJ_UTIL = $(UTIL:%.c=%.o)
 
 TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main 
 # Make options
-all: test3 $(TARGETS) break_CTR_subs types
+all: test3 $(TARGETS) break_ctr_subs types
 test: test3
 
-debug: CFLAGS += -DLOGSTATUS -ggdb3 -fno-inline
+debug: CFLAGS += $(DEBUGFLAGS)
 # debug: CFLAGS += $(SANFLAGS)
 debug: all
 verbose: CFLAGS += -DVERBOSE
@@ -60,10 +61,10 @@ test3: test_crypto3.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
 $(TARGETS): % : %.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-break_CTR_subs: break_CTR_subs.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
+break_ctr_subs: break_ctr_subs.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-break_CTR_subs.o: break_CTR_subs.c $(INCL)
+break_ctr_subs.o: break_ctr_subs.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
 
 # Objects depend on source and headers
@@ -79,7 +80,7 @@ types: .types.vim
 
 # Ignore executables
 .gitignore:
-	@printf "break_CTR_subs\n\
+	@printf "break_ctr_subs\n\
 	$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')\n\
 	test3" > $@
 
@@ -91,7 +92,7 @@ clean:
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
 	rm -f test3 $(TARGETS)
-	rm -f break_CTR_subs
+	rm -f break_ctr_subs
 	rm -f .gitignore
 
 #==============================================================================

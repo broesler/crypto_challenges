@@ -388,7 +388,7 @@ size_t get_key_length(const BYTE *byte, size_t nbyte)
     float min_mean_dist = FLT_MAX;
 
     /* key length in bytes */
-    size_t max_key_len = (size_t)min(40.0, (float)nbyte/min_samples);
+    size_t max_key_len = (size_t)MIN(40.0, (float)nbyte/min_samples);
 
 #ifdef VERBOSE
     printf("%3s\t%8s\t%8s\n", "Key", "Mean", "Norm");

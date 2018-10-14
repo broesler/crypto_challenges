@@ -11,6 +11,7 @@
 #ifndef _HEADER_H_
 #define _HEADER_H_
 
+#include <assert.h>
 #include <ctype.h>
 #include <memory.h>     // needed for memset()
 #include <sys/types.h>
@@ -23,8 +24,8 @@
 // The max length of a terminal line
 #define MAX_CHAR 81
 
-// minimum number comparison
-#define min(x,y)   ((x)>(y))?(y):(x)
+// Take minimum, but don't bother with type checking
+#define MIN(x, y)   (((x) < (y)) ? (x) : (y))
 
 // Print  s together with the source file name and the current line number.
 #define LOG(...)  do {\
