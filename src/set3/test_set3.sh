@@ -28,7 +28,7 @@ printf "done.\n"
 printf "Running tests...\n"
 
 # Test utilities
-# ./test3
+./test3
 ./test_cbc_padding_oracle
 pass_check "$?" "Set 3 Utilities"
 

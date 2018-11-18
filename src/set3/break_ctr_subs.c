@@ -1,9 +1,10 @@
 /*==============================================================================
- *     File: break_CTR_subs.c
+ *     File: break_ctr_subs.c
  *  Created: 05/04/2018, 10:03
  *   Author: Bernie Roesler
  *
- *  Description: Break fixed-nonce CTR using simple substitutions
+ *  Description: Break fixed-nonce CTR using simple substitutions... just
+ *  kidding. Do it statistically because I'm lazy.
  *
  *============================================================================*/
 
@@ -66,6 +67,14 @@ int main(int argc, char **argv)
 #ifdef LOGSTATUS
     LOG("Decrypting results with key length %lu...", key_len);
 #endif
+
+    /* TODO rewrite this code so that we do NOT have to truncate all of the
+     * ciphertexts. 
+     *  * Possibly use components of break_repeating_xor to get best
+     *    keystream byte each time. 
+     *  * Or, call a version of squeeze_arr() from min(y_nums) to
+     *    max(y_nums) that only acts on indices where len(arr) > key_len */
+
     /* In order to use this function, we need to truncate the encrypted lines to
      * the length of the shortest line, then re-concatenate them into `byte` */
     BYTE *byte = NULL;
