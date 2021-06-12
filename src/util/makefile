@@ -9,14 +9,14 @@
 # Directories where source files are kept
 SRCDIR = ./
 INCLDIR = ../../include/
-SSLINCL = /usr/local/opt/openssl/include
+SSLPATH = /usr/local/opt/openssl@1.1/
 
 # Set the compiler options
-CC = gcc-8
+CC = gcc-11
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 
 # Look for header files here -- store all headers in ../include/
-OPT = -I$(INCLDIR) -I$(SSLINCL) 
+OPT = -I$(INCLDIR) -I$(SSLPATH)/include 
 
 # Define source files
 SRC  = $(wildcard test_*.c)
@@ -32,7 +32,7 @@ TARGETS = $(SRC:.c=)
 INCL = $(wildcard $(INCLDIR)*.h)
 
 # Libraries
-LDLIBS = -lcrypto -lssl 
+LDLIBS = -L$(SSLPATH)/lib -lcrypto -lssl 
 
 # Make options
 all: $(TARGETS) types
