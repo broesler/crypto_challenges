@@ -10,14 +10,15 @@
 SRCDIR   = ./
 UTILDIR  = ../util/
 INCLDIR  = ../../include/
-SSLPATH = /usr/local/opt/openssl@1.1/
+SSLPATH  = /usr/local/opt/openssl@3/
 DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
-CC = gcc-11
+CC = clang
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
-# SANFLAGS = -fsanitize=address -fsanitize-recover=address -O1 -fno-omit-frame-pointer
-# SANFLAGS += -fsanitize-address-use-after-scope
+SANFLAGS = -fsanitize=address -O1 -fno-omit-frame-pointer
+# SANFLAGS += -fsanitize-address-use-after-scope -fsanitize-recover=address 
+CFLAGS += $(SANFLAGS)
 DEBUGFLAGS = -DLOGSTATUS -ggdb3 -fno-inline
 
 # Look for header files here

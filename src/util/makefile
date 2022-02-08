@@ -9,11 +9,13 @@
 # Directories where source files are kept
 SRCDIR = ./
 INCLDIR = ../../include/
-SSLPATH = /usr/local/opt/openssl@1.1/
+SSLPATH = /usr/local/opt/openssl@3/
 
 # Set the compiler options
-CC = gcc-11
-CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
+CC = clang
+CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
+SANFLAGS = -fsanitize=address -fno-omit-frame-pointer
+CFLAGS += $(SANFLAGS)
 
 # Look for header files here -- store all headers in ../include/
 OPT = -I$(INCLDIR) -I$(SSLPATH)/include 

@@ -13,8 +13,10 @@ INCLDIR = ../../include/
 SSLPATH = /usr/local/opt/openssl@1.1/
 
 # Set the compiler options
-CC = gcc-11
-CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
+# CC = gcc-11
+# CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
+CC = clang
+CFLAGS = -Wall -pedantic -std=c99 -funsigned-char -fsanitize=address
 
 # Look for header files here -- store all headers in ../include/
 OPT = -I$(INCLDIR) -I$(SSLPATH)/include 
