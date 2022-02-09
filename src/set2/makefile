@@ -14,8 +14,10 @@ SSLPATH = /usr/local/opt/openssl@3/
 DICTINCL = /Users/bernardroesler/Documents/Courses/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
-CC = clang
+CC = /usr/local/opt/llvm/bin/clang
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
+CFLAGS += -Wno-nullability-completeness -Wno-nullability-extension 
+CFLAGS += -Wno-availability -Wno-expansion-to-defined
 SANFLAGS = -fsanitize=address -O1 -fno-omit-frame-pointer
 CFLAGS += $(SANFLAGS)
 

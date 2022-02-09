@@ -12,8 +12,10 @@ INCLDIR = ../../include/
 SSLPATH = /usr/local/opt/openssl@3/
 
 # Set the compiler options
-CC = clang
-CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
+CC = /usr/local/opt/llvm/bin/clang
+CFLAGS = -Wall -pedantic -std=c99 -funsigned-char -fsanitize=address
+CFLAGS += -Wno-nullability-completeness -Wno-nullability-extension 
+CFLAGS += -Wno-availability -Wno-expansion-to-defined
 SANFLAGS = -fsanitize=address -fno-omit-frame-pointer
 CFLAGS += $(SANFLAGS)
 

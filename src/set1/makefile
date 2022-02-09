@@ -10,13 +10,13 @@
 SRCDIR  = ./
 UTILDIR = ../util/
 INCLDIR = ../../include/
-SSLPATH = /usr/local/opt/openssl@1.1/
+SSLPATH = /usr/local/opt/openssl@3/
 
 # Set the compiler options
-# CC = gcc-11
-# CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
-CC = clang
+CC = /usr/local/opt/llvm/bin/clang
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char -fsanitize=address
+CFLAGS += -Wno-nullability-completeness -Wno-nullability-extension 
+CFLAGS += -Wno-availability -Wno-expansion-to-defined
 
 # Look for header files here -- store all headers in ../include/
 OPT = -I$(INCLDIR) -I$(SSLPATH)/include 
