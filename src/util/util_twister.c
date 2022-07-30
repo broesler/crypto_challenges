@@ -19,6 +19,7 @@
 #define MASK32  0xFFFFFFFFUL  /* for > 32-bit machines */
 #define F  1812433253UL  /* parameter for initialization */
 
+/* TODO for Challenge 23, figure out how to create multiple instances */
 /* Create a length N array to store the state of the generator */
 static unsigned long mt[N];
 static int idx = N + 1;  /* global state index */

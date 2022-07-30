@@ -1,7 +1,7 @@
 //==============================================================================
 //    Filename: header.h
 //
-//    Description: Some utilites for the TinySearchEngine engine project
+//    Description: Some utilites for use in the crypto challenges
 //    - MACROs for general memory allocation and initialization and some program
 //    exceptions processing
 //
@@ -27,14 +27,14 @@
 // Take minimum, but don't bother with type checking
 #define MIN(x, y)   (((x) < (y)) ? (x) : (y))
 
-// Print  s together with the source file name and the current line number.
+// Print s together with the source file name and the current line number.
 #define LOG(...)  do {\
     char s[1024];\
     snprintf(s, 1024, __VA_ARGS__);\
     printf("\033[0;34m[%s@%s:%d]\033[0m %s\n", __func__, __FILE__, __LINE__, s);\
 } while(0)
 
-// Print  s together with the source file name and the current line number.
+// Print s together with the source file name and the current line number.
 #define ERROR(...) do {\
     char s[1024];\
     snprintf(s, 1024, __VA_ARGS__);\
@@ -54,7 +54,7 @@
 // malloc a new data structure t
 #define NEW(t) malloc(sizeof(t))
 
-// Check whether  s is NULL or not. Quit this program if it is NULL.
+// Check whether s is NULL or not. Quit this program if it is NULL.
 #define MY_ASSERT(s)  if (!(s))   {\
     fprintf(stderr,"[%s@%s:line %d]: General assert error\n",\
             __func__, __FILE__, __LINE__);\
