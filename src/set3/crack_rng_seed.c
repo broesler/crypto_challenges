@@ -12,7 +12,7 @@
 #include "util_twister.h"
 
 /* The maximum number of keys to test */
-#define MAX_DIFF 1000
+/* #define MAX_DIFF 1000 */
 
 int main(int argc, char *argv[]) {
     char *filename; 
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* Crack RNG seed given first value output */
-    for (int i = 0; i < MAX_DIFF; i++) {
+    for (int i = 0; i < (end_time - start_time + 1); i++) {
         test_seed = end_time - i;
         srand_mt(test_seed);        /* seed the RNG with a fake "time" */
         y = rand_int32();           /* generate the first random number */

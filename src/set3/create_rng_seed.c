@@ -12,23 +12,17 @@
 #include "header.h"
 #include "util_twister.h"
 
+/* TODO combine this function into a single script with crack_rng_seed.c */
 /* Generate a random number in a range *not* using the MT */
 unsigned long rand_integer(int lo, int hi) {
     return rand() % (hi + 1 - lo) + lo;
 }
 
 unsigned long wait_and_seed() {
-    /* Wait a random number of seconds between, I don't know, 40 and 1000. */
-    sleep(rand_integer(1, 20));
-
-    /* Seeds the RNG with the current Unix timestamp */
-    srand_mt(time(NULL));
-
-    /* Wait a random number of seconds again. */
-    sleep(rand_integer(1, 20));
-
-    /* Return the first 32 bit output of the RNG. */
-    return rand_int32();
+    sleep(rand_integer(1, 20));  /* wait a random number of seconds */
+    srand_mt(time(NULL));        /* seed with the current Unix timestamp */
+    sleep(rand_integer(1, 20));  /* wait a random number of seconds again */
+    return rand_int32();         /* return the first output of the RNG */
 }
 
 int main(void) {

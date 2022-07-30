@@ -45,7 +45,7 @@ OBJ_UTIL = $(UTIL:%.c=%.o)
 TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main 
 
 # Make options
-all: test3 $(TARGETS) break_ctr_subs create_rng_seed types
+all: test3 $(TARGETS) break_ctr_subs create_rng_seed crack_rng_seed types
 test: test3
 
 debug: CFLAGS += $(DEBUGFLAGS)
