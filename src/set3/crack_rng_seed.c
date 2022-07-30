@@ -3,7 +3,7 @@
  *  Created: 2018-11-29 22:03
  *   Author: Bernie Roesler
  *
- *  Description: Determine an RNG seed knowing it was seeded between two times.
+ *  Challenge 22: Determine an RNG seed knowing it was seeded between two times.
  *
  *============================================================================*/
 
@@ -11,12 +11,15 @@
 #include "header.h"
 #include "util_twister.h"
 
+/* The maximum number of keys to test */
+#define MAX_DIFF 1000
+
 int main(int argc, char *argv[]) {
     char *filename; 
     char buf[MAX_CHAR];
     FILE *fp;
     time_t start_time, end_time;
-    unsigned long rng_1;
+    unsigned long x, y, test_seed;
 
     if (argc < 2) {
         filename = "rng.out";
@@ -35,15 +38,15 @@ int main(int argc, char *argv[]) {
             switch (i) {
                 case 0:
                     sscanf(buf, "Start: %ld", &start_time);
-                    /* printf("Start: %ld\n", start_time); */
+                    printf("Start: %ld\n", start_time);
                     break;
                 case 1:
-                    sscanf(buf, "%lu", &rng_1);
-                    /* printf("%ld\n", rng_1); */
+                    sscanf(buf, "%lu", &x);
+                    printf("%ld\n", x);
                     break;
                 case 2:
                     sscanf(buf, "End: %ld", &end_time);
-                    /* printf("End: %ld\n", end_time); */
+                    printf("End: %ld\n", end_time);
                     break;
             }
         } else {
@@ -52,10 +55,17 @@ int main(int argc, char *argv[]) {
     }
 
     /* Crack RNG seed given first value output */
-    /* for (int  */
+    for (int i = 0; i < MAX_DIFF; i++) {
+        test_seed = end_time - i;
+        srand_mt(test_seed);        /* seed the RNG with a fake "time" */
+        y = rand_int32();           /* generate the first random number */
+        if (y == x) {
+            printf("seed = %lu\ny = %lu\n", test_seed, y);
+            break;
+        }
+    }
 
-
-
+    fclose(fp);
     return 0;
 }
 

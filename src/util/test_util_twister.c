@@ -48,19 +48,30 @@ int SeedMT2()
     END_TEST_CASE;
 }
 
+/* Test against itself */
 int GenRand1()
 {
     START_TEST_CASE;
-    unsigned long seed = 56,
-                  r;
-    srand_mt(seed);
+    unsigned long seed = 56;
+    unsigned long x[2][10];
+    /* Populate each array, with reseeding */
+    for (int i = 0; i < 2; i++) {
+        srand_mt(seed);
+        for (int j = 0; j < 10; j++) {
+            x[i][j] = rand_int32();
+        }
+    }
+    /* Check that arrays are the same */
     for (int i = 0; i < 10; i++) {
-        r = rand_int32();
-        printf("%2d: %10ld\n", i, r);
+        SHOULD_BE(x[0][i] == x[1][i]);
+#ifdef LOGSTATUS
+        printf("%2d: %10ld  %10ld\n", i, x[0][i], x[1][i]);
+#endif
     }
     END_TEST_CASE;
 }
 
+/* Test against built-in `rand()` */
 int GenRand2()
 {
     START_TEST_CASE;
@@ -81,7 +92,39 @@ int GenRand3()
     srand_mt((unsigned)time(NULL));
     for (int i = 0; i < 10; i++) {
         r = rand_real();
+#ifdef LOGSTATUS
         printf("%2d: %10f\n", i, r);
+#endif
+    }
+    END_TEST_CASE;
+}
+
+int GenRange1()
+{
+    START_TEST_CASE;
+    unsigned long r;
+    srand_mt(56);
+    for (int i = 0; i < 10; i++) {
+        r = rand_rangec_int32(1, 10);
+        SHOULD_BE((r >= 1) && (r <= 10));
+#ifdef LOGSTATUS
+        printf("%2d: %3ld\n", i, r);
+#endif
+    }
+    END_TEST_CASE;
+}
+
+int GenRange2()
+{
+    START_TEST_CASE;
+    double r;
+    srand_mt(56);
+    for (int i = 0; i < 10; i++) {
+        r = rand_rangec_real(1.0, 10.0);
+        SHOULD_BE((r >= 1.0) && (r <= 10.0));
+#ifdef LOGSTATUS
+        printf("%2d: %10f\n", i, r);
+#endif
     }
     END_TEST_CASE;
 }
@@ -94,11 +137,13 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(SeedMT1,    "srand_mt()    ");
-    RUN_TEST(SeedMT2,    "srand_mt_()   ");
-    RUN_TEST(GenRand1,   "rand_int32() ");
-    RUN_TEST(GenRand2,   "rand_real()  ");
-    RUN_TEST(GenRand3,   "rand_real()  ");
+    RUN_TEST(SeedMT1,    "srand_mt()            ");
+    RUN_TEST(SeedMT2,    "srand_mt_()           ");
+    RUN_TEST(GenRand1,   "rand_int32()          ");
+    RUN_TEST(GenRand2,   "rand_real()           ");
+    RUN_TEST(GenRand3,   "rand_real()           ");
+    RUN_TEST(GenRange1,   "rand_rangec_int32()  ");
+    RUN_TEST(GenRange2,   "rand_rangec_real()   ");
 
     /* Count errors */
     if (!fails) {
