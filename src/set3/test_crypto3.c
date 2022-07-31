@@ -63,6 +63,7 @@ int INCLE2()
     END_TEST_CASE;
 }
 
+/* Test Challenge 18 */
 int CTRDEC1()
 {
     START_TEST_CASE;

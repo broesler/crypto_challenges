@@ -78,7 +78,8 @@ float norm_mean_hamming(const BYTE *byte, size_t nbyte, size_t k);
 size_t get_key_length(const BYTE *byte, size_t nbyte);
 
 // Challenge 6: Break repeating key XOR cipher 
-XOR_NODE *break_repeating_xor(const BYTE *byte, size_t nbyte);
+XOR_NODE *break_repeating_xor(const BYTE *byte, const size_t nbyte,
+                              int key_byte);
 
 // Challenge 7: AES 128-bit ECB-mode encrypt/decrypt entire byte array
 int aes_128_ecb_cipher(BYTE **y, size_t *y_len, BYTE *x, size_t x_len, BYTE *key, int enc);

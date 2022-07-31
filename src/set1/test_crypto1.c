@@ -286,7 +286,7 @@ int BreakRepeatingXOR1()
     BYTE key[] = "ICE";
     char expect[] = "Burning 'em, if you ain't quick and nimble\n" \
                     "I go crazy when I hear a cymbal";
-    XOR_NODE *out = break_repeating_xor(input_byte, nbyte);
+    XOR_NODE *out = break_repeating_xor(input_byte, nbyte, -1);
     SHOULD_BE(!memcmp(out->key, key, out->key_byte));
     SHOULD_BE(!memcmp(out->plaintext, expect, nbyte));
     SHOULD_BE(out->score == FLT_MAX); /* unchanged */
