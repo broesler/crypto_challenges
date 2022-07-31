@@ -17,24 +17,9 @@
 #include "crypto2.h"
 #include "crypto3.h"
 
-/* Globals */
-BYTE *key = (BYTE *)"YELLOW SUBMARINE";
-
 /*------------------------------------------------------------------------------
  *          Function definitions        
  *----------------------------------------------------------------------------*/
-size_t min_val(int *arr, size_t len)
-{
-    /* Return minimum value from array */
-    size_t the_min = arr[0];
-    for (size_t i = 1; i < len; i++) {
-        if (arr[i] < the_min) {
-            the_min = arr[i];
-        }
-    }
-    return the_min;
-}
-
 size_t max_val(int *arr, size_t len)
 {
     /* Return maximum value from array */
@@ -47,30 +32,9 @@ size_t max_val(int *arr, size_t len)
     return the_max;
 }
 
-void flatten_arr(BYTE **byte, size_t *nbyte, BYTE **arr, 
-                size_t Nl, size_t line_len)
-{
-    /* Collapse 2D arr into 1D byte array of length Nl*line_len. */
-    *nbyte = Nl*line_len;
-    *byte = init_byte(*nbyte);
-    for (size_t i = 0; i < Nl; i++) {
-        memcpy(*byte + i*line_len, *(arr + i), line_len);
-    }
-    return;
-}
-
-void reshape_arr(BYTE **x_lines, BYTE *byte, size_t Nl, size_t line_len)
-{
-    /* Expand 1D byte array into 2D arr of shape [Nl, line_len] */
-    for (size_t i = 0; i < Nl; i++) {
-        *(x_lines + i) = init_byte(line_len);
-        memcpy(*(x_lines + i), byte + i*line_len, line_len);
-    }
-    return;
-}
-
 size_t read_and_encrypt_file(char *b64_file, BYTE **y_lines, int *y_lens)
 {
+    BYTE *key = (BYTE *)"YELLOW SUBMARINE";
     size_t n_lines = 0;
 
     /* Fixed nonce = 0 */
@@ -168,54 +132,45 @@ int main(int argc, char **argv)
     }
 #endif
 
-    /* Get length of shortest line */
-    size_t key_len = min_val(y_lens, Nl);
-    size_t max_len = max_val(y_lens, Nl);
+    /* Get length of longest line */
+    int key_len = max_val(y_lens, Nl);
+    BYTE *keystream = init_byte(key_len);
 
+    /* Get the keystream one "column" at a time */
 #ifdef LOGSTATUS
-    LOG("Decrypting results with key length %lu...", key_len);
+    printf("Nl = %lu, key_len = %d\n", Nl, key_len);
 #endif
+    for (int j = 0; j < key_len; j++) {
+        BYTE *col = init_byte(Nl);
+        int col_len = 0;
 
-    /* TODO rewrite this code so that we do NOT have to truncate all of the
-     * ciphertexts. 
-     *  * Possibly use components of break_repeating_xor to get best
-     *    keystream byte each time. 
-     *  * Or, call a version of flatten_arr() from min(y_lens) to
-     *    max(y_lens) that only acts on indices where len(arr) > key_len */
-    /* NOTE break_repeating_xor is written to take a flattened array where each
-     * row is the same length. In this case, we have many different length
-     * strings. We could rewrite break_repeating_xor to handle different
-     * lengths, or take each "column" of `y_lines` at a time, and call
-     * single_byte_xor_decode on each one individually. */
+        for (size_t i = 0; i < Nl; i++) {
+            if (j < y_lens[i]) {
+                col[col_len] = y_lines[i][j];
+                col_len++;
+            }
+        }
 
-    /* In order to use this function, we need to truncate the encrypted lines to
-     * the length of the shortest line, then re-concatenate them into `byte` */
-    BYTE *byte = NULL;
-    size_t nbyte = 0;
-    flatten_arr(&byte, &nbyte, y_lines, Nl, key_len);
-    assert(nbyte == Nl*key_len);
+        XOR_NODE *t = single_byte_xor_decode(col, col_len);
+        *(keystream + j) = *(t->key);
 
-    /* Decrypt results as if it were a repeating key XOR cipher */
-    XOR_NODE *out = break_repeating_xor(byte, nbyte, (int)key_len);
-    printf("key = ");
-    printall(out->key, key_len);
-    printf("\n");
-    printf("key_len = %lu\n", key_len);
+        free(t);
+        free(col);
+    }
 
-    /* Reshape decrypted text back into individual lines */
-    BYTE **x_lines = calloc(Nl, sizeof(BYTE *));
+    /* Decrypte the ciphertexts using the known keystream */
+    BYTE **x_lines = calloc(Nl, sizeof(BYTE *));  /* decrypted lines */
     MALLOC_CHECK(x_lines);
-    reshape_arr(x_lines, out->plaintext, Nl, key_len);
-    printf("Decrypted text =\n");
+
     for (size_t i = 0; i < Nl; i++) {
-        printall(*(x_lines+i), key_len);
+        x_lines[i] = repeating_key_xor(y_lines[i], keystream, y_lens[i], key_len);
+        printall(x_lines[i], y_lens[i]);
         printf("\n");
     }
 
     free_str_arr((char **)y_lines, Nl);
     free(y_lens);
-    free(byte);
-    free(out);
+    free(keystream);
     free_str_arr((char **)x_lines, Nl);
     return 0;
 }

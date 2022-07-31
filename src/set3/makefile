@@ -49,7 +49,7 @@ all: test3 $(TARGETS) break_ctr_subs crack_rng_seed types
 test: test3
 
 debug: CFLAGS += $(DEBUGFLAGS)
-# debug: CFLAGS += $(SANFLAGS)
+debug: CFLAGS += $(SANFLAGS)
 debug: all
 verbose: CFLAGS += -DVERBOSE
 verbose: debug
