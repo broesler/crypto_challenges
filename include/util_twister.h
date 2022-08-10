@@ -38,8 +38,11 @@ double rand_rangec_real(double a, double b);
 unsigned long untemper(unsigned long y);
 
 // Reverse a single right-shift operation
-unsigned long undo_Rshift_xor(unsigned long x, int shift, unsigned long mask);
-unsigned long undo_Lshift_xor(unsigned long x, int shift, unsigned long mask);
+unsigned long undo_Rshift_xor(unsigned long x, const int shift, 
+                              const unsigned long mask);
+
+unsigned long undo_Lshift_xor(unsigned long x, const int shift,
+                              const unsigned long mask);
 
 #endif
 //==============================================================================

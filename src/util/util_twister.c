@@ -85,8 +85,10 @@ unsigned long untemper(unsigned long y) {
  *  b) left-shifting outside of `sizeof(unsigned long)` is undefined behavior,
  *     so the right-shift back may still have the data that was shifted "off" to
  *     the left.
+ *  Instead, need an additional max of UINT_MAX to ensure we only use 32 bits.
  */
-unsigned long undo_Rshift_xor(unsigned long x, int shift, unsigned long mask)
+unsigned long undo_Rshift_xor(unsigned long x, const int shift, 
+                              const unsigned long mask)
 {
     if (shift == 0) return 0;
     unsigned long y = 0;
@@ -101,7 +103,8 @@ unsigned long undo_Rshift_xor(unsigned long x, int shift, unsigned long mask)
 }
 
 
-unsigned long undo_Lshift_xor(unsigned long x, int shift, unsigned long mask)
+unsigned long undo_Lshift_xor(unsigned long x, const int shift, 
+                              const unsigned long mask)
 {
     if (shift == 0) return 0;
     unsigned long y = 0;
