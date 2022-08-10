@@ -87,6 +87,10 @@ unsigned long untemper(unsigned long y) {
  *     the left.
  *  Instead, need an additional max of UINT_MAX to ensure we only use 32 bits.
  */
+/* TODO
+ *   - deal with `shift < 0`.
+ *   - pass flag to determine left or right shift?
+ */
 unsigned long undo_Rshift_xor(unsigned long x, const int shift, 
                               const unsigned long mask)
 {
@@ -94,7 +98,7 @@ unsigned long undo_Rshift_xor(unsigned long x, const int shift,
     unsigned long y = 0;
     for (int i = 0; i < UINT_SIZE; i += shift) {
         /* Shift mask from left to right as we go */
-        unsigned long part_mask = (UINT_MAX << (UINT_SIZE - shift) & UINT_MAX) >> i;
+        unsigned long part_mask = ((UINT_MAX << (UINT_SIZE - shift)) & UINT_MAX) >> i;
         unsigned long part = x & part_mask;
         x ^= (part >> shift) & mask;  /* reverse XOR and mask for next pass */
         y |= part;                    /* add part to the result */
