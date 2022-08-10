@@ -69,11 +69,10 @@ unsigned long temper(unsigned long y) {
 /* Reverse the temper operation */
 unsigned long untemper(unsigned long y) {
     /* MT19937 values */
-    /* TODO implement "right-shift" and "left-shift" operations */
-    /* y = undo_Rshift_xor(y, 18, 0xFFFFFFFFUL); */
-    /* y = undo_Lshift_xor(y, 15, 0xEFC60000UL); */
-    /* y = undo_Lshift_xor(y,  7, 0x9D2C5680UL); */
-    /* y = undo_Rshift_xor(y, 11, 0xFFFFFFFFUL); */
+    y = undo_Rshift_xor(y, 18, 0xFFFFFFFFUL);
+    y = undo_Lshift_xor(y, 15, 0xEFC60000UL);
+    y = undo_Lshift_xor(y,  7, 0x9D2C5680UL);
+    y = undo_Rshift_xor(y, 11, 0xFFFFFFFFUL);
     return y;
 }
 

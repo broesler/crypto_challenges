@@ -35,6 +35,7 @@ unsigned long rand_rangec_int32(unsigned long, unsigned long);
 double rand_rangec_real(double a, double b);
 
 // Reverse the tempering operation of the Mersenne Twister
+unsigned long temper(unsigned long y);
 unsigned long untemper(unsigned long y);
 
 // Reverse a single right-shift operation

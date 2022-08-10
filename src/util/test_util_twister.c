@@ -258,6 +258,18 @@ int UndoLshift3()
     END_TEST_CASE;
 }
 
+
+/* Test arbitrary input */
+int Untemper0()
+{
+    START_TEST_CASE;
+    unsigned long y = 0xB75E7E72;
+    SHOULD_BE(untemper(temper(y)) == y);
+    SHOULD_BE(temper(untemper(y)) == y);
+    END_TEST_CASE;
+}
+
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -281,6 +293,7 @@ int main(void)
     RUN_TEST(UndoLshift1, "undo_Lshift_xor() 1   ");
     RUN_TEST(UndoLshift2, "undo_Lshift_xor() 2   ");
     RUN_TEST(UndoLshift3, "undo_Lshift_xor() 3   ");
+    RUN_TEST(Untemper0,   "untemper() 0          ");
 
     /* Count errors */
     if (!fails) {
