@@ -91,13 +91,8 @@ unsigned long undo_Rshift_xor(unsigned long x, int shift, unsigned long mask)
     if (shift == 0) return 0;
     unsigned long y = 0;
     for (int i = 0; i < UINT_SIZE; i += shift) {
-        unsigned long part_mask = (1 << shift) - 1;  /* block of 1's */
-        /* Shift block from left to right as we go */
-        if (i < UINT_SIZE - shift) {
-            part_mask <<= (UINT_SIZE - shift) - i;
-        } else {
-            part_mask >>= i - (UINT_SIZE - shift);
-        }
+        /* Shift mask from left to right as we go */
+        unsigned long part_mask = (UINT_MAX << (UINT_SIZE - shift) & UINT_MAX) >> i;
         unsigned long part = x & part_mask;
         x ^= (part >> shift) & mask;  /* reverse XOR and mask for next pass */
         y |= part;                    /* add part to the result */
@@ -112,8 +107,7 @@ unsigned long undo_Lshift_xor(unsigned long x, int shift, unsigned long mask)
     unsigned long y = 0;
     for (int i = 0; i < UINT_SIZE; i += shift) {
         /* Shift block from right to left as we go */
-        unsigned long part_mask = (1 << shift) - 1;  /* block of 1's */
-        part_mask = (part_mask << i) & 0xFFFFFFFFUL;
+        unsigned long part_mask = (((1 << shift) - 1) << i) & UINT_MAX;
         unsigned long part = x & part_mask;
         x ^= (part << shift) & mask;  /* reverse XOR and mask for next pass */
         y |= part;                    /* add part to the result */
