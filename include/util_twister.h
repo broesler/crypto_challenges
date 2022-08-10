@@ -39,6 +39,7 @@ unsigned long untemper(unsigned long y);
 
 // Reverse a single right-shift operation
 unsigned long undo_Rshift_xor(unsigned long x, int shift, unsigned long mask);
+unsigned long undo_Lshift_xor(unsigned long x, int shift, unsigned long mask);
 
 #endif
 //==============================================================================

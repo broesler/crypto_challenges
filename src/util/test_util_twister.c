@@ -140,6 +140,7 @@ int GenRange2()
 }
 
 
+/* x always 0 */
 int UndoRshift1()
 {
     START_TEST_CASE;
@@ -152,6 +153,7 @@ int UndoRshift1()
 }
 
 
+/* x all 1's */
 int UndoRshift2()
 {
     START_TEST_CASE;
@@ -173,8 +175,64 @@ int UndoRshift3()
     for (int shift = 1; shift < UINT_SIZE; shift += 1) {
         unsigned long res = undo_Rshift_xor(x ^ (x >> shift), shift, mask);
         SHOULD_BE(res == x);
+    }
+    END_TEST_CASE;
+}
+
+
+/* Test arbitrary x, arbitrary mask */
+int UndoRshift4()
+{
+    START_TEST_CASE;
+    unsigned long x = 0xB75E7E72,
+                  mask = 0x9D2C5680;
+    for (int shift = 1; shift < UINT_SIZE; shift += 1) {
+        unsigned long y = x ^ ((x >> shift) & mask);
+        unsigned long res = undo_Rshift_xor(y, shift, mask);
+        SHOULD_BE(res == x);
+    }
+    END_TEST_CASE;
+}
+
+
+
+/* x always 0 */
+int UndoLshift1()
+{
+    START_TEST_CASE;
+    unsigned long x = 0,
+                  mask = 0xFFFFFFFF;  /* mask of all 1's is no mask at all */
+    for (int shift = 0; shift < UINT_SIZE; shift++) {
+        SHOULD_BE(undo_Lshift_xor(x ^ (x << shift), shift, mask) == x);
+    }
+    END_TEST_CASE;
+}
+
+
+/* x all 1's */
+int UndoLshift2()
+{
+    START_TEST_CASE;
+    unsigned long x = 0xFFFFFFFF,
+                  mask = 0xFFFFFFFF;
+    for (int shift = 1; shift < UINT_SIZE; shift++) {
+        SHOULD_BE(undo_Lshift_xor(x ^ (x << shift), shift, mask) == x);
+    }
+    END_TEST_CASE;
+}
+
+
+/* Test arbitrary x, no mask */
+int UndoLshift3()
+{
+    START_TEST_CASE;
+    unsigned long x = 0xB75E7E72,
+                  mask = 0xFFFFFFFF;
+    for (int shift = 1; shift < UINT_SIZE; shift += 1) {
+        unsigned long res = undo_Lshift_xor(x ^ (x << shift), shift, mask);
+        SHOULD_BE(res == x);
 #ifdef LOGSTATUS
-        printf("shift = %d\n", shift);
+        printf("shift = %d ", shift);
         if (res == x) {
             printf("passed!\n");
         } else {
@@ -186,6 +244,20 @@ int UndoRshift3()
     END_TEST_CASE;
 }
 
+
+/* Test arbitrary x, arbitrary mask */
+int UndoLshift4()
+{
+    START_TEST_CASE;
+    unsigned long x = 0xB75E7E72,
+                  mask = 0x9D2C5680;
+    for (int shift = 1; shift < UINT_SIZE; shift += 1) {
+        unsigned long y = x ^ ((x << shift) & mask);
+        unsigned long res = undo_Lshift_xor(y, shift, mask);
+        SHOULD_BE(res == x);
+    }
+    END_TEST_CASE;
+}
 
 /*------------------------------------------------------------------------------
  *        Run tests
@@ -203,8 +275,13 @@ int main(void)
     RUN_TEST(GenRange1,   "rand_rangec_int32()   ");
     RUN_TEST(GenRange2,   "rand_rangec_real()    ");
     RUN_TEST(UndoRshift1, "undo_Rshift_xor()     ");
-    /* RUN_TEST(UndoRshift2, "undo_Rshift_xor()     "); */
+    RUN_TEST(UndoRshift2, "undo_Rshift_xor()     ");
     RUN_TEST(UndoRshift3, "undo_Rshift_xor()     ");
+    RUN_TEST(UndoRshift4, "undo_Rshift_xor()     ");
+    RUN_TEST(UndoLshift1, "undo_Lshift_xor()     ");
+    /* RUN_TEST(UndoLshift2, "undo_Lshift_xor()     "); */
+    RUN_TEST(UndoLshift3, "undo_Lshift_xor()     ");
+    /* RUN_TEST(UndoLshift4, "undo_Lshift_xor()     "); */
 
     /* Count errors */
     if (!fails) {

@@ -77,27 +77,49 @@ unsigned long untemper(unsigned long y) {
     return y;
 }
 
-/* Recover y from the operation x = y ^ ((y >> s) & mask) */
+/* Recover y from the operation x = y ^ ((y >> s) & mask) 
+ * See also:
+ * <https://jazzy.id.au/2010/09/22/cracking_random_number_generators_part_3.html>
+ * NOTE that the `partMask` used therein DOES NOT work in C, since 
+ *  a) a negative uint is machine-dependent to be two's complement
+ *  b) left-shifting outside of `sizeof(unsigned long)` is undefined behavior,
+ *     so the right-shift back may still have the data that was shifted "off" to
+ *     the left.
+ */
 unsigned long undo_Rshift_xor(unsigned long x, int shift, unsigned long mask)
 {
     if (shift == 0) return 0;
     unsigned long y = 0;
     for (int i = 0; i < UINT_SIZE; i += shift) {
         unsigned long part_mask = (1 << shift) - 1;  /* block of 1's */
+        /* Shift block from left to right as we go */
         if (i < UINT_SIZE - shift) {
-            part_mask <<= UINT_SIZE - shift - i;  /* shift to higher bits */
+            part_mask <<= (UINT_SIZE - shift) - i;
         } else {
-            part_mask >>= i - UINT_SIZE + shift;  /* shift off right end */
+            part_mask >>= i - (UINT_SIZE - shift);
         }
         unsigned long part = x & part_mask;
-        /* printf("part_mask = %08lX\n", part_mask); */
-        /* printf("part = %lX\n", part); */
         x ^= (part >> shift) & mask;  /* reverse XOR and mask for next pass */
         y |= part;                    /* add part to the result */
     }
     return y;
 }
 
+
+unsigned long undo_Lshift_xor(unsigned long x, int shift, unsigned long mask)
+{
+    if (shift == 0) return 0;
+    unsigned long y = 0;
+    for (int i = 0; i < UINT_SIZE; i += shift) {
+        /* Shift block from right to left as we go */
+        unsigned long part_mask = (1 << shift) - 1;  /* block of 1's */
+        part_mask = (part_mask << i) & 0xFFFFFFFFUL;
+        unsigned long part = x & part_mask;
+        x ^= (part << shift) & mask;  /* reverse XOR and mask for next pass */
+        y |= part;                    /* add part to the result */
+    }
+    return y;
+}
 /*------------------------------------------------------------------------------
  *         Public API 
  *----------------------------------------------------------------------------*/
