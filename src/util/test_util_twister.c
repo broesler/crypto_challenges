@@ -279,9 +279,9 @@ int main(void)
     RUN_TEST(UndoRshift3, "undo_Rshift_xor()     ");
     RUN_TEST(UndoRshift4, "undo_Rshift_xor()     ");
     RUN_TEST(UndoLshift1, "undo_Lshift_xor()     ");
-    /* RUN_TEST(UndoLshift2, "undo_Lshift_xor()     "); */
+    RUN_TEST(UndoLshift2, "undo_Lshift_xor()     ");
     RUN_TEST(UndoLshift3, "undo_Lshift_xor()     ");
-    /* RUN_TEST(UndoLshift4, "undo_Lshift_xor()     "); */
+    RUN_TEST(UndoLshift4, "undo_Lshift_xor()     ");
 
     /* Count errors */
     if (!fails) {
