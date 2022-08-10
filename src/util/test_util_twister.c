@@ -24,6 +24,7 @@ int SeedMT1()
     END_TEST_CASE;
 }
 
+
 int SeedMT2()
 {
     START_TEST_CASE;
@@ -48,6 +49,7 @@ int SeedMT2()
     END_TEST_CASE;
 }
 
+
 /* Test against itself */
 int GenRand1()
 {
@@ -71,33 +73,40 @@ int GenRand1()
     END_TEST_CASE;
 }
 
+
 /* Test against built-in `rand()` */
 int GenRand2()
 {
     START_TEST_CASE;
-    double r;
     /* unsigned long seed = 56; */
     /* srand_mt(seed); */
     for (int i = 0; i < 10; i++) {
-        r = rand_real();
-        printf("%2d: %10f\n", i, r);
-    }
-    END_TEST_CASE;
-}
-
-int GenRand3()
-{
-    START_TEST_CASE;
-    double r;
-    srand_mt((unsigned)time(NULL));
-    for (int i = 0; i < 10; i++) {
-        r = rand_real();
 #ifdef LOGSTATUS
+        double r = rand_real();
         printf("%2d: %10f\n", i, r);
+#else
+        rand_real();
 #endif
     }
     END_TEST_CASE;
 }
+
+
+int GenRand3()
+{
+    START_TEST_CASE;
+    srand_mt((unsigned)time(NULL));
+    for (int i = 0; i < 10; i++) {
+#ifdef LOGSTATUS
+        double r = rand_real();
+        printf("%2d: %10f\n", i, r);
+#else
+        rand_real();
+#endif
+    }
+    END_TEST_CASE;
+}
+
 
 int GenRange1()
 {
@@ -114,6 +123,7 @@ int GenRange1()
     END_TEST_CASE;
 }
 
+
 int GenRange2()
 {
     START_TEST_CASE;
@@ -129,6 +139,54 @@ int GenRange2()
     END_TEST_CASE;
 }
 
+
+int UndoRshift1()
+{
+    START_TEST_CASE;
+    unsigned long x = 0,
+                  mask = 0xFFFFFFFF;  /* mask of all 1's is no mask at all */
+    for (int shift = 0; shift < UINT_SIZE; shift++) {
+        SHOULD_BE(undo_Rshift_xor(x ^ (x >> shift), shift, mask) == x);
+    }
+    END_TEST_CASE;
+}
+
+
+int UndoRshift2()
+{
+    START_TEST_CASE;
+    unsigned long x = 0xFFFFFFFF,
+                  mask = 0xFFFFFFFF;
+    for (int shift = 1; shift < UINT_SIZE; shift++) {
+        SHOULD_BE(undo_Rshift_xor(x ^ (x >> shift), shift, mask) == x);
+    }
+    END_TEST_CASE;
+}
+
+
+/* Test arbitrary x, no mask */
+int UndoRshift3()
+{
+    START_TEST_CASE;
+    unsigned long x = 0xB75E7E72,
+                  mask = 0xFFFFFFFF;
+    for (int shift = 1; shift < UINT_SIZE; shift += 1) {
+        unsigned long res = undo_Rshift_xor(x ^ (x >> shift), shift, mask);
+        SHOULD_BE(res == x);
+#ifdef LOGSTATUS
+        printf("shift = %d\n", shift);
+        if (res == x) {
+            printf("passed!\n");
+        } else {
+            printf("got:      %08lX\n", res);
+            printf("expected: %08lX\n", x);
+        }
+#endif
+    }
+    END_TEST_CASE;
+}
+
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -137,13 +195,16 @@ int main(void)
     int fails = 0;
     int total = 0;
 
-    RUN_TEST(SeedMT1,    "srand_mt()            ");
-    RUN_TEST(SeedMT2,    "srand_mt_()           ");
-    RUN_TEST(GenRand1,   "rand_int32()          ");
-    RUN_TEST(GenRand2,   "rand_real()           ");
-    RUN_TEST(GenRand3,   "rand_real()           ");
-    RUN_TEST(GenRange1,   "rand_rangec_int32()  ");
-    RUN_TEST(GenRange2,   "rand_rangec_real()   ");
+    RUN_TEST(SeedMT1,     "srand_mt()            ");
+    RUN_TEST(SeedMT2,     "srand_mt_()           ");
+    RUN_TEST(GenRand1,    "rand_int32()          ");
+    RUN_TEST(GenRand2,    "rand_real()           ");
+    RUN_TEST(GenRand3,    "rand_real()           ");
+    RUN_TEST(GenRange1,   "rand_rangec_int32()   ");
+    RUN_TEST(GenRange2,   "rand_rangec_real()    ");
+    RUN_TEST(UndoRshift1, "undo_Rshift_xor()     ");
+    /* RUN_TEST(UndoRshift2, "undo_Rshift_xor()     "); */
+    RUN_TEST(UndoRshift3, "undo_Rshift_xor()     ");
 
     /* Count errors */
     if (!fails) {

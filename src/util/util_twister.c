@@ -6,6 +6,8 @@
  *  Description: Implement the Mersenne Twister PRNG algorithm
  *============================================================================*/
 
+#include <limits.h>
+
 #include "util_twister.h"
 
 /* Declare constants */
@@ -61,6 +63,38 @@ unsigned long temper(unsigned long y) {
     y ^= (y <<  7) & 0x9D2C5680UL;
     y ^= (y << 15) & 0xEFC60000UL;
     y ^= y >> 18;
+    return y;
+}
+
+/* Reverse the temper operation */
+unsigned long untemper(unsigned long y) {
+    /* MT19937 values */
+    /* TODO implement "right-shift" and "left-shift" operations */
+    /* y = undo_Rshift_xor(y, 18, 0xFFFFFFFFUL); */
+    /* y = undo_Lshift_xor(y, 15, 0xEFC60000UL); */
+    /* y = undo_Lshift_xor(y,  7, 0x9D2C5680UL); */
+    /* y = undo_Rshift_xor(y, 11, 0xFFFFFFFFUL); */
+    return y;
+}
+
+/* Recover y from the operation x = y ^ ((y >> s) & mask) */
+unsigned long undo_Rshift_xor(unsigned long x, int shift, unsigned long mask)
+{
+    if (shift == 0) return 0;
+    unsigned long y = 0;
+    for (int i = 0; i < UINT_SIZE; i += shift) {
+        unsigned long part_mask = (1 << shift) - 1;  /* block of 1's */
+        if (i < UINT_SIZE - shift) {
+            part_mask <<= UINT_SIZE - shift - i;  /* shift to higher bits */
+        } else {
+            part_mask >>= i - UINT_SIZE + shift;  /* shift off right end */
+        }
+        unsigned long part = x & part_mask;
+        /* printf("part_mask = %08lX\n", part_mask); */
+        /* printf("part = %lX\n", part); */
+        x ^= (part >> shift) & mask;  /* reverse XOR and mask for next pass */
+        y |= part;                    /* add part to the result */
+    }
     return y;
 }
 

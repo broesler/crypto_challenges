@@ -11,6 +11,8 @@
 #include "header.h"
 #include "crypto_util.h"
 
+#define UINT_SIZE (8*sizeof(unsigned int))
+
 // Initialize the generator from a seed
 unsigned long *srand_mt_(unsigned long);
 
@@ -31,6 +33,12 @@ unsigned long rand_rangec_int32(unsigned long, unsigned long);
 
 // Generate random double in the closed interval [a, b]
 double rand_rangec_real(double a, double b);
+
+// Reverse the tempering operation of the Mersenne Twister
+unsigned long untemper(unsigned long y);
+
+// Reverse a single right-shift operation
+unsigned long undo_Rshift_xor(unsigned long x, int shift, unsigned long mask);
 
 #endif
 //==============================================================================
