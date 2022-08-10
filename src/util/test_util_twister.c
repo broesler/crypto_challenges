@@ -141,7 +141,7 @@ int GenRange2()
 
 
 /* x always 0 */
-int UndoRshift1()
+int UndoRshift0()
 {
     START_TEST_CASE;
     unsigned long x = 0,
@@ -154,7 +154,7 @@ int UndoRshift1()
 
 
 /* x all 1's */
-int UndoRshift2()
+int UndoRshift1()
 {
     START_TEST_CASE;
     unsigned long x = 0xFFFFFFFF,
@@ -167,7 +167,7 @@ int UndoRshift2()
 
 
 /* Test arbitrary x, no mask */
-int UndoRshift3()
+int UndoRshift2()
 {
     START_TEST_CASE;
     unsigned long x = 0xB75E7E72,
@@ -181,7 +181,7 @@ int UndoRshift3()
 
 
 /* Test arbitrary x, arbitrary mask */
-int UndoRshift4()
+int UndoRshift3()
 {
     START_TEST_CASE;
     unsigned long x = 0xB75E7E72,
@@ -195,9 +195,8 @@ int UndoRshift4()
 }
 
 
-
 /* x always 0 */
-int UndoLshift1()
+int UndoLshift0()
 {
     START_TEST_CASE;
     unsigned long x = 0,
@@ -210,7 +209,7 @@ int UndoLshift1()
 
 
 /* x all 1's */
-int UndoLshift2()
+int UndoLshift1()
 {
     START_TEST_CASE;
     unsigned long x = 0xFFFFFFFF,
@@ -223,7 +222,7 @@ int UndoLshift2()
 
 
 /* Test arbitrary x, no mask */
-int UndoLshift3()
+int UndoLshift2()
 {
     START_TEST_CASE;
     unsigned long x = 0xB75E7E72,
@@ -246,7 +245,7 @@ int UndoLshift3()
 
 
 /* Test arbitrary x, arbitrary mask */
-int UndoLshift4()
+int UndoLshift3()
 {
     START_TEST_CASE;
     unsigned long x = 0xB75E7E72,
@@ -274,14 +273,14 @@ int main(void)
     RUN_TEST(GenRand3,    "rand_real()           ");
     RUN_TEST(GenRange1,   "rand_rangec_int32()   ");
     RUN_TEST(GenRange2,   "rand_rangec_real()    ");
-    RUN_TEST(UndoRshift1, "undo_Rshift_xor()     ");
-    RUN_TEST(UndoRshift2, "undo_Rshift_xor()     ");
-    RUN_TEST(UndoRshift3, "undo_Rshift_xor()     ");
-    RUN_TEST(UndoRshift4, "undo_Rshift_xor()     ");
-    RUN_TEST(UndoLshift1, "undo_Lshift_xor()     ");
-    RUN_TEST(UndoLshift2, "undo_Lshift_xor()     ");
-    RUN_TEST(UndoLshift3, "undo_Lshift_xor()     ");
-    RUN_TEST(UndoLshift4, "undo_Lshift_xor()     ");
+    RUN_TEST(UndoRshift0, "undo_Rshift_xor() 0   ");
+    RUN_TEST(UndoRshift1, "undo_Rshift_xor() 1   ");
+    RUN_TEST(UndoRshift2, "undo_Rshift_xor() 2   ");
+    RUN_TEST(UndoRshift3, "undo_Rshift_xor() 3   ");
+    RUN_TEST(UndoLshift0, "undo_Lshift_xor() 0   ");
+    RUN_TEST(UndoLshift1, "undo_Lshift_xor() 1   ");
+    RUN_TEST(UndoLshift2, "undo_Lshift_xor() 2   ");
+    RUN_TEST(UndoLshift3, "undo_Lshift_xor() 3   ");
 
     /* Count errors */
     if (!fails) {
