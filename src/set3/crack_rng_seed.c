@@ -9,7 +9,6 @@
 
 #include <stdlib.h>
 #include <time.h>
-#include "header.h"
 #include "util_twister.h"
 
 
@@ -53,7 +52,7 @@ int main(int argc, char *argv[]) {
     }
 
     free(rng);
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 

@@ -32,7 +32,7 @@ void twist(RNG_MT *rng) {
 
     /* Generate the next _N values from the series x_i  */
     for (size_t i = 0; i < _N; i++) {
-        x =  (rng->state[i]         & UPPER_MASK) 
+        x =  (rng->state[i]          & UPPER_MASK) 
            + (rng->state[(i+1) % _N] & LOWER_MASK);
         xA = x >> 1;
         if (x % 2) {  /* lowest bit of x is 1 */
@@ -50,7 +50,7 @@ unsigned long temper(unsigned long y) {
     y ^= (y >> 11) & MASK32;
     y ^= (y <<  7) & 0x9D2C5680UL;
     y ^= (y << 15) & 0xEFC60000UL;
-    y ^= y >> 18;
+    y ^= (y >> 18) & MASK32;
     return y;
 }
 
@@ -118,6 +118,7 @@ unsigned long undo_Lshift_xor(unsigned long x, const int shift,
 /* Initialize an RNG instance */
 RNG_MT *init_rng_mt(void) {
     RNG_MT *rng = NULL;
+    /* TODO combine NEW, MALLOC_CHECK, and BZERO into one macro?? */
     rng = NEW(RNG_MT);
     MALLOC_CHECK(rng);
     BZERO(rng, sizeof(RNG_MT));
@@ -135,7 +136,7 @@ void srand_mt(RNG_MT *rng, unsigned long seed) {
 
 /* Generate random number in the interval [0, 0xFFFFFFFF] */
 unsigned long rand_int32(RNG_MT *rng) {
-    if (rng->idx == _N+1) {
+    if (rng->idx == _N + 1) {
         /* Seed with constant value; 5489 is used in reference C code */
         srand_mt(rng, 5489UL);
     }
