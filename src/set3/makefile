@@ -45,7 +45,7 @@ OBJ_UTIL = $(UTIL:%.c=%.o)
 TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main 
 
 # Make options
-all: test3 $(TARGETS) break_ctr_subs crack_rng_seed types
+all: test3 $(TARGETS) break_ctr_subs crack_rng_seed clone_rng types
 test: test3
 
 debug: CFLAGS += $(DEBUGFLAGS)
@@ -76,6 +76,12 @@ crack_rng_seed: crack_rng_seed.o $(UTILDIR)util_twister.o | .gitignore
 crack_rng_seed.o: crack_rng_seed.c $(INCLDIR)header.h $(INCLDIR)util_twister.h
 	$(CC) $(CFLAGS) -I$(INCLDIR) -c $< -o $@
 
+clone_rng: clone_rng.o $(UTILDIR)util_twister.o | .gitignore
+	$(CC) $(CFLAGS) -o $@ $^
+
+clone_rng.o: clone_rng.c $(INCLDIR)header.h $(INCLDIR)util_twister.h
+	$(CC) $(CFLAGS) -I$(INCLDIR) -c $< -o $@
+
 # Objects depend on source and headers
 %.o: %.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
@@ -91,6 +97,7 @@ types: .types.vim
 .gitignore:
 	@printf "break_ctr_subs\n\
 	crack_rng_seed\n\
+	clone_rng\n\
 	$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')\n\
 	test3" > $@
 
@@ -102,7 +109,7 @@ clean:
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
 	rm -f test3 $(TARGETS)
-	rm -f break_ctr_subs crack_rng_seed
+	rm -f break_ctr_subs crack_rng_seed clone_rng
 	rm -f .gitignore
 
 #==============================================================================
