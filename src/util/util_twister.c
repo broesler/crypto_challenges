@@ -11,20 +11,15 @@
 #include "util_twister.h"
 
 
-/* TODO for Challenge 23, figure out how to create multiple instances */
-/* Create a length N array to store the state of the generator */
-/* static unsigned long mt[N]; */
-/* static int idx = N + 1;  /1* global state index *1/ */
-
-
 /*------------------------------------------------------------------------------
  *          Private API
  *----------------------------------------------------------------------------*/
 unsigned long *srand_mt_(RNG_MT *rng, unsigned long seed) {
-    rng->idx = N;  /* set idx to flag that generator is initialized */
+    rng->idx = _N;  /* set idx to flag that generator is initialized */
     rng->state[0] = seed & MASK32;
-    for (size_t i = 1; i < N; i++) {
-        rng->state[i] = F * (rng->state[i-1] ^ (rng->state[i-1] >> (W-2))) + i;
+    for (size_t i = 1; i < _N; i++) {
+        rng->state[i] = i + F_PARAM * (rng->state[i-1] \
+                                       ^ (rng->state[i-1] >> (WORD_SIZE-2)));
         rng->state[i] &= MASK32;  /* get lower 32 bits */
     }
     return rng->state;  /* return state for testing */
@@ -35,15 +30,15 @@ unsigned long *srand_mt_(RNG_MT *rng, unsigned long seed) {
 void twist(RNG_MT *rng) {
     unsigned long x, xA;
 
-    /* Generate the next N values from the series x_i  */
-    for (size_t i = 0; i < N; i++) {
+    /* Generate the next _N values from the series x_i  */
+    for (size_t i = 0; i < _N; i++) {
         x =  (rng->state[i]         & UPPER_MASK) 
-           + (rng->state[(i+1) % N] & LOWER_MASK);
+           + (rng->state[(i+1) % _N] & LOWER_MASK);
         xA = x >> 1;
         if (x % 2) {  /* lowest bit of x is 1 */
             xA ^= 0x9908B0DFUL;
         }
-        rng->state[i] = rng->state[(i + M) % N] ^ xA;
+        rng->state[i] = rng->state[(i + MID_OFFSET) % _N] ^ xA;
     }
     rng->idx = 0;  /* reset the index */
 }
@@ -127,7 +122,7 @@ RNG_MT *init_rng_mt(void) {
     MALLOC_CHECK(rng);
     BZERO(rng, sizeof(RNG_MT));
     BZERO(rng->state, sizeof(rng->state));
-    rng->idx = N + 1;
+    rng->idx = _N + 1;
     return rng;
 }
 
@@ -140,13 +135,13 @@ void srand_mt(RNG_MT *rng, unsigned long seed) {
 
 /* Generate random number in the interval [0, 0xFFFFFFFF] */
 unsigned long rand_int32(RNG_MT *rng) {
-    if (rng->idx == N+1) {
+    if (rng->idx == _N+1) {
         /* Seed with constant value; 5489 is used in reference C code */
         srand_mt(rng, 5489UL);
     }
 
-    /* Update the state once N numbers have been generated */
-    if (rng->idx >= N) {
+    /* Update the state once _N numbers have been generated */
+    if (rng->idx >= _N) {
         twist(rng);
     }
 

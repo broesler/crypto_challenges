@@ -13,22 +13,22 @@
 
 #define UINT_SIZE (8*sizeof(unsigned int))
 
-/* Declare constants */
-#define W  32   /* [bits] word size */
-#define N  624  /* degree of recurrence */
-#define M  397  /* middle word (offset in recurrence relation) */
+// Declare constants
+#define _N  624                // degree of recurrence
+#define WORD_SIZE  32          // [bits] word size
+#define MID_OFFSET  397        // middle word (offset in recurrence relation)
+#define F_PARAM  1812433253UL  // parameter for initialization
 
-#define UPPER_MASK  0x80000000UL  /* most significant W-R bits == 2^31 */
-#define LOWER_MASK  0x7FFFFFFFUL  /* least significant    bits == 2^31 - 1 */
+#define UPPER_MASK  0x80000000UL  // most significant WORD_SIZE-R bits == 2^31
+#define LOWER_MASK  0x7FFFFFFFUL  // least significant    bits == 2^31 - 1
 
-#define MASK32  0xFFFFFFFFUL  /* for > 32-bit machines */
-#define F  1812433253UL  /* parameter for initialization */
+#define MASK32  0xFFFFFFFFUL  // for > 32-bit machines
 
 
 // The random number generator object
 typedef struct _RNG_MT {
-    unsigned long state[N];  /* state vector */
-    int idx;                 /* state index */
+    unsigned long state[_N];  /* state vector */
+    int idx;  /* state index */
 } __RNG_MT;
 
 typedef struct _RNG_MT RNG_MT;
