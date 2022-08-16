@@ -19,6 +19,7 @@
 #define MASK32  0xFFFFFFFFUL  /* for > 32-bit machines */
 #define F  1812433253UL  /* parameter for initialization */
 
+/* TODO for Challenge 23, figure out how to create multiple instances */
 /* Create a length N array to store the state of the generator */
 static unsigned long mt[N];
 static int idx = N + 1;  /* global state index */
@@ -89,6 +90,22 @@ unsigned long rand_int32() {
 /* Generate random number in the semi-open interval [0, 1) */
 double rand_real() {
     return rand_int32() * (1.0 / 0x80000000p1);  /* div by 2^32 */
+}
+
+/* Generate random number in the closed interval [0, 1] */
+double rand_realc() {
+    return rand_int32() * (1.0 / 0x7FFFFFFFp1);  /* div by 2^32 - 1 */
+}
+
+/* Generate random integer in the closed interval [a, b] */
+unsigned long rand_rangec_int32(unsigned long a, unsigned long b) {
+    return (rand_int32() % (b - a + 1)) + a;
+}
+
+/* Generate random float in the closed interval [a, b] */
+double rand_rangec_real(double a, double b) {
+    /* Convert range [0, 1] to [a, b] */
+    return (rand_realc() * (b - a)) + a;
 }
 
 /*==============================================================================

@@ -10,17 +10,19 @@
 SRCDIR  = ./
 UTILDIR = ../util/
 INCLDIR = ../../include/
-SSLINCL = /usr/local/opt/openssl/include/
+SSLPATH = /usr/local/opt/openssl@3/
 
 # Set the compiler options
-CC = gcc-8
-CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
+CC = /usr/local/opt/llvm/bin/clang
+CFLAGS = -Wall -pedantic -std=c99 -funsigned-char -fsanitize=address
+CFLAGS += -Wno-nullability-completeness -Wno-nullability-extension 
+CFLAGS += -Wno-availability -Wno-expansion-to-defined
 
-# Look for header files here
-OPT = -I$(INCLDIR) -I$(SSLINCL) 
+# Look for header files here -- store all headers in ../include/
+OPT = -I$(INCLDIR) -I$(SSLPATH)/include 
 
 # Libraries
-LDLIBS = -lcrypto -lssl 
+LDLIBS = -L$(SSLPATH)/lib -lcrypto -lssl 
 
 # Headers
 INCL = $(wildcard $(INCLDIR)*.h)

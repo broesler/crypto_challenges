@@ -10,19 +10,22 @@
 SRCDIR   = ./
 UTILDIR  = ../util/
 INCLDIR  = ../../include/
-SSLINCL  = /usr/local/opt/openssl/include/
-DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6/util/
+SSLPATH = /usr/local/opt/openssl@3/
+DICTINCL = /Users/bernardroesler/Documents/Courses/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
-CC = gcc-8
+CC = /usr/local/opt/llvm/bin/clang
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
+CFLAGS += -Wno-nullability-completeness -Wno-nullability-extension 
+CFLAGS += -Wno-availability -Wno-expansion-to-defined
 SANFLAGS = -fsanitize=address -O1 -fno-omit-frame-pointer
+CFLAGS += $(SANFLAGS)
 
 # Look for header files here
-OPT = -I$(INCLDIR) -I$(SSLINCL) -I$(DICTINCL)
+OPT = -I$(INCLDIR) -I$(SSLPATH)/include -I$(DICTINCL)
 
 # Libraries
-LDLIBS = -lcrypto -lssl 
+LDLIBS = -L$(SSLPATH)/lib -lcrypto -lssl 
 DLIBS = -L$(DICTINCL) -ldict
 
 # NOTE: to build dictionary:

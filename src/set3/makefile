@@ -10,21 +10,23 @@
 SRCDIR   = ./
 UTILDIR  = ../util/
 INCLDIR  = ../../include/
-SSLINCL  = /usr/local/opt/openssl/include/
+SSLPATH  = /usr/local/opt/openssl@3/
 DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
-CC = gcc-8
+CC = /usr/local/opt/llvm/bin/clang
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char 
-# SANFLAGS = -fsanitize=address -fsanitize-recover=address -O1 -fno-omit-frame-pointer
-# SANFLAGS += -fsanitize-address-use-after-scope
+CFLAGS += -Wno-nullability-completeness -Wno-nullability-extension 
+CFLAGS += -Wno-availability -Wno-expansion-to-defined
+SANFLAGS = -fsanitize=address -O1 -fno-omit-frame-pointer
+CFLAGS += $(SANFLAGS)
 DEBUGFLAGS = -DLOGSTATUS -ggdb3 -fno-inline
 
 # Look for header files here
-OPT = -I$(INCLDIR) -I$(SSLINCL) -I$(DICTINCL)
+OPT = -I$(INCLDIR) -I$(SSLPATH)/include -I$(DICTINCL)
 
 # Libraries
-LDLIBS = -lcrypto -lssl 
+LDLIBS = -L$(SSLPATH)/lib -lcrypto -lssl 
 DLIBS = -L$(DICTINCL) -ldict
 
 # Headers
@@ -41,8 +43,9 @@ UTIL += $(UTILDIR)fmemopen.c
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
 TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main 
+
 # Make options
-all: test3 $(TARGETS) break_ctr_subs types
+all: test3 $(TARGETS) break_ctr_subs crack_rng_seed types
 test: test3
 
 debug: CFLAGS += $(DEBUGFLAGS)
@@ -67,6 +70,12 @@ break_ctr_subs: break_ctr_subs.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignor
 break_ctr_subs.o: break_ctr_subs.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
 
+crack_rng_seed: crack_rng_seed.o $(UTILDIR)util_twister.o | .gitignore
+	$(CC) $(CFLAGS) -o $@ $^
+
+crack_rng_seed.o: crack_rng_seed.c $(INCLDIR)header.h $(INCLDIR)util_twister.h
+	$(CC) $(CFLAGS) -I$(INCLDIR) -c $< -o $@
+
 # Objects depend on source and headers
 %.o: %.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
@@ -81,6 +90,7 @@ types: .types.vim
 # Ignore executables
 .gitignore:
 	@printf "break_ctr_subs\n\
+	crack_rng_seed\n\
 	$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')\n\
 	test3" > $@
 
@@ -92,7 +102,7 @@ clean:
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
 	rm -f test3 $(TARGETS)
-	rm -f break_ctr_subs
+	rm -f break_ctr_subs crack_rng_seed
 	rm -f .gitignore
 
 #==============================================================================
