@@ -25,7 +25,8 @@ int *count_chars(const BYTE *s, size_t nbyte)
 {
     int *cf = init_int(NUM_LETTERS);
 
-    /* Count occurrences letters in the string, index by letter */
+    /* Count occurrences of letters in the string.
+     * index by letter {A: 0, B: 1, ..., Z: 25, SPACE: 26} */
     for (size_t i = 0; i < nbyte; i++)
     {
         if      (*s >= 'A' && *s <= 'Z') { cf[*s-'A']++; }

@@ -13,6 +13,8 @@
 #include "crypto2.h"
 #include "crypto3.h"
 
+
+/* Challenge 18: Implement AES CTR Mode */
 int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce)
 {
     /* Block -> Stream Cipher implementation
@@ -27,7 +29,6 @@ int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce)
     int c;
     BYTE *counter = init_byte(BLOCK_SIZE/2);
 
-    /* While x stream not EOF */
     do {
         BYTE *keystream = get_keystream_block(key, nonce, counter);
 

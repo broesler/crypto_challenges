@@ -200,19 +200,28 @@ BYTE *fixed_xor(const BYTE *a, const BYTE *b, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Get character frequency score of string
  *----------------------------------------------------------------------------*/
+/* TODO include spaces and punctuation! 1st and ~4th in order */
 float char_freq_score(const BYTE *byte, size_t nbyte)
 {
     /* <https://en.wikipedia.org/wiki/Letter_frequency> */
     /* Indexed [A-Z] - 'A' == 0 -- 25 */
+    /* static const float ENGLISH_FREQ[] = */
+        /* { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \ */
+        /*   0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \ */
+        /*   0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \ */
+        /*   0.00978, 0.02360, 0.00150, 0.01974, 0.00074 */ 
+        /* }; */
+    /* <http://www.macfreek.nl/memory/Letter_Distribution> */
+    /* Includes space as {A: 0, B: 1, ..., Z: 25, SPACE: 26} */
     static const float ENGLISH_FREQ[] =
-        { 0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,  \
-          0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749,  \
-          0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758,  \
-          0.00978, 0.02360, 0.00150, 0.01974, 0.00074 
+        { 0.065454, 0.012614, 0.022382, 0.032896, 0.102875, 0.019871, 0.016282,\
+          0.049887, 0.056799, 0.000977, 0.005621, 0.033243, 0.020307, 0.057236,\
+          0.061721, 0.015074, 0.000838, 0.049980, 0.053278, 0.075322, 0.022804,\
+          0.007977, 0.017074, 0.001412, 0.014306, 0.000514, 0.183256,
         };
 
-    /* ordering by frequency of acceptable chars */
-    static const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ";
+    /* ordering by frequency of acceptable chars (include space!) */
+    static const char etaoin[] = "ETAOINSHRDLCUMWFGYPBVKJXQZ ";
 
     float N = 0,
           Nl = 0,
@@ -220,8 +229,8 @@ float char_freq_score(const BYTE *byte, size_t nbyte)
           score = FLT_MAX,
           observed = 0.0,
           expected = 0.0,
-          chi_sq = 0.0,
-          tol = 1e-16;
+          chi_sq = 0.0;
+    const float TOL = 1e-16;
 
     /* Count frequency of each letter in string */
     int *cf = count_chars(byte, nbyte);
@@ -229,23 +238,31 @@ float char_freq_score(const BYTE *byte, size_t nbyte)
     /* Calculate score via chi-squared test */
     N = (float)nbyte; /* all chars in array */
 
-    /* Count just letters in string */
+    /* Count letters and spaces in string */
     for (int j = 0; j < NUM_LETTERS; j++) {
         Nl += (float)cf[j];
     }
 
-    /* Fraction of string that is just letters */
-    letter_frac = Nl/N;
-    if (letter_frac < tol) {  /* no letters present, just clean up and exit */
+    /* Fraction of string that is just letters and spaces */
+    if ((letter_frac = Nl/N) < TOL) {  /* no letters present */
         free(cf);
         return score; 
     }
 
     /* Sum the chi^2 values for each alphabetic character */
+    /* NOTE this calculation does not include spaces! */
     for (int i = 0; i < strlen(etaoin); i++) {
         int ch_ind = etaoin[i];
-        observed = cf[ch_ind-'A'];               /* observed count */
-        expected = ENGLISH_FREQ[ch_ind-'A'] * N; /* expected in English */
+        int ind = 0;
+        if ('A' <= ch_ind && ch_ind <= 'Z') {
+            ind = ch_ind - 'A';
+        } else if (ch_ind == 32) {
+            ind = NUM_LETTERS - 1;
+        } else {
+            ERROR("Invalid character index!");
+        }
+        observed = cf[ind];               /* observed count */
+        expected = ENGLISH_FREQ[ind] * N; /* expected in English */
 
         /* sum actual letter counts, not frequencies */
         chi_sq += (observed - expected)*(observed - expected) / expected;
@@ -383,7 +400,7 @@ float norm_mean_hamming(const BYTE *byte, size_t nbyte, size_t k)
  *----------------------------------------------------------------------------*/
 size_t get_key_length(const BYTE *byte, size_t nbyte)
 {
-    size_t min_samples = 10; /* ensure high accuracy */
+    size_t min_samples = 10;  /* ensure high accuracy */
     size_t key_byte = 0;
     float min_mean_dist = FLT_MAX;
 
@@ -415,11 +432,14 @@ size_t get_key_length(const BYTE *byte, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Challenge 6: Break repeating key XOR cipher
  *----------------------------------------------------------------------------*/
-XOR_NODE *break_repeating_xor(const BYTE *byte, size_t nbyte)
+XOR_NODE *break_repeating_xor(const BYTE *byte, const size_t nbyte, 
+                              int key_byte)
 {
-    /* Get most probable key length */
-    /* TODO return sorted list of possible key sizes */
-    size_t key_byte = get_key_length(byte, nbyte);
+    if (key_byte < 0) {
+        /* Get most probable key length */
+        /* TODO return sorted list of possible key sizes */
+        key_byte = get_key_length(byte, nbyte);
+    }
 
     /* Maximum number of bytes in each substring 
      * (may run out of chars on repeated key application) */
@@ -429,14 +449,15 @@ XOR_NODE *break_repeating_xor(const BYTE *byte, size_t nbyte)
 
     /* For each byte of the key, transpose input and decode */
     for (size_t k = 0; k < key_byte; k++) {
+        /* TODO refactor this block into a function */
         /* Transpose input into every kth chunk */
         BYTE *byte_t = init_byte(nbyte_t);
-        size_t count_byte = 0;
+        size_t count_byte = 0, ind = 0;
         for (size_t i = 0; i < nbyte_t; i++) {
             /* Make sure we're not at end of input */
-            size_t ind = k+i*key_byte;
+            ind = k + i*key_byte;
             if (ind < nbyte) {
-                *(byte_t+i)   = *(byte+ind);
+                *(byte_t + i) = *(byte + ind);
                 count_byte++; /* track actual number of bytes used */
             } else { 
                 break; 
@@ -461,7 +482,7 @@ XOR_NODE *break_repeating_xor(const BYTE *byte, size_t nbyte)
         out->key_byte = key_byte;
         free(ptext);
     } else {
-        WARNING("Key not found!");
+        ERROR("Key not found!");
     }
 
     return out;

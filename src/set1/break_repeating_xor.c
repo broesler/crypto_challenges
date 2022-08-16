@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     size_t nbyte = b642byte(&byte, b64_clean);
 
     /*---------- Break the code! ----------*/
-    XOR_NODE *out = break_repeating_xor(byte, nbyte);
+    XOR_NODE *out = break_repeating_xor(byte, nbyte, -1);
 
     if (v_flag) {
         printf("key = '%s'\n", out->key);
