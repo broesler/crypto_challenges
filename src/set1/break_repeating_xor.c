@@ -1,5 +1,5 @@
 /*==============================================================================
- *     File: breakRepeatingXOR.c
+ *     File: break_repeating_xor.c
  *  Created: 07/20/2017, 16:43
  *   Author: Bernie Roesler
  *
@@ -21,8 +21,7 @@ int main(int argc, char **argv)
 
     /* Get flags */
     while ((c = getopt(argc, argv, "v")) != -1) {
-        switch (c)
-        {
+        switch (c) {
             case 'v':
                 v_flag = 1;
                 break;
@@ -41,7 +40,7 @@ int main(int argc, char **argv)
 
     /* Read file into memory */
     char *b64 = NULL;
-    (void)fileToString(&b64, b64_file);
+    (void)file2str(&b64, b64_file);
     char *b64_clean = strrmchr(b64, "\n");  /* strip newlines */
 
     /* Convert to byte array for decryption */
@@ -49,7 +48,7 @@ int main(int argc, char **argv)
     size_t nbyte = b642byte(&byte, b64_clean);
 
     /*---------- Break the code! ----------*/
-    XOR_NODE *out = breakRepeatingXOR(byte, nbyte);
+    XOR_NODE *out = break_repeating_xor(byte, nbyte);
 
     if (v_flag) {
         printf("key = '%s'\n", out->key);

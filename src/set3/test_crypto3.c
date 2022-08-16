@@ -20,40 +20,12 @@
 /*------------------------------------------------------------------------------
  *        Define test functions
  *----------------------------------------------------------------------------*/
-/* Test fmemopen stream function */
-int FMEM1()
-{
-    START_TEST_CASE;
-    char *x = (char *)"Hello, friends!";
-    size_t x_len = strlen(x);
-    FILE *xs = fmemopen(x, x_len, "r");  /* create stream from byte array */
-    FILE *ys = tmpfile();
-    int c;
-    while ((c = fgetc(xs)) != EOF) {
-        fputc(c, ys);
-    }
-    /* Rewind output stream */
-    /* if (fseek(ys, 0L, SEEK_SET)) { ERROR("Rewind failed!"); } */
-    REWIND_CHECK(ys);
-    BYTE *yb = init_byte(x_len);
-    if (fread(yb, 1, x_len, ys)) {
-#ifdef LOGSTATUS
-        printf("ys = \"%s\"\n", yb);
-#endif
-    }
-    SHOULD_BE(!memcmp(yb, x, x_len));
-    free(yb);
-    fclose(xs);
-    fclose(ys);
-    END_TEST_CASE;
-}
-
-/* Test incle() little endian incrementer */
+/* Test inc64le() little endian incrementer */
 int INCLE1()
 {
     START_TEST_CASE;
     BYTE *counter = init_byte(BLOCK_SIZE/2);
-    incle(counter);
+    inc64le(counter);
     SHOULD_BE(counter[0] == 0x01);
 #ifdef LOGSTATUS
     printf("counter = ");
@@ -64,7 +36,7 @@ int INCLE1()
     END_TEST_CASE;
 }
 
-/* Test incle() little endian incrementer for overflow error */
+/* Test inc64le() little endian incrementer for overflow error */
 int INCLE2()
 {
     START_TEST_CASE;
@@ -78,7 +50,7 @@ int INCLE2()
         print_blocks(counter, BLOCK_SIZE/2, BLOCK_SIZE, 0);
         printf("\n");
 #endif
-        incle(counter); /* should wrap to 0, then to 1 (little endian) */
+        inc64le(counter); /* should wrap to 0, then to 1 (little endian) */
     }
 #ifdef LOGSTATUS
         printf("counter = ");
@@ -97,13 +69,37 @@ int CTRDEC1()
     /* NOTE the function aes_128_ctr() is designed to handle file streams,
      * regardless of their origins. We use fmemopen() to create I/O 'streams' in
      * memory for the purposes of this test. */
-    char x_b64[] = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/" \
+    char y_b64[] = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/" \
                    "2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==";
-    BYTE *x = NULL;
-    size_t x_len = b642byte(&x, x_b64);
+    BYTE *y = NULL;
+    size_t y_len = b642byte(&y, y_b64);
+    FILE *ys = fmemopen(y, y_len, "r");
+    FILE *xs = tmpfile();
+    BYTE *key = (BYTE *)"YELLOW SUBMARINE";
+    BYTE *nonce = init_byte(BLOCK_SIZE/2); /* leave at 0's */
+    SHOULD_BE(aes_128_ctr(xs, ys, key, nonce) == 0);
+    BYTE *xb = init_byte(y_len);
+    SHOULD_BE(fread(xb, 1, y_len, xs) > 0);
+    SHOULD_BE(!memcmp(xb, "Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby ", y_len));
 #ifdef LOGSTATUS
-        printf("x  = \"%.*s\", %lu bytes\n", (int)x_len, x, x_len);
+    printf("xb = ");
+    printall(xb, y_len);
+    printf("\n");
 #endif
+    free(y);
+    free(nonce);
+    free(xb);
+    fclose(ys);
+    fclose(xs);
+    END_TEST_CASE;
+}
+
+/* Encryption identical to decryption */
+int CTRENC1()
+{
+    START_TEST_CASE;
+    BYTE *x = (BYTE *)"Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby ";
+    size_t x_len = strlen((char *)x);
     FILE *xs = fmemopen(x, x_len, "r");
     FILE *ys = tmpfile();
     BYTE *key = (BYTE *)"YELLOW SUBMARINE";
@@ -111,41 +107,18 @@ int CTRDEC1()
     SHOULD_BE(aes_128_ctr(ys, xs, key, nonce) == 0);
     BYTE *yb = init_byte(x_len);
     SHOULD_BE(fread(yb, 1, x_len, ys) > 0);
-    SHOULD_BE(!memcmp(yb, "Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby ", x_len));
-#ifdef LOGSTATUS
-    printf("ys = \"%s\"\n", yb);
-#endif
-    free(x);
-    free(nonce);
+    char y_b64[] = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/" \
+                   "2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==";
+    BYTE *y = NULL;
+    size_t y_len = b642byte(&y, y_b64);
+    SHOULD_BE(!memcmp(yb, y, y_len));
+    free(y);
     free(yb);
+    free(nonce);
     fclose(xs);
     fclose(ys);
     END_TEST_CASE;
 }
-
-/* #<{(| Encryption identical to decryption |)}># */
-/* int CTRENC1() */
-/* { */
-/*     START_TEST_CASE; */
-/*     BYTE *x = (BYTE *)"Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby "; */
-/*     size_t x_len = strlen((char *)x); */
-/*     FILE *xs = fmemopen(x, x_len, "r"); */
-/*     FILE *ys = tmpfile(); */
-/*     BYTE *key = (BYTE *)"YELLOW SUBMARINE"; */
-/*     BYTE *nonce = init_byte(BLOCK_SIZE/2); #<{(| leave at 0's |)}># */
-/*     SHOULD_BE(aes_128_ctr(ys, xs, key, nonce) == 0); */
-/*     BYTE *yb = init_byte(x_len); */
-/*     SHOULD_BE(fread(yb, 1, x_len, ys) > 0); */
-/*     SHOULD_BE(!memcmp(yb, "/k¯wz3M[?_8O12T.E", x_len)); */
-/* #ifdef LOGSTATUS */
-/*     printf("ys = \"%.*s\"\n", (int)x_len, yb); */
-/* #endif */
-/*     free(yb); */
-/*     free(nonce); */
-/*     fclose(xs); */
-/*     fclose(ys); */
-/*     END_TEST_CASE; */
-/* } */
 
 /*------------------------------------------------------------------------------
  *        Run tests
@@ -156,11 +129,10 @@ int main(void)
     int total = 0;
 
     /* Run OpenSSL lines here for speed */
-    RUN_TEST(FMEM1,   "fmemopen()      ");
-    RUN_TEST(INCLE1,  "incle() 1       ");
-    RUN_TEST(INCLE2,  "incle() 2       ");
+    RUN_TEST(INCLE1,  "inc64le() 1     ");
+    RUN_TEST(INCLE2,  "inc64le() 2     ");
     RUN_TEST(CTRDEC1, "aes_128_ctr() 1 ");
-    /* RUN_TEST(CTRENC1, "aes_128_ctr() 2 "); */
+    RUN_TEST(CTRENC1, "aes_128_ctr() 2 ");
 
     /* Count errors */
     if (!fails) {

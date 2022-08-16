@@ -14,7 +14,7 @@ source "../test_funcs.sh"
 DATA_PATH="../../data/"
 
 # Log file header
-printf "\n##### TEST LOG: $(date) #####\n"
+printf "\n##### SET 1 TEST LOG: $(date) #####\n"
 
 # Make all executables
 printf "Building executables...\n"
@@ -32,12 +32,12 @@ printf "Running tests...\n"
 pass_check "$?" "Set 1 Utilities"
 
 # Test challenge 4
-diff <(./findSingleByteXOR "${DATA_PATH}/4.txt") \
+diff <(./find_single_byte_xor "${DATA_PATH}/4.txt") \
     <(printf "Now that the party is jumping\n\n")
 pass_check "$?" "Challenge 4"
 
 # Test challenge 6
-diff <(./breakRepeatingXOR "${DATA_PATH}/6.txt") \
+diff <(./break_repeating_xor "${DATA_PATH}/6.txt") \
     "${DATA_PATH}/play_that_funky_music.txt"
 pass_check "$?" "Challenge 6"
 
@@ -47,7 +47,7 @@ diff <(./aes_ecb_file "${DATA_PATH}/7.txt" 0) \
 pass_check "$?" "Challenge 7"
 
 # Test challenge 7
-line=$(./findECB "${DATA_PATH}/8.txt")
+line=$(./find_ecb "${DATA_PATH}/8.txt")
 [ "$line" -eq 133 ]
 pass_check "$?" "Challenge 8"
 

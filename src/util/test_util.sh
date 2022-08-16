@@ -11,13 +11,23 @@
 # Include test functions
 source "../test_funcs.sh"
 
-make clean > /dev/null && make > /dev/null
+# Make all executables
+printf "Building utility executables...\n"
+make clean > /dev/null &&\
+make > /dev/null
+
 if [ "$?" -ne 0 ]; then
     printf "[$0: $LINENO]: Error! make failed to execute properly.\n"
     exit 2
 fi
+printf "done.\n"
 
-./test_util
+printf "Running tests...\n"
+
+shopt -s extglob
+for f in test_util_!(*.c|*.o|*.dSYM); do 
+    ./"$f"
+done
 pass_check "$?" "Utilities"
 
 #===============================================================================

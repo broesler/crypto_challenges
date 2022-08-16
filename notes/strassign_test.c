@@ -18,7 +18,7 @@
  * Mehtod 3: 
  ******************************************************************************/
 
-/* Test getHexByte function */
+/* Test get_hex_byte function */
 int StrassignTest()
 {
     START_TEST_CASE;

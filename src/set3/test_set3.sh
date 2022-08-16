@@ -14,7 +14,7 @@ source "../test_funcs.sh"
 DATA_PATH="../../data/"
 
 # Log file header
-printf "##### TEST LOG: $(date) #####\n"
+printf "##### SET 3 TEST LOG: $(date) #####\n"
 
 # Make all executables
 printf "Building executables...\n"
@@ -28,7 +28,7 @@ printf "done.\n"
 printf "Running tests...\n"
 
 # Test utilities
-# ./test3
+./test3
 ./test_cbc_padding_oracle
 pass_check "$?" "Set 3 Utilities"
 

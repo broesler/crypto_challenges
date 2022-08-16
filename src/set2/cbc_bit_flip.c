@@ -103,7 +103,7 @@ int encryption_oracle(BYTE **y, size_t *y_len, BYTE *x, size_t x_len)
     *y_len = 0;
 
     /* Escape ';' and '=' before encrypting */
-    char *x_clean = strhtmlesc((char *)x, ";=");
+    char *x_clean = strescchr((char *)x, ";=", 1);
     xc_len = strlen(x_clean);
 
     /* Prepend this string */

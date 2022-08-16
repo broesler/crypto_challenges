@@ -45,7 +45,7 @@ int main(int argc, char **argv)
             BYTE *yim1 = (i == 0) ? global_iv : (y + im1);
 
             /* x = D(y) ^ y_{n-1} */
-            BYTE *xg = fixedXOR(Dy, yim1, BLOCK_SIZE);
+            BYTE *xg = fixed_xor(Dy, yim1, BLOCK_SIZE);
             n_pad = pkcs7_rmpad(xg, BLOCK_SIZE, BLOCK_SIZE);
 
             /* Store in output array */

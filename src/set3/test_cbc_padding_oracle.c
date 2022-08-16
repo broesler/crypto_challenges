@@ -135,7 +135,7 @@ int BLOCKDECR1()
     SHOULD_BE(aes_128_cbc_encrypt(&y, &y_len, x, x_len, global_key, global_iv) == 0);
     BYTE *Dy = NULL;
     SHOULD_BE(block_decrypt(&Dy, y + BLOCK_SIZE) == 0);
-    BYTE *xg = fixedXOR(Dy, y, BLOCK_SIZE);
+    BYTE *xg = fixed_xor(Dy, y, BLOCK_SIZE);
     SHOULD_BE(!memcmp(xg, x + BLOCK_SIZE, BLOCK_SIZE));
 #ifdef LOGSTATUS
     printf("xg = \"");
@@ -175,7 +175,7 @@ int BLOCKDECR2()
     BYTE *Dy = NULL;
     int i = 1; /* decrypt ith block */
     SHOULD_BE(block_decrypt(&Dy, y + i*BLOCK_SIZE) == 0);
-    BYTE *xg = fixedXOR(Dy, y + (i-1)*BLOCK_SIZE, BLOCK_SIZE); /* XOR with first block */
+    BYTE *xg = fixed_xor(Dy, y + (i-1)*BLOCK_SIZE, BLOCK_SIZE); /* XOR with first block */
     SHOULD_BE(!memcmp(xg, "oll, it's time t", BLOCK_SIZE)); /* 7 */
 #ifdef LOGSTATUS
     printf("xg = \"");

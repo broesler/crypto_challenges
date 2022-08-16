@@ -12,11 +12,6 @@
 #include "crypto_util.h"
 
 //-------------------------------------------------------------------------------
-//      Macros
-//-------------------------------------------------------------------------------
-#define REWIND_CHECK(x) if (fseek((x), 0L, SEEK_SET)) { ERROR("Rewind failed!"); }
-
-//-------------------------------------------------------------------------------
 //      Function Prototypes
 //-------------------------------------------------------------------------------
 // AES 128-bit CTR mode streamcipher (encrypt or decrypt)
@@ -26,7 +21,7 @@ int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce);
 BYTE *get_keystream_block(BYTE *key, BYTE *nonce, BYTE *counter);
 
 // Increment little endian counter
-int incle(BYTE *counter);
+int inc64le(BYTE *counter);
 
 #endif
 //==============================================================================

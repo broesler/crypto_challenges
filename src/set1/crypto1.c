@@ -138,8 +138,7 @@ size_t b642byte(BYTE **byte, const char *b64)
 
     /* Require padding by '=' signs */
     if (nchar % 4) {
-        printf("nchar = %zu\n", nchar);
-        ERROR("Input string is not a valid b64 string!");
+        ERROR("Input string is not a valid b64 string! nchar = %zu\n", nchar);
     } else {
         /* 4 b64 chars * 6 bits/char == 24 bits / 8 bits/byte == 3 bytes */
         /* check for "=" padding in b64 string -- will have 0, 1, or 2 */
@@ -167,8 +166,7 @@ size_t b642byte(BYTE **byte, const char *b64)
             if (0 <= b && b < 65) {
                 b64_int[j] = b;
             } else {
-                printf("got index %d\n", b);
-                ERROR("Input string is not a valid b64 string!");
+                ERROR("Input string is not a valid b64 string! got index %d\n", b);
             }
         }
 
@@ -189,7 +187,7 @@ size_t b642byte(BYTE **byte, const char *b64)
 /*------------------------------------------------------------------------------
  *          Challenge 2: XOR two equal-length byte arrays
  *----------------------------------------------------------------------------*/
-BYTE *fixedXOR(const BYTE *a, const BYTE *b, size_t nbyte)
+BYTE *fixed_xor(const BYTE *a, const BYTE *b, size_t nbyte)
 {
     BYTE *xor = init_byte(nbyte);
     /* XOR each byte in the input array */
@@ -202,7 +200,7 @@ BYTE *fixedXOR(const BYTE *a, const BYTE *b, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Get character frequency score of string
  *----------------------------------------------------------------------------*/
-float charFreqScore(const BYTE *byte, size_t nbyte)
+float char_freq_score(const BYTE *byte, size_t nbyte)
 {
     /* <https://en.wikipedia.org/wiki/Letter_frequency> */
     /* Indexed [A-Z] - 'A' == 0 -- 25 */
@@ -226,7 +224,7 @@ float charFreqScore(const BYTE *byte, size_t nbyte)
           tol = 1e-16;
 
     /* Count frequency of each letter in string */
-    int *cf = countChars(byte, nbyte);
+    int *cf = count_chars(byte, nbyte);
 
     /* Calculate score via chi-squared test */
     N = (float)nbyte; /* all chars in array */
@@ -285,7 +283,7 @@ XOR_NODE *init_xor_node(void)
 /*------------------------------------------------------------------------------
  *         Challenge 3: Decode a string XOR'd against a single character
  *----------------------------------------------------------------------------*/
-XOR_NODE *singleByteXORDecode(const BYTE *byte, size_t nbyte)
+XOR_NODE *single_byte_xor_decode(const BYTE *byte, size_t nbyte)
 {
     XOR_NODE *out = init_xor_node();
     float cfreq_score = FLT_MAX; /* initialize large value */
@@ -295,14 +293,13 @@ XOR_NODE *singleByteXORDecode(const BYTE *byte, size_t nbyte)
         BYTE key = (BYTE)keyi;  /* cast to char (char always < 0x100) */
 
         /* Decode input with single-byte key */
-        BYTE *ptext = repeatingKeyXOR(byte, &key, nbyte, 1);
+        BYTE *ptext = repeating_key_xor(byte, &key, nbyte, 1);
 
         /* Make sure string does not contain NULL chars, and is printable */
         /* strlen(ptext) could break. BYTE not guaranteed null-terminated */
         if (isprintable(ptext, nbyte)) {
-        /* if ((strlen(ptext) == nbyte) && (isprintable(ptext))) { */
             /* calculate string score */
-            cfreq_score = charFreqScore(ptext, nbyte);
+            cfreq_score = char_freq_score(ptext, nbyte);
 
 #ifdef VERBOSE
             printf("%.2X\t%s\t%10.4e\n", key, ptext, cfreq_score);
@@ -328,11 +325,11 @@ XOR_NODE *singleByteXORDecode(const BYTE *byte, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Challenge 5: Encode hex string using repeating-key XOR
  *----------------------------------------------------------------------------*/
-BYTE *repeatingKeyXOR(const BYTE *byte, const BYTE *key_byte, size_t nbyte, size_t key_len)
+BYTE *repeating_key_xor(const BYTE *byte, const BYTE *key_byte, size_t nbyte, size_t key_len)
 {
     /* XOR each byte in the ciphertext with the key */
     BYTE *key_arr = bytenrepeat(key_byte, key_len, nbyte);
-    BYTE *xor = fixedXOR(byte, key_arr, nbyte);
+    BYTE *xor = fixed_xor(byte, key_arr, nbyte);
     free(key_arr);
     return xor;
 }
@@ -342,7 +339,7 @@ BYTE *repeatingKeyXOR(const BYTE *byte, const BYTE *key_byte, size_t nbyte, size
  *----------------------------------------------------------------------------*/
 size_t hamming_dist(const BYTE *a, const BYTE *b, size_t nbyte)
 {
-    BYTE *xor = fixedXOR(a, b, nbyte); /* XOR returns differing bits */
+    BYTE *xor = fixed_xor(a, b, nbyte); /* XOR returns differing bits */
     size_t weight = hamming_weight(xor, nbyte);
     free(xor);
     return weight;
@@ -351,7 +348,7 @@ size_t hamming_dist(const BYTE *a, const BYTE *b, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Get the normalized mean Hamming distance
  *----------------------------------------------------------------------------*/
-float normMeanHamming(const BYTE *byte, size_t nbyte, size_t k)
+float norm_mean_hamming(const BYTE *byte, size_t nbyte, size_t k)
 {
     /* Maximum number of pairs of size k */
     size_t n_blocks = (size_t)ceil(nbyte/(2.0*k) + 1);
@@ -384,21 +381,21 @@ float normMeanHamming(const BYTE *byte, size_t nbyte, size_t k)
 /*------------------------------------------------------------------------------
  *         Get most probable key length of repeating XOR 
  *----------------------------------------------------------------------------*/
-size_t getKeyLength(const BYTE *byte, size_t nbyte)
+size_t get_key_length(const BYTE *byte, size_t nbyte)
 {
     size_t min_samples = 10; /* ensure high accuracy */
     size_t key_byte = 0;
     float min_mean_dist = FLT_MAX;
 
     /* key length in bytes */
-    size_t max_key_len = (size_t)min(40.0, (float)nbyte/min_samples);
+    size_t max_key_len = (size_t)MIN(40.0, (float)nbyte/min_samples);
 
 #ifdef VERBOSE
     printf("%3s\t%8s\t%8s\n", "Key", "Mean", "Norm");
 #endif
     for (size_t k = 3; k <= max_key_len; k++) {
         /* Get mean Hamming distance of all samples */
-        float norm_mean = normMeanHamming(byte, nbyte, k);
+        float norm_mean = norm_mean_hamming(byte, nbyte, k);
 
         /* Take key with minimum mean Hamming distance. */
         if (norm_mean < min_mean_dist) {
@@ -418,11 +415,11 @@ size_t getKeyLength(const BYTE *byte, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Challenge 6: Break repeating key XOR cipher
  *----------------------------------------------------------------------------*/
-XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
+XOR_NODE *break_repeating_xor(const BYTE *byte, size_t nbyte)
 {
     /* Get most probable key length */
     /* TODO return sorted list of possible key sizes */
-    size_t key_byte = getKeyLength(byte, nbyte);
+    size_t key_byte = get_key_length(byte, nbyte);
 
     /* Maximum number of bytes in each substring 
      * (may run out of chars on repeated key application) */
@@ -450,7 +447,7 @@ XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
         printf("---------- k = %zu\n", k);
 #endif
         /* Run single byte xor on each chunk */
-        XOR_NODE *temp = singleByteXORDecode(byte_t, count_byte);
+        XOR_NODE *temp = single_byte_xor_decode(byte_t, count_byte);
         *(out->key+k) = *(temp->key);
 
         free(temp);
@@ -459,7 +456,7 @@ XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
 
     if (*out->key) {
         /* XOR original string with found key! */
-        BYTE *ptext = repeatingKeyXOR(byte, out->key, nbyte, key_byte);
+        BYTE *ptext = repeating_key_xor(byte, out->key, nbyte, key_byte);
         memcpy(out->plaintext, ptext, nbyte);
         out->key_byte = key_byte;
         free(ptext);
@@ -473,7 +470,7 @@ XOR_NODE *breakRepeatingXOR(const BYTE *byte, size_t nbyte)
 /*------------------------------------------------------------------------------
  *         Look for blocks with 0 Hamming distance
  *----------------------------------------------------------------------------*/
-int hasIdenticalBlocks(const BYTE *byte, size_t nbyte, size_t block_size)
+int has_identical_blocks(const BYTE *byte, size_t nbyte, size_t block_size)
 {
     /* Maximum number of pairs of size block_size */
     size_t n_blocks = (size_t)ceil(nbyte/(2.0*block_size) + 1);

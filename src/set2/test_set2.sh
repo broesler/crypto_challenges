@@ -15,7 +15,7 @@ DATA_PATH="../../data/"
 make_opt=''
 
 # Log file header
-printf "##### TEST LOG: $(date) #####\n"
+printf "##### SET 2 TEST LOG: $(date) #####\n"
 
 # Make all executables
 printf "Building executables...\n"

@@ -43,15 +43,14 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
     int file_line = -1;
     FILE *fp = NULL;
     char buffer[MAX_WORD_LEN];
-    char message[2*MAX_PAGE_NUM];
+    char message[2*MAX_LINE_LEN];
     BZERO(buffer, MAX_WORD_LEN);
-    BZERO(message, 2*MAX_PAGE_NUM);
+    BZERO(message, 2*MAX_LINE_LEN);
 
     /* open file stream */
     fp = fopen(hex_filename, "r");
     if (fp == NULL) {
-        snprintf(message, sizeof(message), "File %s could not be read!", hex_filename);
-        ERROR(message);
+        ERROR("File %s could not be read!", hex_filename);
     }
 
     int fl = 1; /* count file lines */
@@ -69,13 +68,13 @@ int find_AES_ECB(BYTE **out, const char *hex_filename)
         if (fl == 1) { *out = init_byte(nbyte); }
 
         /* AES ECB encrypted line will have identical blocks of ciphertext */
-        if (hasIdenticalBlocks(byte, nbyte, key_byte)) {
+        if (has_identical_blocks(byte, nbyte, key_byte)) {
             memcpy(*out, byte, nbyte);
             file_line = fl;
         }
 
 /*         #<{(| Get mean Hamming distance between key_byte-size chunks of byte |)}># */
-/*         float mean_dist = normMeanHamming(byte, nbyte, key_byte); */
+/*         float mean_dist = norm_mean_hamming(byte, nbyte, key_byte); */
 /*          */
 /* #ifdef LOGSTATUS */
 /*         printf("%4d\t%8.4f\n", fl, mean_dist); */

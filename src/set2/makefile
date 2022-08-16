@@ -14,7 +14,7 @@ SSLINCL  = /usr/local/opt/openssl/include/
 DICTINCL = /Users/bernardroesler/Documents/School/cs50_software_design/labs/lab6/util/
 
 # Set the compiler options
-CC = gcc-7
+CC = gcc-8
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 SANFLAGS = -fsanitize=address -O1 -fno-omit-frame-pointer
 
@@ -25,25 +25,28 @@ OPT = -I$(INCLDIR) -I$(SSLINCL) -I$(DICTINCL)
 LDLIBS = -lcrypto -lssl 
 DLIBS = -L$(DICTINCL) -ldict
 
+# NOTE: to build dictionary:
+# 	cd ~/Documents/School/cs50_software_design/labs/lab6/util
+# 	make dlib
+
 # Headers
 INCL = $(wildcard $(INCLDIR)*.h)
 
 # Define source files
 SRC   = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
 UTIL  = crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c 
-UTIL += $(UTILDIR)aes_openssl.c $(UTILDIR)crypto_util.c
+UTIL += $(UTILDIR)aes_openssl.c $(wildcard $(UTILDIR)util_*.c)
 
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
+# Individual challenges
+TARGETS  = aes_cbc_file detect_block_mode make_admin_profile 
+TARGETS += one_byte_ecb cbc_bit_flip
+
 # Make options
-all: test2 c10 c11 c13 c14 c16 types
+all: $(TARGETS) test types
 test: test2
-c10: aes_cbc_file
-c11: detect_block_mode
-c13: make_admin_profile
-c14: one_byte_ecb
-c16: cbc_bit_flip
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3 -fno-inline
 debug: all
@@ -57,28 +60,11 @@ verbose: debug
 test2: test_crypto2.o $(OBJ_UTIL)
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-aes_cbc_file: aes_cbc_file.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
-
-detect_block_mode: detect_block_mode.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
-
-make_admin_profile: make_admin_profile.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
-
-one_byte_ecb: one_byte_ecb.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
-
-cbc_bit_flip: cbc_bit_flip.o $(OBJ_UTIL) | .gitignore
+$(TARGETS): % : %.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS) $(DLIBS)
 
 .gitignore:
-	@printf "test2\n\
-	aes_cbc_file\n\
-	detect_block_mode\n\
-	make_admin_profile\n\
-	one_byte_ecb\n\
-	cbc_bit_flip\n" > $@
+	@printf "test2\n$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')" > $@
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)
@@ -95,22 +81,12 @@ types: .types.vim
 .PHONY: depend clean
 clean:
 	rm -f *~
-	rm -f ../set1/*.o
-	rm -f ../set1/*.gch
-	rm -rf ../set1/*.dSYM/
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
-	rm -f $(UTILDIR)*.o
-	rm -f $(UTILDIR)*.gch
-	rm -rf $(UTILDIR)*.dSYM/
-	rm -f test2
-	rm -f aes_cbc_file
-	rm -f cbc_bit_flip
-	rm -f detect_block_mode
-	rm -f one_byte_ecb
-	rm -f make_admin_profile
+	rm -f test2 $(TARGETS)
 	rm -f .gitignore
+	rm -f .types.vim
 
 #==============================================================================
 #==============================================================================

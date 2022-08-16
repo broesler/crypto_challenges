@@ -20,6 +20,7 @@ valout
 
 # Data directory
 data/
+notes/*.txt
 
 # Debug files
 *.dSYM
@@ -34,10 +35,13 @@ data/
 *.pyc
 *.pyo
 *.x86_64
-strtoupper_test
-strassign_test
-test_strtoul
-ruby_test
-strtok_test
-gdb_macros
+
+# Executables in notes
 aes_demo
+dup2-a
+gdb_macros
+ruby_test
+strassign_test
+strtok_test
+strtoupper_test
+test_strtoul

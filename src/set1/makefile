@@ -13,7 +13,7 @@ INCLDIR = ../../include/
 SSLINCL = /usr/local/opt/openssl/include/
 
 # Set the compiler options
-CC = gcc-7
+CC = gcc-8
 CFLAGS = -Wall -pedantic -std=c99 -funsigned-char
 
 # Look for header files here
@@ -25,9 +25,11 @@ LDLIBS = -lcrypto -lssl
 # Headers
 INCL = $(wildcard $(INCLDIR)*.h)
 
+TARGETS = find_single_byte_xor break_repeating_xor aes_ecb_file find_ecb
+
 # Define source files
 SRC      = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
-UTIL     = crypto1.c $(UTILDIR)crypto_util.c
+UTIL     = crypto1.c $(wildcard $(UTILDIR)util_*.c)
 AES_UTIL = aes_ecb.c $(UTILDIR)aes_openssl.c
 
 OBJ_UTIL = $(UTIL:%.c=%.o)
@@ -36,12 +38,8 @@ OBJ_AES  = $(AES_UTIL:%.c=%.o)
 #------------------------------------------------------------------------------ 
 #         Make options
 #------------------------------------------------------------------------------
-all: test1 breakRepeatingXOR findSingleByteXOR aes_ecb_file findECB types
+all: test1 $(TARGETS) types
 test: test1
-c4: findSingleByteXOR
-c6: breakRepeatingXOR
-c7: aes_ecb_file
-c8: findECB
 
 debug: CFLAGS += -DLOGSTATUS -ggdb3 -fno-inline
 debug: all
@@ -55,24 +53,11 @@ verbose: debug
 test1: test_crypto1.o $(OBJ_AES) $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-findSingleByteXOR: findSingleByteXOR.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^
-
-breakRepeatingXOR: breakRepeatingXOR.o $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^
-
-aes_ecb_file: aes_ecb_file.o $(OBJ_AES) $(OBJ_UTIL) | .gitignore
-	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
-
-findECB: findECB.o $(OBJ_AES) $(OBJ_UTIL) | .gitignore
+$(TARGETS): % : %.o $(OBJ_UTIL) $(OBJ_AES) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 .gitignore:
-	@printf "test1\n\
-	findSingleByteXOR\n\
-	breakRepeatingXOR\n\
-	aes_ecb_file\n\
-	findECB\n" > $@
+	@printf "test1\n$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')" > $@
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)
@@ -95,13 +80,9 @@ clean:
 	rm -f $(UTILDIR)*.o
 	rm -f $(UTILDIR)*.gch
 	rm -rf $(UTILDIR)*.dSYM/
-	rm -f test1
-	rm -f findSingleByteXOR
-	rm -f breakRepeatingXOR
-	rm -f aes_ecb_file
-	rm -f findECB
-	rm -f .types.vim
+	rm -f test1 $(TARGETS)
 	rm -f .gitignore
+	rm -f .types.vim
 
 #==============================================================================
 #==============================================================================
