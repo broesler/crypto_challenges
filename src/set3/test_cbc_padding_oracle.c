@@ -6,6 +6,7 @@
  *  Description: Unit tests for cbc_padding_oracle functions
  *
  *============================================================================*/
+
 /* User-defined headers */
 #include "unit_test.h"
 #include "header.h"
@@ -15,10 +16,12 @@
 #include "crypto2.h"
 #include "cbc_padding_oracle.h"
 
+
 /* OVERWRITE externs?? */
 BYTE *global_key = (BYTE *)"BUSINESS CASUAL";
 BYTE *global_iv  = (BYTE *)"\x99\x99\x99\x99\x99\x99\x99\x99" \
                            "\x99\x99\x99\x99\x99\x99\x99\x99";
+
 
 /*------------------------------------------------------------------------------
  *        Define test functions
@@ -64,6 +67,7 @@ int PORACLE1()
     END_TEST_CASE;
 }
 
+
 /* Test last_byte algorithm */
 int LASTBYTE1()
 {
@@ -90,6 +94,7 @@ int LASTBYTE1()
     free(Dy);
     END_TEST_CASE;
 }
+
 
 /* Test last_byte algorithm */
 int LASTBYTE2()
@@ -124,6 +129,7 @@ int LASTBYTE2()
     END_TEST_CASE;
 }
 
+
 /* Test block_decrypt algorithm */
 int BLOCKDECR1()
 {
@@ -147,6 +153,7 @@ int BLOCKDECR1()
     free(Dy);
     END_TEST_CASE;
 }
+
 
 /* Test last_byte algorithm */
 int BLOCKDECR2()
@@ -188,6 +195,7 @@ int BLOCKDECR2()
     free(xg);
     END_TEST_CASE;
 }
+
 
 /*------------------------------------------------------------------------------
  *        Run tests
