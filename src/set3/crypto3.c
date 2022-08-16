@@ -124,7 +124,8 @@ int mersenne_ctr(FILE *y, FILE *x, short seed)
         fputc(c ^ k, y);
     }
 
-    REWIND_CHECK(y);  /* rewind output stream before returning */
+    REWIND_CHECK(x);  /* rewind streams before returning */
+    REWIND_CHECK(y);
     free(rng);
     return EXIT_SUCCESS;
 }

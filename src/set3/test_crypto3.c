@@ -143,8 +143,6 @@ int MT_CTR1()
     FILE *ys = tmpfile();
     /* Encrypt xs -> ys */
     SHOULD_BE(mersenne_ctr(ys, xs, seed) == EXIT_SUCCESS);
-    BYTE *yb = init_byte(x_len);
-    SHOULD_BE(fread(yb, 1, x_len, ys) > 0);
     /* Decrypt ys -> xs */
     SHOULD_BE(mersenne_ctr(xs, ys, seed) == EXIT_SUCCESS);
     BYTE *xb = init_byte(x_len);
@@ -161,7 +159,6 @@ int MT_CTR1()
 #endif
     free(x);
     free(xb);
-    free(yb);
     fclose(xs);
     fclose(ys);
     END_TEST_CASE;
