@@ -16,6 +16,7 @@ int main(void) {
     RNG_MT *rng = init_rng_mt();
     RNG_MT *clone = init_rng_mt();
     assert(rng != clone);
+    srand_mt(rng, time(NULL));  /* seed randomly */
 
     /* Generate 624 numbers from the original rng */
     for (int i = 0; i < _N; i++) {
