@@ -26,13 +26,13 @@ int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce)
      *
      * returns : integer 0 on success, non-zero on failure
      */
-    int c;
     BYTE *counter = init_byte(BLOCK_SIZE/2);
 
     do {
         BYTE *keystream = get_keystream_block(key, nonce, counter);
 
         /* Write x ^ keystream to y */
+        int c;
         int n = 0;
         while ((n < BLOCK_SIZE) && ((c = fgetc(x)) != EOF))
         {
@@ -46,11 +46,12 @@ int aes_128_ctr(FILE *y, FILE *x, BYTE *key, BYTE *nonce)
         free(keystream);
     } while (!feof(x));
 
-    /* Rewind output stream before returning */
+    REWIND_CHECK(x);  /* rewind streams before returning */
     REWIND_CHECK(y);
     free(counter);
-    return 0;
+    return EXIT_SUCCESS;
 }
+
 
 BYTE *get_keystream_block(BYTE *key, BYTE *nonce, BYTE *counter)
 {
@@ -67,7 +68,7 @@ BYTE *get_keystream_block(BYTE *key, BYTE *nonce, BYTE *counter)
 
     /* Create (nonce || counter) */
     memcpy(nc, nonce, BLOCK_SIZE/2);
-    memcpy(nc+BLOCK_SIZE/2, counter, BLOCK_SIZE/2);
+    memcpy(nc + BLOCK_SIZE/2, counter, BLOCK_SIZE/2);
 
     /* Encrypt single block to get keystream */
     if (0 != aes_128_ecb_block(&keystream, &len, nc, BLOCK_SIZE, key, 1)) {
@@ -77,6 +78,7 @@ BYTE *get_keystream_block(BYTE *key, BYTE *nonce, BYTE *counter)
     free(nc);
     return keystream;
 }
+
 
 int inc64le(BYTE *counter)
 {
@@ -103,6 +105,28 @@ int inc64le(BYTE *counter)
     memcpy(counter, &lo, sizeof(uint32_t));
     memcpy(counter + sizeof(uint32_t), &hi, sizeof(uint32_t));
     return out;
+}
+
+
+/* Challenge 24 */
+int mersenne_ctr(FILE *y, FILE *x, short seed) 
+{
+    /* Seed the RNG, then use the output as an 8-bit keystream */
+    RNG_MT *rng = init_rng_mt();
+    srand_mt(rng, seed);
+
+    /* Write x ^ keystream to y */
+    int c;
+    while (!feof(x) && ((c = fgetc(x)) != EOF))
+    {
+        if (ferror(x)) { ERROR("Read error in input stream!"); }
+        BYTE k = (BYTE)rand_int32(rng);
+        fputc(c ^ k, y);
+    }
+
+    REWIND_CHECK(y);  /* rewind output stream before returning */
+    free(rng);
+    return EXIT_SUCCESS;
 }
 
 /*==============================================================================

@@ -23,6 +23,9 @@ BYTE *get_keystream_block(BYTE *key, BYTE *nonce, BYTE *counter);
 // Increment little endian counter
 int inc64le(BYTE *counter);
 
+// Use a Mersenne Twister MT19937 PRNG as a keystream
+int mersenne_ctr(FILE *y, FILE *x, short seed);
+
 #endif
 //==============================================================================
 //==============================================================================

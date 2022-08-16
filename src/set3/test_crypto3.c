@@ -36,6 +36,7 @@ int INCLE1()
     END_TEST_CASE;
 }
 
+
 /* Test inc64le() little endian incrementer for overflow error */
 int INCLE2()
 {
@@ -63,6 +64,7 @@ int INCLE2()
     END_TEST_CASE;
 }
 
+
 /* Test Challenge 18 */
 int CTRDEC1()
 {
@@ -78,7 +80,7 @@ int CTRDEC1()
     FILE *xs = tmpfile();
     BYTE *key = (BYTE *)"YELLOW SUBMARINE";
     BYTE *nonce = init_byte(BLOCK_SIZE/2); /* leave at 0's */
-    SHOULD_BE(aes_128_ctr(xs, ys, key, nonce) == 0);
+    SHOULD_BE(aes_128_ctr(xs, ys, key, nonce) == EXIT_SUCCESS);
     BYTE *xb = init_byte(y_len);
     SHOULD_BE(fread(xb, 1, y_len, xs) > 0);
     SHOULD_BE(!memcmp(xb, "Yo, VIP Let's kick it Ice, Ice, baby Ice, Ice, baby ", y_len));
@@ -95,6 +97,7 @@ int CTRDEC1()
     END_TEST_CASE;
 }
 
+
 /* Encryption identical to decryption */
 int CTRENC1()
 {
@@ -105,7 +108,7 @@ int CTRENC1()
     FILE *ys = tmpfile();
     BYTE *key = (BYTE *)"YELLOW SUBMARINE";
     BYTE *nonce = init_byte(BLOCK_SIZE/2); /* leave at 0's */
-    SHOULD_BE(aes_128_ctr(ys, xs, key, nonce) == 0);
+    SHOULD_BE(aes_128_ctr(ys, xs, key, nonce) == EXIT_SUCCESS);
     BYTE *yb = init_byte(x_len);
     SHOULD_BE(fread(yb, 1, x_len, ys) > 0);
     char y_b64[] = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/" \
@@ -121,6 +124,50 @@ int CTRENC1()
     END_TEST_CASE;
 }
 
+
+/* Test Challenge 24 Mersenne CTR */
+int MT_CTR1()
+{
+    START_TEST_CASE;
+    srand(565656);
+    short seed = (short)565656;
+    char *known = "AAAAAAAAAAAAAA";  /* 14 A's */
+    size_t k_len = strlen(known);
+    /* Add a random number of random padding characters */
+    int n_pad = RAND_RANGE(1, 16);
+    int x_len = n_pad + k_len;
+    BYTE *x = rand_byte(x_len);
+    strlcpy((char *)x + n_pad, known, k_len); 
+    /* Create filestreams for encryption */
+    FILE *xs = fmemopen(x, x_len, "r");
+    FILE *ys = tmpfile();
+    /* Encrypt xs -> ys */
+    SHOULD_BE(mersenne_ctr(ys, xs, seed) == EXIT_SUCCESS);
+    BYTE *yb = init_byte(x_len);
+    SHOULD_BE(fread(yb, 1, x_len, ys) > 0);
+    /* Decrypt ys -> xs */
+    SHOULD_BE(mersenne_ctr(xs, ys, seed) == EXIT_SUCCESS);
+    BYTE *xb = init_byte(x_len);
+    SHOULD_BE(fread(xb, 1, x_len, xs) > 0);
+    SHOULD_BE(!memcmp(xb, x, x_len));
+#ifdef LOGSTATUS
+    printf("x_len = %d, n_pad = %d\n", x_len, n_pad);
+    printf("xb = ");
+    printall(xb, x_len);
+    printf("\n");
+    printf("x  = ");
+    printall(x, x_len);
+    printf("\n");
+#endif
+    free(x);
+    free(xb);
+    free(yb);
+    fclose(xs);
+    fclose(ys);
+    END_TEST_CASE;
+}
+
+
 /*------------------------------------------------------------------------------
  *        Run tests
  *----------------------------------------------------------------------------*/
@@ -134,17 +181,17 @@ int main(void)
     RUN_TEST(INCLE2,  "inc64le() 2     ");
     RUN_TEST(CTRDEC1, "aes_128_ctr() 1 ");
     RUN_TEST(CTRENC1, "aes_128_ctr() 2 ");
+    RUN_TEST(MT_CTR1, "mersenne_ctr()  ");
 
     /* Count errors */
     if (!fails) {
-        printf("\033[0;32mAll %d tests passed!\033[0m\n", total); 
+        printf("\033[0;32mAll %d tests passed!\033[0m\n", total);
         return 0;
     } else {
         printf("\033[0;31m%d/%d tests failed!\033[0m\n", fails, total);
         return 1;
     }
 }
-
 
 /*==============================================================================
  *============================================================================*/
