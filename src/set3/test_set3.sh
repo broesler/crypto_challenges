@@ -36,6 +36,10 @@ pass_check "$?" "Set 3 Utilities"
 diff <(./cbc_padding_oracle_main) "${DATA_PATH}/17.txt"
 pass_check "$?" "Challenge 17"
 
+# Test Challenge 23
+./clone_rng
+pass_check "$?" "Challenge 23"
+
 printf "done.\n"
 exit 0
 #===============================================================================
