@@ -7,22 +7,16 @@
  *
  *============================================================================*/
 
-#include <stdlib.h>
 #include <time.h>
+
 #include "util_twister.h"
-
-
-/* Generate a random number in a range *not* using the MT */
-unsigned long rand_integer(int lo, int hi) {
-    return rand() % (hi + 1 - lo) + lo;
-}
 
 
 /* Use the Mersenne Twister RNG object */
 unsigned long wait_and_seed(RNG_MT *rng) {
-    sleep(rand_integer(1, 10));  /* wait a random number of seconds */
+    sleep(RAND_RANGE(1, 10));  /* wait a random number of seconds */
     srand_mt(rng, time(NULL));   /* seed with the current Unix timestamp */
-    sleep(rand_integer(1, 10));  /* wait a random number of seconds again */
+    sleep(RAND_RANGE(1, 10));  /* wait a random number of seconds again */
     return rand_int32(rng);      /* return the first output of the RNG */
 }
 
