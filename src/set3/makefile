@@ -34,7 +34,8 @@ INCL = $(wildcard $(INCLDIR)*.h)
 
 # Define source files
 SRC   = $(wildcard $(SRCDIR)*.c) $(wildcard $(UTILDIR)*.c)
-UTIL  = ./crypto3.c ./cbc_padding_oracle.c 
+# UTIL  = ./crypto3.c ./cbc_padding_oracle.c
+UTIL  = ./crypto3.c
 UTIL += ../set2/crypto2.c ../set1/aes_ecb.c ../set1/crypto1.c
 UTIL += $(UTILDIR)aes_openssl.c $(wildcard $(UTILDIR)util_*.c) 
 UTIL += $(UTILDIR)fmemopen.c
@@ -42,12 +43,10 @@ UTIL += $(UTILDIR)fmemopen.c
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
-# TODO rewrite with special rules for cbc_padding_oracle only? 
-#  	Instead of other way around...
-TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main
+TARGETS = break_ctr_subs crack_rng_seed clone_rng break_mt19937_ctr 
 
 # Make options
-all: test3 $(TARGETS) break_ctr_subs crack_rng_seed clone_rng break_mt19937_ctr types
+all: test3 $(TARGETS) test_cbc_padding_oracle cbc_padding_oracle_main types
 test: test3
 
 debug: CFLAGS += $(DEBUGFLAGS)
@@ -60,36 +59,18 @@ verbose: debug
 # 		Compile and link steps 
 #------------------------------------------------------------------------------
 # Main tests: ignore cbc_padding_oracle files ("substitute with nothing")
-test3: test_crypto3.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
+test3: test_crypto3.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 $(TARGETS): % : %.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-# Ignore cbc_padding_oracle files ("substitute with nothing")
-break_ctr_subs: break_ctr_subs.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
+# Special cases
+cbc_padding_oracle_main: cbc_padding_oracle_main.o cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
-break_ctr_subs.o: break_ctr_subs.c $(INCL)
-	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
-
-break_mt19937_ctr: break_mt19937_ctr.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
+test_cbc_padding_oracle: test_cbc_padding_oracle.o cbc_padding_oracle.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
-
-break_mt19937_ctr.o: break_mt19937_ctr.c $(INCL)
-	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
-
-crack_rng_seed: crack_rng_seed.o $(UTILDIR)util_twister.o | .gitignore
-	$(CC) $(CFLAGS) -o $@ $^
-
-crack_rng_seed.o: crack_rng_seed.c $(INCLDIR)util_twister.h
-	$(CC) $(CFLAGS) -I$(INCLDIR) -c $< -o $@
-
-clone_rng: clone_rng.o $(UTILDIR)util_twister.o | .gitignore
-	$(CC) $(CFLAGS) -o $@ $^
-
-clone_rng.o: clone_rng.c $(INCLDIR)util_twister.h
-	$(CC) $(CFLAGS) -I$(INCLDIR) -c $< -o $@
 
 # Objects depend on source and headers
 %.o: %.c $(INCL)
@@ -104,10 +85,8 @@ types: .types.vim
 
 # Ignore executables
 .gitignore:
-	@printf "break_ctr_subs\n\
-	crack_rng_seed\n\
-	clone_rng\n\
-	break_mt19937_ctr\n\
+	@printf "test_cbc_padding_oracle\n\
+	cbc_padding_oracle_main\n\
 	$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')\n\
 	test3" > $@
 
@@ -118,8 +97,7 @@ clean:
 	rm -f $(SRCDIR)*.o
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
-	rm -f test3 $(TARGETS)
-	rm -f break_ctr_subs crack_rng_seed clone_rng break_mt19937_ctr
+	rm -f test3 $(TARGETS) test_cbc_padding_oracle cbc_padding_oracle_main
 	rm -f .gitignore
 
 #==============================================================================
