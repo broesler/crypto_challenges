@@ -42,10 +42,12 @@ UTIL += $(UTILDIR)fmemopen.c
 # Object files
 OBJ_UTIL = $(UTIL:%.c=%.o)
 
-TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main 
+# TODO rewrite with special rules for cbc_padding_oracle only? 
+#  	Instead of other way around...
+TARGETS = test_cbc_padding_oracle cbc_padding_oracle_main
 
 # Make options
-all: test3 $(TARGETS) break_ctr_subs crack_rng_seed clone_rng types
+all: test3 $(TARGETS) break_ctr_subs crack_rng_seed clone_rng break_mt19937_ctr types
 test: test3
 
 debug: CFLAGS += $(DEBUGFLAGS)
@@ -57,29 +59,36 @@ verbose: debug
 #------------------------------------------------------------------------------
 # 		Compile and link steps 
 #------------------------------------------------------------------------------
-# Main tests: ignore cbc_padding_oracle files
+# Main tests: ignore cbc_padding_oracle files ("substitute with nothing")
 test3: test_crypto3.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 $(TARGETS): % : %.o $(OBJ_UTIL) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
+# Ignore cbc_padding_oracle files ("substitute with nothing")
 break_ctr_subs: break_ctr_subs.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
 	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
 
 break_ctr_subs.o: break_ctr_subs.c $(INCL)
 	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
 
+break_mt19937_ctr: break_mt19937_ctr.o $(OBJ_UTIL:./cbc_padding_oracle.o=) | .gitignore
+	$(CC) $(CFLAGS) $(OPT) -o $@ $^ $(LDLIBS)
+
+break_mt19937_ctr.o: break_mt19937_ctr.c $(INCL)
+	$(CC) $(CFLAGS) $(OPT) -c $< -o $@
+
 crack_rng_seed: crack_rng_seed.o $(UTILDIR)util_twister.o | .gitignore
 	$(CC) $(CFLAGS) -o $@ $^
 
-crack_rng_seed.o: crack_rng_seed.c $(INCLDIR)header.h $(INCLDIR)util_twister.h
+crack_rng_seed.o: crack_rng_seed.c $(INCLDIR)util_twister.h
 	$(CC) $(CFLAGS) -I$(INCLDIR) -c $< -o $@
 
 clone_rng: clone_rng.o $(UTILDIR)util_twister.o | .gitignore
 	$(CC) $(CFLAGS) -o $@ $^
 
-clone_rng.o: clone_rng.c $(INCLDIR)header.h $(INCLDIR)util_twister.h
+clone_rng.o: clone_rng.c $(INCLDIR)util_twister.h
 	$(CC) $(CFLAGS) -I$(INCLDIR) -c $< -o $@
 
 # Objects depend on source and headers
@@ -98,6 +107,7 @@ types: .types.vim
 	@printf "break_ctr_subs\n\
 	crack_rng_seed\n\
 	clone_rng\n\
+	break_mt19937_ctr\n\
 	$(shell echo "$(TARGETS)" | sed -e 's/ /\\n/g')\n\
 	test3" > $@
 
@@ -109,7 +119,7 @@ clean:
 	rm -f $(SRCDIR)*.gch
 	rm -rf $(SRCDIR)*.dSYM/
 	rm -f test3 $(TARGETS)
-	rm -f break_ctr_subs crack_rng_seed clone_rng
+	rm -f break_ctr_subs crack_rng_seed clone_rng break_mt19937_ctr
 	rm -f .gitignore
 
 #==============================================================================

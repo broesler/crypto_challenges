@@ -141,12 +141,11 @@ int MT_CTR1()
     /* Create filestreams for encryption */
     FILE *xs = fmemopen(x, x_len, "r");
     FILE *ys = tmpfile();
-    /* Encrypt xs -> ys */
-    SHOULD_BE(mersenne_ctr(ys, xs, seed) == EXIT_SUCCESS);
-    /* Decrypt ys -> xs */
-    SHOULD_BE(mersenne_ctr(xs, ys, seed) == EXIT_SUCCESS);
+    SHOULD_BE(mersenne_ctr(ys, xs, seed) == EXIT_SUCCESS);  /* encrypt x -> y */
+    SHOULD_BE(mersenne_ctr(xs, ys, seed) == EXIT_SUCCESS);  /* decrypt y -> x */
     BYTE *xb = init_byte(x_len);
     SHOULD_BE(fread(xb, 1, x_len, xs) > 0);
+    /* Actual test that encrypted/decrypted stream matches original input */
     SHOULD_BE(!memcmp(xb, x, x_len));
 #ifdef LOGSTATUS
     printf("x_len = %d, n_pad = %d\n", x_len, n_pad);
